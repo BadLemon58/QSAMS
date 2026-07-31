@@ -56,8 +56,12 @@ export default function ScanPage() {
 
           // Parse payload
           let payload
-          try { payload = JSON.parse(decodedText) } catch (_) {
+          try {
+            payload = JSON.parse(decodedText)
+          } catch (_) {
             setErrorMsg('Invalid QR code. Please scan the QR projected by your teacher.')
+            setStatus('error')
+            await stopScanner()
             return
           }
 
@@ -72,7 +76,8 @@ export default function ScanPage() {
                 setStatus('already_marked')
                 setSuccessMsg(`You are already enrolled in "${payload.className || 'this class'}".`)
               } else {
-                setErrorMsg(enrollErr.message)
+                setErrorMsg(`Enrollment error: ${enrollErr.message}`)
+                setStatus('error')
               }
               await stopScanner()
               return
@@ -87,6 +92,8 @@ export default function ScanPage() {
           // Validate it's an attendance QR
           if (payload.type !== 'attendance' || !payload.sessionId || !payload.token) {
             setErrorMsg('Invalid QR code. Ask your teacher for the Attendance or Class Join QR.')
+            setStatus('error')
+            await stopScanner()
             return
           }
 
@@ -99,28 +106,34 @@ export default function ScanPage() {
             .eq('id', payload.sessionId)
             .eq('session_token', payload.token)
             .eq('is_active', true)
-            .single()
+            .maybeSingle()
 
           if (sessErr || !session) {
             setErrorMsg('Session not found or has ended. Ask your teacher to generate a new QR.')
+            setStatus('error')
+            await stopScanner()
             return
           }
 
           if (new Date(session.expires_at) < new Date()) {
             setErrorMsg('This QR code has expired. Ask your teacher to rotate the token.')
+            setStatus('error')
+            await stopScanner()
             return
           }
 
           // Check if student is enrolled
-          const { data: enrollment } = await supabase
+          const { data: enrollment, error: enrollCheckErr } = await supabase
             .from('enrollments')
             .select('id')
             .eq('class_id', session.class_id)
             .eq('student_id', profile.id)
             .maybeSingle()
 
-          if (!enrollment) {
-            setErrorMsg("You're not enrolled in this class. Contact your teacher.")
+          if (enrollCheckErr || !enrollment) {
+            setErrorMsg("You're not enrolled in this class. Please join the class first!")
+            setStatus('error')
+            await stopScanner()
             return
           }
 
@@ -162,6 +175,7 @@ export default function ScanPage() {
               setSuccessMsg('You are already marked for this session.')
             } else {
               setErrorMsg(`Failed to record attendance: ${logErr.message}`)
+              setStatus('error')
             }
             await stopScanner()
             return
