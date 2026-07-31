@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
@@ -9,6 +9,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -84,6 +89,34 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen bg-[#0a0f1e] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
+          <div className="w-14 h-14 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+            ⚡
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">Vercel Environment Variables Missing</h2>
+          <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+            QSAMS is deployed on Vercel, but needs your Supabase API keys to connect to the database.
+          </p>
+          <div className="bg-slate-950 p-4 rounded-xl text-left text-xs font-mono text-slate-300 space-y-2 mb-6 border border-slate-800/80">
+            <p className="text-blue-400 font-semibold mb-2">Add these in Vercel → Project Settings → Environment Variables:</p>
+            <p className="flex justify-between items-center bg-slate-900/60 p-2 rounded border border-slate-800">
+              <span className="text-slate-300">VITE_SUPABASE_URL</span>
+            </p>
+            <p className="flex justify-between items-center bg-slate-900/60 p-2 rounded border border-slate-800">
+              <span className="text-slate-300">VITE_SUPABASE_ANON_KEY</span>
+            </p>
+          </div>
+          <p className="text-xs text-slate-500">
+            Once added, go to <b>Deployments</b> on Vercel and click <b>Redeploy</b>!
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
