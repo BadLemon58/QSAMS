@@ -198,6 +198,9 @@ export default function AttendancePage() {
       return false
     }
 
+    // Eagerly update local state so the dropdown updates instantly
+    setRoster(prev => prev.map(s => s.id === studentId ? { ...s, status } : s))
+
     showToast(`Marked ${status}!`, 'success')
     return true
   }, [session, classId])

@@ -24,7 +24,7 @@ export default function ScanPage() {
       try { await scannerRef.current.stop(); await scannerRef.current.clear() } catch (_) {}
       scannerRef.current = null
     }
-    setStatus('idle')
+    // DO NOT setStatus('idle') here, because it overwrites error/success states immediately
   }, [])
 
   const startScanner = useCallback(async () => {
