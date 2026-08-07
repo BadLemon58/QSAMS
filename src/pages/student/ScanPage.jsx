@@ -18,6 +18,7 @@ export default function ScanPage() {
   const [errorMsg, setErrorMsg] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
   const [lastToken, setLastToken] = useState(null)
+  const isProcessingRef = useRef(false)
 
   const stopScanner = useCallback(async () => {
     if (scannerRef.current) {
@@ -31,6 +32,7 @@ export default function ScanPage() {
     setStatus('requesting')
     setErrorMsg('')
     setSuccessMsg('')
+    isProcessingRef.current = false
 
     try {
       await navigator.mediaDevices.getUserMedia({ video: true })
@@ -52,7 +54,9 @@ export default function ScanPage() {
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 240, height: 240 }, aspectRatio: 1 },
         async (decodedText) => {
+          if (isProcessingRef.current) return
           if (decodedText === lastToken) return
+          isProcessingRef.current = true
 
           // Parse payload
           let payload

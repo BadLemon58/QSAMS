@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { RefreshCw, Clock, Shield, Tv2 } from 'lucide-react'
 
-const TOKEN_DURATION_MS = 15 * 60 * 1000 // 15 minutes
+const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
 /**
  * KioskMode — displays a rotating, time-sensitive QR code for students to scan.
@@ -20,41 +20,76 @@ export default function KioskMode({ classId }) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
-  // Generate a new attendance session in Supabase
+  // Generate or rotate attendance session in Supabase
   const createSession = async () => {
     setCreating(true)
     setError('')
 
-    // Deactivate any existing active session for this class
-    await supabase
-      .from('attendance_sessions')
-      .update({ is_active: false })
-      .eq('class_id', classId)
-      .eq('is_active', true)
-
     const token = uuidv4()
     const expiresAt = new Date(Date.now() + TOKEN_DURATION_MS).toISOString()
+    
+    // Get today's date in YYYY-MM-DD local time
+    const today = new Date().toLocaleDateString('en-CA') // outputs YYYY-MM-DD
 
-    const { data, error: err } = await supabase
+    // Check for an existing active session for this class today
+    const { data: existingSession, error: checkErr } = await supabase
       .from('attendance_sessions')
-      .insert({
-        class_id: classId,
-        teacher_id: profile.id,
-        session_token: token,
-        date: new Date().toISOString().split('T')[0],
-        expires_at: expiresAt,
-        is_active: true,
-      })
-      .select()
-      .single()
+      .select('*')
+      .eq('class_id', classId)
+      .eq('date', today)
+      .eq('is_active', true)
+      .maybeSingle()
 
-    if (err) {
-      setError(err.message)
+    let resultData = null
+    let resultError = null
+
+    if (existingSession) {
+      // Rotate token on the existing session
+      const { data, error } = await supabase
+        .from('attendance_sessions')
+        .update({
+          session_token: token,
+          expires_at: expiresAt,
+        })
+        .eq('id', existingSession.id)
+        .select()
+        .single()
+      
+      resultData = data
+      resultError = error
+    } else {
+      // Deactivate any old active sessions just in case (from previous days)
+      await supabase
+        .from('attendance_sessions')
+        .update({ is_active: false })
+        .eq('class_id', classId)
+        .eq('is_active', true)
+
+      // Create a brand new session for today
+      const { data, error } = await supabase
+        .from('attendance_sessions')
+        .insert({
+          class_id: classId,
+          teacher_id: profile.id,
+          session_token: token,
+          date: today,
+          expires_at: expiresAt,
+          is_active: true,
+        })
+        .select()
+        .single()
+
+      resultData = data
+      resultError = error
+    }
+
+    if (resultError) {
+      setError(resultError.message)
       setCreating(false)
       return
     }
 
-    setSession(data)
+    setSession(resultData)
     setTimeLeft(TOKEN_DURATION_MS / 1000)
     setCreating(false)
   }
@@ -163,7 +198,7 @@ export default function KioskMode({ classId }) {
       {/* Security note */}
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <Shield size={12} />
-        QR code auto-rotates every 15 minutes for security
+        QR code auto-rotates every 15 seconds for security
       </div>
 
       {error && (
