@@ -213,30 +213,24 @@ export default function StudentDashboard() {
         ) : (
           <>
             {/* Stats & Actions grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <StatCard icon={TrendingUp} label="Attendance Rate" value={`${attendancePct}%`} color="from-indigo-600 to-purple-600" sublabel={`${presentCount} of ${totalSessions} sessions`} />
               <StatCard icon={BookOpen} label="Enrolled Classes" value={enrollments.length} color="from-sky-600 to-indigo-600" />
               
-              <Link to="/student/my-qr" className="glass-card p-5 flex items-center gap-4 group hover:border-indigo-500/30 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
-                  <QrCode size={22} className="text-white" />
+              <Link to="/student/my-qr" className="glass-card p-5 flex flex-col group hover:border-indigo-500/30 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center mb-3">
+                  <QrCode size={18} className="text-white" />
                 </div>
-                <div>
-                  <p className="font-semibold text-white group-hover:text-indigo-200 transition-colors">My QR Code</p>
-                  <p className="text-slate-500 text-xs mt-1">Show ID to teacher</p>
-                </div>
-                <ChevronRight size={16} className="text-slate-600 group-hover:text-indigo-400 transition-colors ml-auto" />
+                <p className="font-bold text-lg text-white group-hover:text-indigo-200 transition-colors">My QR Code</p>
+                <p className="text-slate-400 text-xs mt-0.5">Show ID to teacher</p>
               </Link>
 
-              <Link to="/student/scan" className="glass-card p-5 flex items-center gap-4 group hover:border-purple-500/30 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
-                  <ScanLine size={22} className="text-white" />
+              <Link to="/student/scan" className="glass-card p-5 flex flex-col group hover:border-purple-500/30 transition-all">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center mb-3">
+                  <ScanLine size={18} className="text-white" />
                 </div>
-                <div>
-                  <p className="font-semibold text-white group-hover:text-purple-200 transition-colors">Scan QR</p>
-                  <p className="text-slate-500 text-xs mt-1">Mark attendance</p>
-                </div>
-                <ChevronRight size={16} className="text-slate-600 group-hover:text-purple-400 transition-colors ml-auto" />
+                <p className="font-bold text-lg text-white group-hover:text-purple-200 transition-colors">Scan QR</p>
+                <p className="text-slate-400 text-xs mt-0.5">Mark attendance</p>
               </Link>
             </div>
 
