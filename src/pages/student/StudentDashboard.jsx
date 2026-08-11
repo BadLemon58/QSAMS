@@ -158,8 +158,7 @@ export default function StudentDashboard() {
             .from('attendance_logs')
             .select('*, attendance_sessions(date), classes(name)')
             .eq('student_id', profile.id)
-            .order('marked_at', { ascending: false })
-            .limit(20),
+            .order('marked_at', { ascending: false }),
         ])
         setEnrollments((enr || []).map(e => e.classes).filter(Boolean))
         setLogs(attendanceLogs || [])
@@ -213,66 +212,92 @@ export default function StudentDashboard() {
           <div className="flex justify-center py-20"><Spinner size="xl" /></div>
         ) : (
           <>
-            {/* Stats grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Stats & Actions grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <StatCard icon={TrendingUp} label="Attendance Rate" value={`${attendancePct}%`} color="from-indigo-600 to-purple-600" sublabel={`${presentCount} of ${totalSessions} sessions`} />
               <StatCard icon={BookOpen} label="Enrolled Classes" value={enrollments.length} color="from-sky-600 to-indigo-600" />
-              <StatCard icon={Calendar} label="Sessions Attended" value={presentCount} color="from-emerald-600 to-teal-600" />
-              <StatCard icon={Clock} label="Total Absences" value={absentCount} color="from-red-600 to-rose-600" />
-            </div>
-
-            {/* Attendance rate bar */}
-            <div className="glass-card p-5 mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="font-semibold text-white text-sm">Overall Attendance Rate</h2>
-                <span className={`font-bold text-lg ${attendancePct >= 80 ? 'text-emerald-400' : attendancePct >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                  {attendancePct}%
-                </span>
-              </div>
-              <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-1000 ${
-                    attendancePct >= 80 ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
-                      : attendancePct >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-400'
-                        : 'bg-gradient-to-r from-red-500 to-rose-400'
-                  }`}
-                  style={{ width: `${attendancePct}%` }}
-                />
-              </div>
-              <p className="text-slate-500 text-xs mt-2">
-                {attendancePct >= 80 ? '✓ Good standing' : attendancePct >= 60 ? '⚠ At risk — attend more classes' : '✗ Poor attendance — contact advisor'}
-              </p>
-            </div>
-
-            {/* Quick actions */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
+              
               <Link to="/student/my-qr" className="glass-card p-5 flex items-center gap-4 group hover:border-indigo-500/30 transition-all">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
                   <QrCode size={22} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-white group-hover:text-indigo-200 transition-colors">My QR Code</p>
-                  <p className="text-slate-500 text-xs">Show ID to teacher</p>
+                  <p className="text-slate-500 text-xs mt-1">Show ID to teacher</p>
                 </div>
                 <ChevronRight size={16} className="text-slate-600 group-hover:text-indigo-400 transition-colors ml-auto" />
               </Link>
+
               <Link to="/student/scan" className="glass-card p-5 flex items-center gap-4 group hover:border-purple-500/30 transition-all">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center flex-shrink-0">
                   <ScanLine size={22} className="text-white" />
                 </div>
                 <div>
                   <p className="font-semibold text-white group-hover:text-purple-200 transition-colors">Scan QR</p>
-                  <p className="text-slate-500 text-xs">Mark attendance or join class</p>
+                  <p className="text-slate-500 text-xs mt-1">Mark attendance</p>
                 </div>
                 <ChevronRight size={16} className="text-slate-600 group-hover:text-purple-400 transition-colors ml-auto" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Enrolled classes with individual progress */}
+              <div className="glass-card overflow-hidden h-fit">
+                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                  <h2 className="font-semibold text-white">My Classes Performance</h2>
+                  <button onClick={() => setShowJoinModal(true)} className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1">
+                    <Plus size={14} /> Join Class
+                  </button>
+                </div>
+                {enrollments.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <p className="text-slate-500 text-sm">Not enrolled in any class.</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-white/5">
+                    {enrollments.map(cls => {
+                      const classLogs = logs.filter(l => l.class_id === cls.id);
+                      const t = classLogs.length;
+                      const p = classLogs.filter(l => l.status === 'present' || l.status === 'late').length;
+                      const rate = t > 0 ? Math.round((p / t) * 100) : 0;
+                      
+                      return (
+                        <div key={cls.id} className="px-5 py-4 hover:bg-white/[0.02] transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <p className="text-sm font-medium text-slate-200">{cls.name}</p>
+                              {cls.schedule && <p className="text-xs text-slate-500 mt-0.5">{cls.schedule}</p>}
+                            </div>
+                            <div className="text-right">
+                              <span className={`font-bold ${rate >= 80 ? 'text-emerald-400' : rate >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                {rate}%
+                              </span>
+                              <p className="text-[10px] text-slate-500">{t > 0 ? `${p} of ${t} attended` : 'No sessions yet'}</p>
+                            </div>
+                          </div>
+                          
+                          {/* Progress bar per class */}
+                          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-1000 ${
+                                rate >= 80 ? 'bg-gradient-to-r from-emerald-500 to-teal-400'
+                                  : rate >= 60 ? 'bg-gradient-to-r from-yellow-500 to-orange-400'
+                                    : 'bg-gradient-to-r from-red-500 to-rose-400'
+                              }`}
+                              style={{ width: `${rate}%` }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
               {/* Attendance log */}
-              <div className="lg:col-span-2 glass-card overflow-hidden">
-                <div className="px-5 py-4 border-b border-white/5">
-                  <h2 className="font-semibold text-white">Attendance History</h2>
+              <div className="glass-card overflow-hidden h-fit">
+                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
+                  <h2 className="font-semibold text-white">Recent Attendance History</h2>
                 </div>
                 {logs.length === 0 ? (
                   <div className="p-10 text-center">
@@ -280,11 +305,11 @@ export default function StudentDashboard() {
                   </div>
                 ) : (
                   <div className="divide-y divide-white/5">
-                    {logs.map(log => (
+                    {logs.slice(0, 10).map(log => (
                       <div key={log.id} className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors">
                         <div>
                           <p className="text-sm font-medium text-slate-200">{log.classes?.name || 'Unknown Class'}</p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 mt-0.5">
                             {log.attendance_sessions?.date
                               ? format(parseISO(log.attendance_sessions.date), 'MMM d, yyyy')
                               : format(parseISO(log.marked_at), 'MMM d, yyyy')}
@@ -295,40 +320,6 @@ export default function StudentDashboard() {
                         <div className="flex items-center gap-2">
                           <Badge status={log.status} />
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Enrolled classes */}
-              <div className="glass-card overflow-hidden">
-                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-                  <h2 className="font-semibold text-white">My Classes</h2>
-                  <button onClick={() => setShowJoinModal(true)} className="text-xs text-indigo-400 hover:text-indigo-300 font-medium">
-                    + Join Class
-                  </button>
-                </div>
-                {enrollments.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <p className="text-slate-500 text-sm">Not enrolled in any class.</p>
-                    <button onClick={() => setShowJoinModal(true)} className="btn-primary btn-sm mt-3">
-                      <Plus size={14} /> Join a Class
-                    </button>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-white/5">
-                    {enrollments.map(cls => (
-                      <div key={cls.id} className="px-5 py-3 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-slate-200">{cls.name}</p>
-                          {cls.schedule && <p className="text-xs text-slate-500">{cls.schedule}</p>}
-                        </div>
-                        {cls.join_code && (
-                          <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded">
-                            {cls.join_code}
-                          </span>
-                        )}
                       </div>
                     ))}
                   </div>
