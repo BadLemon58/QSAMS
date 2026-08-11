@@ -262,10 +262,10 @@ export default function StudentDashboard() {
                       const rate = t > 0 ? Math.round((p / t) * 100) : 0;
                       
                       return (
-                        <div key={cls.id} className="px-5 py-4 hover:bg-white/[0.02] transition-colors">
+                        <Link to={`/student/class/${cls.id}`} key={cls.id} className="block px-5 py-4 hover:bg-white/[0.04] transition-colors group">
                           <div className="flex items-start justify-between mb-3">
                             <div>
-                              <p className="text-sm font-medium text-slate-200">{cls.name}</p>
+                              <p className="text-sm font-medium text-slate-200 group-hover:text-indigo-300 transition-colors">{cls.name}</p>
                               {cls.schedule && <p className="text-xs text-slate-500 mt-0.5">{cls.schedule}</p>}
                             </div>
                             <div className="text-right">
@@ -287,7 +287,7 @@ export default function StudentDashboard() {
                               style={{ width: `${rate}%` }}
                             />
                           </div>
-                        </div>
+                        </Link>
                       )
                     })}
                   </div>

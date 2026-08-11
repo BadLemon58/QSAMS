@@ -15,6 +15,7 @@ import AttendancePage from '../pages/teacher/AttendancePage'
 import StudentDashboard from '../pages/student/StudentDashboard'
 import MyQRPage from '../pages/student/MyQRPage'
 import ScanPage from '../pages/student/ScanPage'
+import StudentClassPage from '../pages/student/StudentClassPage'
 
 // ── Protected Route Wrapper ─────────────────────────────────
 function ProtectedRoute({ children, allowedRole }) {
@@ -83,6 +84,9 @@ export default function AppRouter() {
       } />
       <Route path="/student/scan" element={
         <ProtectedRoute allowedRole="student"><ScanPage /></ProtectedRoute>
+      } />
+      <Route path="/student/class/:classId" element={
+        <ProtectedRoute allowedRole="student"><StudentClassPage /></ProtectedRoute>
       } />
 
       {/* 404 */}
