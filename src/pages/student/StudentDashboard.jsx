@@ -240,7 +240,7 @@ export default function StudentDashboard() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               {/* Enrolled classes with individual progress */}
               <div className="glass-card overflow-hidden h-fit">
                 <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
@@ -290,38 +290,6 @@ export default function StudentDashboard() {
                         </Link>
                       )
                     })}
-                  </div>
-                )}
-              </div>
-
-              {/* Attendance log */}
-              <div className="glass-card overflow-hidden h-fit">
-                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between">
-                  <h2 className="font-semibold text-white">Recent Attendance History</h2>
-                </div>
-                {logs.length === 0 ? (
-                  <div className="p-10 text-center">
-                    <p className="text-slate-500 text-sm">No attendance records yet.</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-white/5">
-                    {logs.slice(0, 10).map(log => (
-                      <div key={log.id} className="flex items-center justify-between px-5 py-3 hover:bg-white/[0.02] transition-colors">
-                        <div>
-                          <p className="text-sm font-medium text-slate-200">{log.classes?.name || 'Unknown Class'}</p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {log.attendance_sessions?.date
-                              ? format(parseISO(log.attendance_sessions.date), 'MMM d, yyyy')
-                              : format(parseISO(log.marked_at), 'MMM d, yyyy')}
-                            {' · '}
-                            {format(parseISO(log.marked_at), 'h:mm a')}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge status={log.status} />
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 )}
               </div>
