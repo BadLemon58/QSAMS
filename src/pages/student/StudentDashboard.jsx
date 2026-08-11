@@ -7,7 +7,7 @@ import Badge from '../../components/common/Badge'
 import Spinner from '../../components/common/Spinner'
 import {
   QrCode, ScanLine, BookOpen, TrendingUp, Calendar, Clock,
-  ChevronRight, Plus, X, AlertCircle, CheckCircle, Sparkles
+  ChevronRight, Plus, X, AlertCircle, CheckCircle, Sparkles, Flame
 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
@@ -176,6 +176,16 @@ export default function StudentDashboard() {
   const absentCount = logs.filter(l => l.status === 'absent').length
   const attendancePct = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0
 
+  // Calculate Streak
+  let currentStreak = 0;
+  for (const log of logs) {
+    if (log.status === 'present' || log.status === 'late') {
+      currentStreak++;
+    } else if (log.status === 'absent') {
+      break;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0f1e]">
       <Navbar />
@@ -189,10 +199,17 @@ export default function StudentDashboard() {
             <p className="text-purple-400 text-sm font-medium mb-1">
               {format(new Date(), 'EEEE, MMMM d, yyyy')}
             </p>
-            <h1 className="text-3xl font-bold text-white">
-              Welcome back, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'Student'}</span>
-            </h1>
-            <p className="text-slate-400 mt-1 text-sm">
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold text-white">
+                Welcome back, <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'Student'}</span>
+              </h1>
+              {currentStreak >= 3 && (
+                <div className="bg-orange-500/10 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1.5 shadow-[0_0_15px_rgba(249,115,22,0.1)] animate-fade-in">
+                  <Flame size={16} /> {currentStreak} Streak!
+                </div>
+              )}
+            </div>
+            <p className="text-slate-400 text-sm">
               Student ID: <span className="font-mono text-slate-300">{profile?.student_id || 'N/A'}</span>
             </p>
           </div>
