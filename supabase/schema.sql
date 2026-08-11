@@ -98,6 +98,14 @@ CREATE INDEX IF NOT EXISTS idx_logs_student  ON public.attendance_logs(student_i
 CREATE INDEX IF NOT EXISTS idx_logs_class    ON public.attendance_logs(class_id);
 
 -- ============================================================
+-- REALTIME
+-- ============================================================
+-- Enable realtime for the tables that need live updates
+alter publication supabase_realtime add table attendance_sessions;
+alter publication supabase_realtime add table attendance_logs;
+alter publication supabase_realtime add table enrollments;
+
+-- ============================================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================
 

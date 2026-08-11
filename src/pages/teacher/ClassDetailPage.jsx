@@ -205,6 +205,25 @@ export default function ClassDetailPage() {
     load()
   }, [classId])
 
+  // Real-time enrollments refresh
+  useEffect(() => {
+    const channel = supabase
+      .channel(`enrollments:${classId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public',
+        table: 'enrollments',
+        filter: `class_id=eq.${classId}`
+      }, async () => {
+        const { data: enr } = await supabase
+          .from('enrollments')
+          .select('profiles(id, full_name, student_id)')
+          .eq('class_id', classId)
+        setStudents((enr || []).map(e => e.profiles).filter(Boolean))
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [classId])
+
   if (loading) return (
     <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center"><Spinner size="xl" /></div>
   )
