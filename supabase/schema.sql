@@ -71,6 +71,9 @@ CREATE TABLE IF NOT EXISTS public.attendance_sessions (
   date           DATE NOT NULL DEFAULT CURRENT_DATE,
   expires_at     TIMESTAMPTZ NOT NULL,                           -- Token validity window
   is_active      BOOLEAN DEFAULT TRUE,
+  latitude       DOUBLE PRECISION,
+  longitude      DOUBLE PRECISION,
+  radius_meters  INTEGER DEFAULT 100,
   created_at     TIMESTAMPTZ DEFAULT NOW()
 );
 

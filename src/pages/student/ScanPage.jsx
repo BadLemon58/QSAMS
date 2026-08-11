@@ -11,6 +11,39 @@ import {
 
 const SCANNER_ID = 'student-qr-scanner'
 
+// Haversine distance in meters
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371e3; // metres
+  const p1 = lat1 * Math.PI/180;
+  const p2 = lat2 * Math.PI/180;
+  const dp = (lat2-lat1) * Math.PI/180;
+  const dl = (lon2-lon1) * Math.PI/180;
+  const a = Math.sin(dp/2) * Math.sin(dp/2) +
+            Math.cos(p1) * Math.cos(p2) *
+            Math.sin(dl/2) * Math.sin(dl/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+const getLocation = () => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(null)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        })
+      },
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  })
+}
+
 export default function ScanPage() {
   const { profile } = useAuth()
   const scannerRef = useRef(null)
@@ -125,6 +158,31 @@ export default function ScanPage() {
             await stopScanner()
             return
           }
+
+          // --- GEOLOCATION VERIFICATION ---
+          if (session.latitude && session.longitude) {
+            setStatus('requesting');
+            setErrorMsg('Verifying your location...');
+            
+            const loc = await getLocation();
+            if (!loc) {
+              setErrorMsg('Location access is required to check in. Please enable location services in your browser.');
+              setStatus('error');
+              await stopScanner();
+              return;
+            }
+
+            const distance = calculateDistance(loc.latitude, loc.longitude, session.latitude, session.longitude);
+            const maxRadius = session.radius_meters || 100;
+
+            if (distance > maxRadius) {
+              setErrorMsg(`You are too far from the classroom (${Math.round(distance)}m away). Geolocation verification failed.`);
+              setStatus('error');
+              await stopScanner();
+              return;
+            }
+          }
+          // --- END GEOLOCATION VERIFICATION ---
 
           // Check if student is enrolled
           const { data: enrollment, error: enrollCheckErr } = await supabase

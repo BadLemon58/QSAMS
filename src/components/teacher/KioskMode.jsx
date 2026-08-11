@@ -20,6 +20,29 @@ export default function KioskMode({ classId }) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
+  // Helper to get location wrapped in a Promise
+  const getLocation = () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null)
+        return
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+        },
+        (error) => {
+          console.warn('Geolocation error:', error)
+          resolve(null) // Return null if denied or errored
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      )
+    })
+  }
+
   // Generate or rotate attendance session in Supabase
   const createSession = async () => {
     setCreating(true)
@@ -30,6 +53,9 @@ export default function KioskMode({ classId }) {
     
     // Get today's date in YYYY-MM-DD local time
     const today = new Date().toLocaleDateString('en-CA') // outputs YYYY-MM-DD
+
+    // Try to grab location first
+    const loc = await getLocation()
 
     // Check for an existing active session for this class today
     const { data: existingSession, error: checkErr } = await supabase
@@ -50,6 +76,8 @@ export default function KioskMode({ classId }) {
         .update({
           session_token: token,
           expires_at: expiresAt,
+          latitude: loc?.latitude || null,
+          longitude: loc?.longitude || null,
         })
         .eq('id', existingSession.id)
         .select()
@@ -75,6 +103,8 @@ export default function KioskMode({ classId }) {
           date: today,
           expires_at: expiresAt,
           is_active: true,
+          latitude: loc?.latitude || null,
+          longitude: loc?.longitude || null,
         })
         .select()
         .single()
