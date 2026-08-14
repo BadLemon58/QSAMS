@@ -26,14 +26,18 @@ export default function IDCardScanner({ onScan, onError }) {
       return
     }
 
-    const html5QrCode = new Html5Qrcode(SCANNER_ID)
+    const html5QrCode = new Html5Qrcode(SCANNER_ID, {
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true, // Native hardware acceleration
+      }
+    })
     scannerRef.current = html5QrCode
 
     try {
       await html5QrCode.start(
         { facingMode: 'environment' },
         {
-          fps: 10,
+          fps: 24, // Fast scan rate
           qrbox: { width: 260, height: 260 },
           aspectRatio: 1.0,
         },
@@ -46,7 +50,7 @@ export default function IDCardScanner({ onScan, onError }) {
           setTimeout(() => {
             setLastScanned(null)
             setStatus('scanning')
-          }, 1800)
+          }, 1200)
         },
         () => {}
       )
@@ -96,15 +100,7 @@ export default function IDCardScanner({ onScan, onError }) {
         {status === 'requesting' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm">
             <Spinner size="lg" />
-            <p className="text-[#0f172a] text-xs font-semibold">Requesting camera access...</p>
-          </div>
-        )}
-
-        {status === 'success' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#dcfce7] text-[#15803d] p-4 text-center animate-fade-in border border-[#86efac]">
-            <CheckCircle size={40} />
-            <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-base">QR ID Scanned!</p>
-            <p className="text-xs">Marking student in roster...</p>
+            <p className="text-[#0f172a] text-xs font-semibold">Starting camera...</p>
           </div>
         )}
 
@@ -113,47 +109,40 @@ export default function IDCardScanner({ onScan, onError }) {
             <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
           </div>
         )}
-      </div>
 
-      {status === 'error' && (
-        <div className="w-full max-w-sm flex items-start gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 text-xs font-semibold animate-fade-in">
-          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
-          <div>
-            <p className="font-bold">Camera Error</p>
-            <p className="mt-0.5 text-[11px]">{errorMsg}</p>
+        {status === 'success' && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#005a36]/90 text-white backdrop-blur-sm animate-fade-in">
+            <CheckCircle size={44} className="text-white" />
+            <p className="font-['Source_Serif_4',Georgia,serif] text-base font-bold">ID Card Scanned!</p>
           </div>
-        </div>
-      )}
-
-      {/* Control Buttons */}
-      <div className="flex gap-2.5">
-        {(status === 'idle' || status === 'error') && (
-          <button onClick={startScanner} className="btn-primary py-3 px-5 text-xs">
-            <Camera size={15} />
-            Start Camera Scanner
-          </button>
-        )}
-
-        {(status === 'scanning' || status === 'success' || status === 'requesting') && (
-          <button onClick={stopScanner} className="btn-danger py-3 px-5 text-xs">
-            <CameraOff size={15} />
-            Stop Camera
-          </button>
         )}
 
         {status === 'error' && (
-          <button onClick={startScanner} className="btn-secondary py-3 px-5 text-xs">
-            <RotateCcw size={15} />
-            Retry
-          </button>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-5 text-center rounded-[20px] bg-[#fee2e2] text-[#b91c1c]">
+            <AlertTriangle size={32} />
+            <p className="text-xs font-semibold">{errorMsg}</p>
+          </div>
         )}
       </div>
 
-      {status === 'scanning' && (
-        <p className="text-[#64748b] text-xs text-center">
-          Point camera at the student's static or digital ID QR
-        </p>
-      )}
+      {/* Controls */}
+      <div className="flex gap-2.5 w-full max-w-sm">
+        {status === 'idle' || status === 'error' ? (
+          <button
+            onClick={startScanner}
+            className="btn-primary w-full justify-center text-xs py-3.5"
+          >
+            <Camera size={16} /> Start Camera Scanner
+          </button>
+        ) : (
+          <button
+            onClick={stopScanner}
+            className="btn-secondary w-full justify-center text-xs py-3.5"
+          >
+            <CameraOff size={16} /> Stop Camera
+          </button>
+        )}
+      </div>
     </div>
   )
 }

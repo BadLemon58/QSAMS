@@ -1,134 +1,157 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { RefreshCw, Clock, Shield, Tv2 } from 'lucide-react'
+import { RefreshCw, Clock, Shield, Tv2, AlertCircle } from 'lucide-react'
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
 export default function KioskMode({ classId }) {
   const { profile } = useAuth()
   const [session, setSession] = useState(null)
-  const [timeLeft, setTimeLeft] = useState(0)
-  const [creating, setCreating] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(15)
+  const [initialLoading, setInitialLoading] = useState(true)
   const [error, setError] = useState('')
+  const cachedLocationRef = useRef(null)
+  const rotatingRef = useRef(false)
 
-  const getLocation = () => {
+  // 1. Fetch Geolocation once and cache it
+  const fetchAndCacheLocation = () => {
+    if (!navigator.geolocation) return Promise.resolve(null)
+    if (cachedLocationRef.current) return Promise.resolve(cachedLocationRef.current)
+
     return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null)
-        return
-      }
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          resolve({
+          const loc = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
-          })
+          }
+          cachedLocationRef.current = loc
+          resolve(loc)
         },
-        (error) => {
-          console.warn('Geolocation error:', error)
+        (err) => {
+          console.warn('Geolocation warning:', err)
           resolve(null)
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
       )
     })
   }
 
-  const createSession = async () => {
-    setCreating(true)
+  // 2. Fast token generation & rotation
+  const rotateSessionToken = async (isFirst = false) => {
+    if (rotatingRef.current) return
+    rotatingRef.current = true
+
+    if (isFirst) setInitialLoading(true)
     setError('')
 
     const token = uuidv4()
     const expiresAt = new Date(Date.now() + TOKEN_DURATION_MS).toISOString()
     const today = new Date().toLocaleDateString('en-CA')
 
-    const loc = await getLocation()
+    const loc = cachedLocationRef.current || await fetchAndCacheLocation()
 
-    const { data: existingSession } = await supabase
-      .from('attendance_sessions')
-      .select('*')
-      .eq('class_id', classId)
-      .eq('date', today)
-      .eq('is_active', true)
-      .maybeSingle()
+    try {
+      // Find existing active session for today
+      let currentSessionId = session?.id
 
-    let resultData = null
-    let resultError = null
+      if (!currentSessionId) {
+        const { data: existing } = await supabase
+          .from('attendance_sessions')
+          .select('*')
+          .eq('class_id', classId)
+          .eq('date', today)
+          .eq('is_active', true)
+          .maybeSingle()
 
-    if (existingSession) {
-      const { data, error } = await supabase
-        .from('attendance_sessions')
-        .update({
-          session_token: token,
-          expires_at: expiresAt,
-          latitude: loc?.latitude || null,
-          longitude: loc?.longitude || null,
-        })
-        .eq('id', existingSession.id)
-        .select()
-        .single()
-      
-      resultData = data
-      resultError = error
-    } else {
-      await supabase
-        .from('attendance_sessions')
-        .update({ is_active: false })
-        .eq('class_id', classId)
-        .eq('is_active', true)
+        if (existing) {
+          currentSessionId = existing.id
+        }
+      }
 
-      const { data, error } = await supabase
-        .from('attendance_sessions')
-        .insert({
-          class_id: classId,
-          teacher_id: profile.id,
-          session_token: token,
-          date: today,
-          expires_at: expiresAt,
-          is_active: true,
-          latitude: loc?.latitude || null,
-          longitude: loc?.longitude || null,
-        })
-        .select()
-        .single()
+      let resultData = null
+      let resultError = null
 
-      resultData = data
-      resultError = error
+      if (currentSessionId) {
+        const { data, error } = await supabase
+          .from('attendance_sessions')
+          .update({
+            session_token: token,
+            expires_at: expiresAt,
+            latitude: loc?.latitude || null,
+            longitude: loc?.longitude || null,
+          })
+          .eq('id', currentSessionId)
+          .select()
+          .single()
+
+        resultData = data
+        resultError = error
+      } else {
+        await supabase
+          .from('attendance_sessions')
+          .update({ is_active: false })
+          .eq('class_id', classId)
+          .eq('is_active', true)
+
+        const { data, error } = await supabase
+          .from('attendance_sessions')
+          .insert({
+            class_id: classId,
+            teacher_id: profile.id,
+            session_token: token,
+            date: today,
+            expires_at: expiresAt,
+            is_active: true,
+            latitude: loc?.latitude || null,
+            longitude: loc?.longitude || null,
+          })
+          .select()
+          .single()
+
+        resultData = data
+        resultError = error
+      }
+
+      if (resultError) {
+        setError(resultError.message)
+      } else if (resultData) {
+        setSession(resultData)
+        setTimeLeft(15)
+      }
+    } catch (err) {
+      setError(err?.message || 'Error updating token')
+    } finally {
+      rotatingRef.current = false
+      if (isFirst) setInitialLoading(false)
     }
-
-    if (resultError) {
-      setError(resultError.message)
-      setCreating(false)
-      return
-    }
-
-    setSession(resultData)
-    setTimeLeft(TOKEN_DURATION_MS / 1000)
-    setCreating(false)
   }
 
+  // Initial mount: start session & warm up geolocation
+  useEffect(() => {
+    fetchAndCacheLocation()
+    rotateSessionToken(true)
+  }, [classId])
+
+  // Countdown timer: smooth 1s tick, auto-rotate at 0
   useEffect(() => {
     if (!session) return
-    if (timeLeft <= 0) {
-      createSession()
-      return
-    }
 
     const interval = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0 }
+        if (prev <= 1) {
+          rotateSessionToken(false)
+          return 15
+        }
         return prev - 1
       })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [session, timeLeft])
-
-  useEffect(() => {
-    createSession()
-  }, [classId])
+  }, [session?.id])
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0')
@@ -136,8 +159,8 @@ export default function KioskMode({ classId }) {
     return `${m}:${s}`
   }
 
-  const pct = session ? (timeLeft / (TOKEN_DURATION_MS / 1000)) * 100 : 0
-  const isExpiringSoon = timeLeft < 5 && timeLeft > 0
+  const pct = (timeLeft / 15) * 100
+  const isExpiringSoon = timeLeft <= 3 && timeLeft > 0
 
   const qrValue = session
     ? JSON.stringify({ type: 'attendance', sessionId: session.id, token: session.session_token, classId })
@@ -151,19 +174,20 @@ export default function KioskMode({ classId }) {
           <Tv2 size={13} />
           <span>Kiosk Projection</span>
         </div>
-        <p className="text-[#64748b] text-xs">Students scan this QR code using the QSAMS mobile app</p>
+        <p className="text-[#64748b] text-xs">Students scan this dynamic QR code using the QSAMS app</p>
       </div>
 
       {/* QR Code Container with Pulse Ring */}
       <div className="relative">
-        {creating ? (
-          <div className="w-[220px] h-[220px] rounded-[20px] bg-[#ffffff] flex items-center justify-center shadow-sm border border-[#e2e8f0]">
+        {initialLoading ? (
+          <div className="w-[250px] h-[250px] rounded-[20px] bg-[#ffffff] flex flex-col items-center justify-center gap-3 shadow-sm border border-[#e2e8f0]">
             <div className="w-8 h-8 border-3 border-[#e2e8f0] border-t-[#005a36] rounded-full animate-spin" />
+            <span className="text-xs text-[#64748b]">Initializing kiosk...</span>
           </div>
         ) : session ? (
-          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
+          <div className="relative p-5 bg-[#ffffff] rounded-[24px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
             <div
-              className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
+              className="absolute inset-[-6px] rounded-[28px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
               style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
             />
             <QRCodeSVG
@@ -177,53 +201,55 @@ export default function KioskMode({ classId }) {
         ) : null}
 
         {isExpiringSoon && session && (
-          <div className="absolute inset-0 rounded-[20px] border-2 border-[#d97706] animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-[24px] border-2 border-[#d97706] animate-pulse pointer-events-none" />
         )}
       </div>
 
-      {/* Timer Bar */}
-      {session && (
-        <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-          <div className="w-full h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#005a36] transition-all duration-1000"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-
-          <div className="flex items-center justify-between w-full text-xs font-semibold text-[#64748b]">
-            <span className="flex items-center gap-1">
-              <Clock size={12} className="text-[#005a36]" />
-              Token expires in
-            </span>
-            <span className="font-mono font-bold text-[#0f172a]">
-              {formatTime(timeLeft)}
-            </span>
-          </div>
+      {/* Error Message */}
+      {error && (
+        <div className="flex items-center gap-2 text-xs text-[#b91c1c] bg-[#fee2e2] border border-[#fca5a5] px-3.5 py-2 rounded-[14px]">
+          <AlertCircle size={14} className="shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      {/* Security Note */}
-      <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
-        <Shield size={12} className="text-[#005a36]" />
-        <span>Rotating token prevents photo proxy attendance</span>
+      {/* Timer & Token Status */}
+      <div className="w-full max-w-[260px] space-y-2">
+        <div className="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
+          <div className="flex items-center gap-1.5 text-[#64748b]">
+            <Clock size={13} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
+            <span className="text-[11px] uppercase tracking-wider font-bold">QR Token Expires in</span>
+          </div>
+          <span className={`font-mono text-sm font-bold ${isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}`}>
+            {formatTime(timeLeft)}
+          </span>
+        </div>
+
+        {/* Progress Bar Track */}
+        <div className="w-full h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-1000 ${
+              isExpiringSoon ? 'bg-[#d97706]' : 'bg-[#005a36]'
+            }`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
       </div>
 
-      {error && (
-        <div className="text-[#b91c1c] text-xs bg-[#fee2e2] border border-[#fca5a5] rounded-[14px] px-3.5 py-2">
-          {error}
-        </div>
-      )}
+      {/* Manual Refresh & Security Info */}
+      <div className="flex flex-col items-center gap-2 text-center mt-1">
+        <button
+          onClick={() => rotateSessionToken(false)}
+          className="text-xs text-[#005a36] hover:underline flex items-center gap-1.5 font-semibold py-1 px-3 rounded-full hover:bg-[#e6f2ec] transition-colors"
+        >
+          <RefreshCw size={12} /> Rotate Token Now
+        </button>
 
-      {/* Manual Refresh */}
-      <button
-        onClick={createSession}
-        disabled={creating}
-        className="btn-secondary btn-sm"
-      >
-        <RefreshCw size={13} className={creating ? 'animate-spin' : ''} />
-        Rotate Token Now
-      </button>
+        <div className="flex items-center gap-1 text-[11px] text-[#64748b]">
+          <Shield size={11} className="text-[#005a36]" />
+          <span>Dynamic Anti-Proxy Token active (Auto-refreshes every 15s)</span>
+        </div>
+      </div>
     </div>
   )
 }

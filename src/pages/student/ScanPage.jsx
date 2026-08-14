@@ -14,32 +14,31 @@ export default function ScanPage() {
   const { profile } = useAuth()
   const navigate = useNavigate()
   const scannerRef = useRef(null)
+  const userLocationRef = useRef(null)
 
   const [status, setStatus] = useState('idle') // idle | requesting | scanning | verifying | success | error
   const [message, setMessage] = useState('')
   const [scanResult, setScanResult] = useState(null)
-  const [userLocation, setUserLocation] = useState(null)
 
   const SCANNER_ID = 'student-camera-scanner'
 
-  // Get student's GPS location
+  // 1. Fetch and warm-up GPS location immediately on mount
   const fetchLocation = () => {
+    if (!navigator.geolocation) return Promise.resolve(null)
+    if (userLocationRef.current) return Promise.resolve(userLocationRef.current)
+
     return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null)
-        return
-      }
       navigator.geolocation.getCurrentPosition(
         pos => {
           const coords = {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
           }
-          setUserLocation(coords)
+          userLocationRef.current = coords
           resolve(coords)
         },
         () => resolve(null),
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
       )
     })
   }
@@ -65,6 +64,9 @@ export default function ScanPage() {
     setMessage('')
     setScanResult(null)
 
+    // Pre-fetch location in parallel with camera request
+    fetchLocation()
+
     try {
       await navigator.mediaDevices.getUserMedia({ video: true })
     } catch (permErr) {
@@ -76,18 +78,25 @@ export default function ScanPage() {
       return
     }
 
-    const html5QrCode = new Html5Qrcode(SCANNER_ID)
+    const html5QrCode = new Html5Qrcode(SCANNER_ID, {
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true, // Native hardware acceleration
+      }
+    })
     scannerRef.current = html5QrCode
 
     try {
       await html5QrCode.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+        {
+          fps: 24, // Fast scan rate
+          qrbox: { width: 260, height: 260 },
+          aspectRatio: 1.0,
+        },
         handleScanSuccess,
         () => {}
       )
       setStatus('scanning')
-      fetchLocation()
     } catch (err) {
       setMessage(`Failed to start camera: ${err?.message || err}`)
       setStatus('error')
@@ -145,12 +154,12 @@ export default function ScanPage() {
     // Check token match
     if (session.session_token !== parsed.token) {
       setStatus('error')
-      setMessage('QR token has expired! Please scan the updated QR code on screen.')
+      setMessage('QR token has rotated! Please point your camera at the current QR code on screen.')
       return
     }
 
-    // 2. Geofence verification
-    const currentCoords = await fetchLocation()
+    // 2. Geofence verification (instant via pre-fetched coords)
+    const currentCoords = userLocationRef.current || await fetchLocation()
     if (session.latitude && session.longitude && currentCoords) {
       const dist = calculateDistance(
         session.latitude,
@@ -158,7 +167,7 @@ export default function ScanPage() {
         currentCoords.latitude,
         currentCoords.longitude
       )
-      const ALLOWED_RADIUS_METERS = 150
+      const ALLOWED_RADIUS_METERS = 200
       if (dist > ALLOWED_RADIUS_METERS) {
         setStatus('error')
         setMessage(`Out of range! You are ${Math.round(dist)}m away from the classroom session.`)
@@ -193,6 +202,7 @@ export default function ScanPage() {
   }
 
   useEffect(() => {
+    fetchLocation()
     startScanner()
     return () => { stopScanner() }
   }, [])
@@ -213,11 +223,11 @@ export default function ScanPage() {
           </button>
 
           <div className="text-center">
-            <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Self Check-in</span>
+            <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Instant Check-in</span>
             <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mt-0.5">
               Scan Classroom QR
             </h1>
-            <p className="text-[#64748b] text-xs mt-1">Point your camera at the rotating QR code on the teacher screen</p>
+            <p className="text-[#64748b] text-xs mt-1">Point your camera at the QR code on the teacher screen</p>
           </div>
 
           {/* Viewport Frame */}
@@ -230,15 +240,15 @@ export default function ScanPage() {
             {status === 'requesting' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px]">
                 <Spinner size="lg" />
-                <p className="text-xs font-semibold text-[#0f172a]">Accessing camera...</p>
+                <p className="text-xs font-semibold text-[#0f172a]">Starting camera...</p>
               </div>
             )}
 
             {status === 'verifying' && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-4 text-center">
                 <Spinner size="lg" />
-                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a]">Verifying Token & GPS...</p>
-                <p className="text-xs text-[#64748b]">Confirming your classroom attendance...</p>
+                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a]">Verifying Check-in...</p>
+                <p className="text-xs text-[#64748b]">Recording classroom attendance...</p>
               </div>
             )}
 
@@ -283,7 +293,7 @@ export default function ScanPage() {
           {/* GPS Indicator */}
           <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
             <Shield size={12} className="text-[#005a36]" />
-            <span>Geo-verified session security enabled</span>
+            <span>Fast Geo-verification enabled</span>
           </div>
         </div>
       </div>
