@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { QrCode, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function LoginPage() {
   const { signIn } = useAuth()
@@ -37,9 +38,11 @@ export default function LoginPage() {
       <div className="w-full max-w-md animate-fade-in">
         {/* Institutional Branding */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[20px] bg-[#005a36] mb-3 shadow-md text-[#ffffff]">
-            <QrCode size={32} />
-          </div>
+          <img
+            src={qsamsLogo}
+            alt="QSAMS Logo"
+            className="w-20 h-20 object-contain mx-auto mb-3 shadow-md rounded-[20px]"
+          />
           <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a]">QSAMS</h1>
           <p className="text-[#005a36] text-xs uppercase tracking-wider font-bold mt-1">
             Notre Dame of Midsayap College

@@ -9,13 +9,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png'],
+      includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png', 'QsamsLogoNew.png'],
       manifest: {
         name: 'QSAMS — QR Smart Attendance',
         short_name: 'QSAMS',
-        description: 'A modern QR-based classroom attendance tracker for teachers and students.',
-        theme_color: '#0a0f1e',
-        background_color: '#0a0f1e',
+        description: 'QR Code-Based Student Attendance Monitoring System - Notre Dame of Midsayap College.',
+        theme_color: '#005a36',
+        background_color: '#ffffff',
         display: 'standalone',
         icons: [
           {
@@ -38,6 +38,11 @@ export default defineConfig({
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
+          },
+          {
+            src: 'QsamsLogoNew.png',
+            sizes: '512x512',
+            type: 'image/png'
           }
         ]
       }
