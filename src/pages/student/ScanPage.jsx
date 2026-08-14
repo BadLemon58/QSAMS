@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Spinner from '../../components/common/Spinner'
+import Navbar from '../../components/common/Navbar'
 import {
   Camera, CameraOff, AlertTriangle, CheckCircle,
   ArrowLeft, RotateCcw, MapPin, Shield
@@ -197,89 +198,93 @@ export default function ScanPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] flex flex-col items-center justify-center p-4 selection:bg-[#005a36]/20">
-      <div className="w-full max-w-md bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col items-center gap-5 relative">
-        
-        {/* Back Link */}
-        <button
-          onClick={() => navigate('/student')}
-          className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-[#005a36] hover:underline transition-colors"
-        >
-          <ArrowLeft size={15} /> Dashboard
-        </button>
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
+      <Navbar />
 
-        <div className="text-center">
-          <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Self Check-in</span>
-          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mt-0.5">
-            Scan Classroom QR
-          </h1>
-          <p className="text-[#64748b] text-xs mt-1">Point your camera at the rotating QR code on the teacher screen</p>
-        </div>
+      <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-5rem)]">
+        <div className="w-full max-w-md bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm flex flex-col items-center gap-5 relative">
+          
+          {/* Back Link */}
+          <button
+            onClick={() => navigate('/student')}
+            className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-[#005a36] hover:underline transition-colors"
+          >
+            <ArrowLeft size={15} /> Dashboard
+          </button>
 
-        {/* Viewport Frame */}
-        <div className="relative w-full max-w-xs">
-          <div
-            id={SCANNER_ID}
-            className="w-full rounded-[20px] overflow-hidden bg-[#f8fafc] min-h-[280px] flex items-center justify-center border border-[#cbd5e1]"
-          />
-
-          {status === 'requesting' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px]">
-              <Spinner size="lg" />
-              <p className="text-xs font-semibold text-[#0f172a]">Accessing camera...</p>
-            </div>
-          )}
-
-          {status === 'verifying' && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-4 text-center">
-              <Spinner size="lg" />
-              <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a]">Verifying Token & GPS...</p>
-              <p className="text-xs text-[#64748b]">Confirming your classroom attendance...</p>
-            </div>
-          )}
-
-          {status === 'scanning' && (
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
-            </div>
-          )}
-        </div>
-
-        {/* Results / Feedback */}
-        {status === 'success' && scanResult && (
-          <div className="w-full bg-[#dcfce7] border border-[#86efac] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 animate-fade-in text-[#15803d]">
-            <CheckCircle size={36} />
-            <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold">Attendance Recorded!</h3>
-            <p className="text-xs">
-              Marked present for <strong className="text-[#0f172a]">{scanResult.className}</strong> at {scanResult.time}
-            </p>
-            <button
-              onClick={() => navigate('/student')}
-              className="btn-primary w-full justify-center mt-2 text-xs py-3"
-            >
-              Return to Dashboard
-            </button>
+          <div className="text-center">
+            <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Self Check-in</span>
+            <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mt-0.5">
+              Scan Classroom QR
+            </h1>
+            <p className="text-[#64748b] text-xs mt-1">Point your camera at the rotating QR code on the teacher screen</p>
           </div>
-        )}
 
-        {status === 'error' && (
-          <div className="w-full bg-[#fee2e2] border border-[#fca5a5] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 text-[#b91c1c] animate-fade-in">
-            <AlertTriangle size={32} />
-            <h3 className="font-bold text-sm">Scan Failed</h3>
-            <p className="text-xs">{message}</p>
-            <button
-              onClick={startScanner}
-              className="btn-secondary w-full justify-center mt-2 text-xs py-3 flex items-center gap-1.5"
-            >
-              <RotateCcw size={14} /> Try Again
-            </button>
+          {/* Viewport Frame */}
+          <div className="relative w-full max-w-xs">
+            <div
+              id={SCANNER_ID}
+              className="w-full rounded-[20px] overflow-hidden bg-[#f8fafc] min-h-[280px] flex items-center justify-center border border-[#cbd5e1]"
+            />
+
+            {status === 'requesting' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px]">
+                <Spinner size="lg" />
+                <p className="text-xs font-semibold text-[#0f172a]">Accessing camera...</p>
+              </div>
+            )}
+
+            {status === 'verifying' && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-4 text-center">
+                <Spinner size="lg" />
+                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a]">Verifying Token & GPS...</p>
+                <p className="text-xs text-[#64748b]">Confirming your classroom attendance...</p>
+              </div>
+            )}
+
+            {status === 'scanning' && (
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
+              </div>
+            )}
           </div>
-        )}
 
-        {/* GPS Indicator */}
-        <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
-          <Shield size={12} className="text-[#005a36]" />
-          <span>Geo-verified session security enabled</span>
+          {/* Results / Feedback */}
+          {status === 'success' && scanResult && (
+            <div className="w-full bg-[#dcfce7] border border-[#86efac] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 animate-fade-in text-[#15803d]">
+              <CheckCircle size={36} />
+              <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold">Attendance Recorded!</h3>
+              <p className="text-xs">
+                Marked present for <strong className="text-[#0f172a]">{scanResult.className}</strong> at {scanResult.time}
+              </p>
+              <button
+                onClick={() => navigate('/student')}
+                className="btn-primary w-full justify-center mt-2 text-xs py-3"
+              >
+                Return to Dashboard
+              </button>
+            </div>
+          )}
+
+          {status === 'error' && (
+            <div className="w-full bg-[#fee2e2] border border-[#fca5a5] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 text-[#b91c1c] animate-fade-in">
+              <AlertTriangle size={32} />
+              <h3 className="font-bold text-sm">Scan Failed</h3>
+              <p className="text-xs">{message}</p>
+              <button
+                onClick={startScanner}
+                className="btn-secondary w-full justify-center mt-2 text-xs py-3 flex items-center gap-1.5"
+              >
+                <RotateCcw size={14} /> Try Again
+              </button>
+            </div>
+          )}
+
+          {/* GPS Indicator */}
+          <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
+            <Shield size={12} className="text-[#005a36]" />
+            <span>Geo-verified session security enabled</span>
+          </div>
         </div>
       </div>
     </div>

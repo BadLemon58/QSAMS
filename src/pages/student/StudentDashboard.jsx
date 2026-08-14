@@ -7,9 +7,11 @@ import { format, isToday } from 'date-fns'
 import {
   Camera, RefreshCw, Share2, Plus, X, Flame, CheckCircle,
   AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft,
-  Users, User, ChevronRight, Sparkles, Check
+  Users, User, ChevronRight, Sparkles, Check, Download, Shield
 } from 'lucide-react'
 import Spinner from '../../components/common/Spinner'
+import Navbar from '../../components/common/Navbar'
+import Badge from '../../components/common/Badge'
 
 // ── Join Class Modal (NDMC Forest Green Style) ───────────────────────────
 function JoinClassModal({ studentId, onClose, onEnrolled }) {
@@ -127,17 +129,19 @@ function JoinClassModal({ studentId, onClose, onEnrolled }) {
   )
 }
 
-// ── Main Component: Student Dashboard (NDMC Forest Green Style) ───────────
+// ── Main Component: Responsive Student Dashboard ─────────────────────────
 export default function StudentDashboard() {
   const { profile } = useAuth()
   const navigate = useNavigate()
 
+  // Mobile tab state
   const [activeTab, setActiveTab] = useState('live') // 'live' | 'classes' | 'history'
   const [enrollments, setEnrollments] = useState([])
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
+  const [downloaded, setDownloaded] = useState(false)
 
   // Fetch Student Data
   const fetchData = async () => {
@@ -176,6 +180,7 @@ export default function StudentDashboard() {
   // Calculate Metrics
   const totalSessions = logs.length
   const presentCount = logs.filter(l => l.status === 'present' || l.status === 'late').length
+  const lateCount = logs.filter(l => l.status === 'late').length
   const absentCount = logs.filter(l => l.status === 'absent').length
   const attendancePct = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0
 
@@ -220,432 +225,706 @@ export default function StudentDashboard() {
 
   const progressRatio = Math.min(Math.max(attendancePct, 0), 100)
 
+  // QR Download Handler
+  const downloadQR = () => {
+    const svg = document.getElementById('student-id-qr-desk') || document.getElementById('student-live-qr')
+    if (!svg) return
+
+    const svgData = new XMLSerializer().serializeToString(svg)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+
+    img.onload = () => {
+      canvas.width = img.width + 80
+      canvas.height = img.height + 80
+
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 40, 40)
+
+      const pngUrl = canvas.toDataURL('image/png')
+      const downloadLink = document.createElement('a')
+      downloadLink.href = pngUrl
+      downloadLink.download = `QSAMS-QR-${profile?.student_id || 'ID'}.png`
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      document.body.removeChild(downloadLink)
+
+      setDownloaded(true)
+      setTimeout(() => setDownloaded(false), 2500)
+    }
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+  }
+
   return (
-    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] flex justify-center selection:bg-[#005a36]/20">
-      
-      {/* Mobile Shell Wrapper */}
-      <div className="w-full max-w-[420px] min-h-screen bg-[#ffffff] flex flex-col justify-between px-4 pt-5 pb-24 relative shadow-sm border-x border-[#e2e8f0]">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
 
-        {/* ══════════ MAIN SCROLLABLE CONTENT ══════════ */}
-        <div className="flex flex-col gap-6 w-full">
+      {/* ══════════════════════════════════════════════════════════════
+          1. DESKTOP & TABLET LAYOUT (Visible on md, lg, xl screens)
+          ══════════════════════════════════════════════════════════════ */}
+      <div className="hidden md:block">
+        <Navbar />
 
-          {/* 1. Header Row */}
-          <section className="flex items-center justify-between w-full">
-            <button
-              onClick={() => navigate('/profile')}
-              aria-label="Profile settings"
-              className="w-10 h-10 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#0f172a] hover:bg-[#e2e8f0] active:scale-95 transition-all"
-            >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <User size={18} />
-              )}
-            </button>
-            <div className="flex flex-col text-right">
-              <span className="text-[13px] font-bold text-[#005a36] leading-tight">
-                {roomScheduleText}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+          {/* Institutional Forest Green Header Banner (Matches Assessment Photo Exactly) */}
+          <div className="ndmc-banner mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono tracking-wider opacity-90 block mb-1">
+                {format(new Date(), 'yyyy')} - Semester 1 • Student Portal
               </span>
-              <h1 className="text-[20px] font-bold font-['Source_Serif_4',Georgia,serif] text-[#0f172a] leading-tight mt-0.5">
-                {activeTab === 'live' && 'Your check-in'}
-                {activeTab === 'classes' && 'Enrolled Classes'}
-                {activeTab === 'history' && 'Attendance History'}
+              <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                Welcome back, {profile?.full_name || 'Student'}
               </h1>
+              <p className="text-xs opacity-90 mt-1">
+                Notre Dame of Midsayap College — Student ID: {profile?.student_id || 'N/A'}
+              </p>
             </div>
-          </section>
 
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-24">
-              <Spinner size="lg" />
-              <p className="text-xs text-[#64748b] mt-3 font-medium">Syncing student roll...</p>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowJoinModal(true)}
+                className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-3 px-5 rounded-[14px] shadow-sm transition-all flex items-center gap-2"
+              >
+                <Plus size={16} /> Join Class
+              </button>
+              <button
+                onClick={() => navigate('/student/scan')}
+                className="bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs py-3 px-5 rounded-[14px] shadow-sm transition-all flex items-center gap-2"
+              >
+                <Camera size={16} /> Open Scanner
+              </button>
             </div>
-          ) : (
-            <>
-              {/* ══════════ TAB 1: LIVE SESSION (DEFAULT SCREEN) ══════════ */}
-              {activeTab === 'live' && (
-                <>
-                  {/* 2. QR Hero Stage — Student's Personal Check-in Code */}
-                  <section className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-7 flex flex-col items-center gap-4 relative shadow-sm">
-                    <div className="relative w-[220px] h-[220px] rounded-[16px] bg-[#ffffff] flex items-center justify-center overflow-hidden shadow-sm border border-[#e2e8f0]">
-                      <div
-                        className="absolute inset-[-8px] rounded-[24px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
-                        style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
-                      />
-                      <QRCodeSVG
-                        id="student-live-qr"
-                        value={qrPayload}
-                        size={180}
-                        level="H"
-                        includeMargin={false}
-                        fgColor="#005a36"
-                      />
-                    </div>
-                    <div className="flex flex-col items-center gap-1.5 text-center mt-1">
-                      <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] text-[#0f172a] tracking-tight">
-                        {profile?.full_name || 'Student Name'}
-                      </span>
-                      {checkedInToday ? (
-                        <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#dcfce7] text-[#15803d] font-bold text-[13px] border border-[#86efac]">
-                          <CheckCircle size={14} />
-                          Checked in at {checkInTimeString}
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
-                          <Sparkles size={14} className="text-[#d97706]" />
-                          ID: {profile?.student_id || 'Ready to scan'}
-                        </span>
-                      )}
-                    </div>
-                  </section>
+          </div>
 
-                  {/* 3. Session Action Row */}
-                  <section className="flex flex-col gap-3">
-                    <button
-                      onClick={() => navigate('/student/scan')}
-                      className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
-                    >
-                      <Camera size={18} />
-                      Open camera to scan
-                    </button>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={handleRefresh}
-                        className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
-                      >
-                        <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
-                        Refresh
-                      </button>
-                      <button
-                        onClick={() => setShowJoinModal(true)}
-                        className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
-                      >
-                        <Plus size={16} />
-                        Join Class
-                      </button>
-                      <button
-                        onClick={() => navigate('/student/my-qr')}
-                        className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
-                      >
-                        <QrCode size={16} />
-                        Card ID
-                      </button>
-                    </div>
-                  </section>
+          {/* Stat Metric Cards Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Attendance Rate</span>
+              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] mt-1">
+                {attendancePct}%
+              </p>
+            </div>
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Present Sessions</span>
+              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#15803d] mt-1">
+                {presentCount}
+              </p>
+            </div>
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Late Sessions</span>
+              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#d97706] mt-1">
+                {lateCount}
+              </p>
+            </div>
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Missed Sessions</span>
+              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#b91c1c] mt-1">
+                {absentCount}
+              </p>
+            </div>
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-1.5">
+                <Flame size={15} className="text-[#d97706]" />
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Streak</span>
+              </div>
+              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] mt-1">
+                {currentStreak} Days
+              </p>
+            </div>
+          </div>
 
-                  {/* 4. Stat Pair Band */}
-                  <section className="grid grid-cols-2 gap-4">
-                    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex flex-col gap-2 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <Flame size={16} className="text-[#d97706]" />
-                        <span className="text-[12px] text-[#64748b] font-medium">Attendance streak</span>
-                      </div>
-                      <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[32px] leading-8 text-[#005a36]">
-                        {currentStreak}
-                      </span>
-                    </div>
-                    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex flex-col gap-2 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-[#64748b] font-medium">Classes done today</span>
-                      </div>
-                      <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[32px] leading-8 text-[#0f172a]">
-                        {classesTodayCount}
-                      </span>
-                    </div>
-                  </section>
+          {/* Main 2-Column Responsive Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                  {/* 5. Attendance Progress Ring (Data-Viz Gauge) */}
-                  <section className="flex flex-col gap-3">
-                    <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
-                      This semester
-                    </span>
-                    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex items-center gap-5 shadow-sm">
-                      <svg width="88" height="88" viewBox="0 0 88 88" className="shrink-0">
-                        <circle
-                          cx="44"
-                          cy="44"
-                          r="36"
-                          fill="none"
-                          stroke="#e2e8f0"
-                          strokeWidth="8"
-                        />
-                        <circle
-                          cx="44"
-                          cy="44"
-                          r="36"
-                          fill="none"
-                          stroke="#005a36"
-                          strokeWidth="8"
-                          strokeLinecap="round"
-                          pathLength="100"
-                          strokeDasharray={`${progressRatio} 100`}
-                          transform="rotate(-90 44 44)"
-                        />
-                        <text
-                          x="44"
-                          y="50"
-                          textAnchor="middle"
-                          className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] fill-[#005a36]"
-                        >
-                          {attendancePct}%
-                        </text>
-                      </svg>
-                      <div className="flex flex-col gap-1 flex-1">
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[18px] text-[#0f172a] leading-snug">
-                          {presentCount} of {totalSessions || 1} sessions
-                        </span>
-                        <span className="text-[12px] text-[#64748b] leading-tight">
-                          {absentCount} missed · {enrollments.length} enrolled subjects
-                        </span>
-                      </div>
-                    </div>
-                  </section>
+            {/* Left 2 Columns: Enrolled Classes & Recent Activity */}
+            <div className="lg:col-span-2 space-y-8">
+              
+              {/* Enrolled Courses */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <BookOpen size={18} className="text-[#005a36]" />
+                    <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
+                      Enrolled Courses ({enrollments.length})
+                    </h2>
+                  </div>
+                  <button
+                    onClick={() => setShowJoinModal(true)}
+                    className="text-xs font-semibold text-[#005a36] hover:underline flex items-center gap-1"
+                  >
+                    <Plus size={14} /> Join Course
+                  </button>
+                </div>
 
-                  {/* 6. Recent Check-in History (Dotted Rail Motif) */}
-                  <section className="flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
-                        Recent check-ins
-                      </span>
-                      <button
-                        onClick={() => setActiveTab('history')}
-                        className="text-[12px] font-semibold text-[#005a36] hover:underline"
-                      >
-                        View all
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col mt-1">
-                      {logs.length === 0 ? (
-                        <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-6 text-center text-[#64748b] text-xs">
-                          No attendance records logged yet. Scan a class QR to start!
-                        </div>
-                      ) : (
-                        logs.slice(0, 4).map((log, idx, arr) => {
-                          const isPresent = log.status === 'present' || log.status === 'late'
-                          const dateObj = log.marked_at ? new Date(log.marked_at) : (log.attendance_sessions?.date ? new Date(log.attendance_sessions.date) : new Date())
-                          const dateLabel = isToday(dateObj) ? `Today · ${format(dateObj, 'h:mm a')}` : format(dateObj, 'MMM d · h:mm a')
-
-                          return (
-                            <div key={log.id || idx} className="grid grid-cols-[24px_40px_1fr_auto] items-center gap-3 py-3 relative">
-                              {/* Dotted Rail */}
-                              <div className="flex flex-col items-center relative h-full">
-                                <div className={`w-3 h-3 rounded-full shrink-0 z-10 ${isPresent ? 'bg-[#005a36]' : 'bg-transparent border-2 border-[#cbd5e1]'}`} />
-                                {idx < arr.length - 1 && (
-                                  <div className="absolute top-5 bottom-[-12px] left-1/2 -translate-x-1/2 w-0 border-l-2 border-dotted border-[#cbd5e1]" />
-                                )}
-                              </div>
-
-                              {/* Class Icon */}
-                              <div className="w-10 h-10 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center">
-                                <BookOpen size={18} />
-                              </div>
-
-                              {/* Details */}
-                              <div className="flex flex-col min-w-0">
-                                <span className="font-semibold text-[15px] text-[#0f172a] truncate">
-                                  {log.classes?.name || 'Class Session'}
-                                </span>
-                                <span className="text-[12px] text-[#64748b] truncate">
-                                  {dateLabel} · {log.status ? log.status.toUpperCase() : 'MARKED'}
-                                </span>
-                              </div>
-
-                              {/* Check Status */}
-                              <div className="shrink-0">
-                                {isPresent ? (
-                                  <CheckCircle size={18} className="text-[#005a36]" />
-                                ) : (
-                                  <span className="text-xs text-[#64748b] font-medium">Missed</span>
-                                )}
-                              </div>
-                            </div>
-                          )
-                        })
-                      )}
-                    </div>
-                  </section>
-                </>
-              )}
-
-              {/* ══════════ TAB 2: ENROLLED CLASSES ══════════ */}
-              {activeTab === 'classes' && (
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
-                      Your Courses ({enrollments.length})
-                    </span>
-                    <button
-                      onClick={() => setShowJoinModal(true)}
-                      className="text-[12px] font-semibold text-[#005a36] flex items-center gap-1 hover:underline"
-                    >
-                      <Plus size={14} /> Join New Class
+                {loading ? (
+                  <div className="p-8 text-center"><Spinner size="lg" /></div>
+                ) : enrollments.length === 0 ? (
+                  <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-8 text-center">
+                    <p className="text-sm font-semibold text-[#0f172a] mb-1">No enrolled courses</p>
+                    <p className="text-xs text-[#64748b] mb-4">Join a class using your teacher's code to start tracking attendance.</p>
+                    <button onClick={() => setShowJoinModal(true)} className="btn-primary btn-sm">
+                      Join a Class
                     </button>
                   </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {enrollments.map(cls => {
+                      const classLogs = logs.filter(l => l.class_id === cls.id)
+                      const t = classLogs.length
+                      const p = classLogs.filter(l => l.status === 'present' || l.status === 'late').length
+                      const rate = t > 0 ? Math.round((p / t) * 100) : 0
 
-                  {enrollments.length === 0 ? (
-                    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center flex flex-col items-center gap-3">
-                      <BookOpen size={32} className="text-[#64748b]" />
-                      <p className="text-sm font-semibold text-[#0f172a]">You haven't joined any classes yet</p>
-                      <p className="text-xs text-[#64748b]">Enter your teacher's 6-character join code to enroll.</p>
-                      <button
-                        onClick={() => setShowJoinModal(true)}
-                        className="py-2.5 px-5 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-xs mt-2"
-                      >
-                        Join a Class Now
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-3">
-                      {enrollments.map(cls => {
-                        const classLogs = logs.filter(l => l.class_id === cls.id)
-                        const t = classLogs.length
-                        const p = classLogs.filter(l => l.status === 'present' || l.status === 'late').length
-                        const rate = t > 0 ? Math.round((p / t) * 100) : 0
-
-                        return (
-                          <Link
-                            key={cls.id}
-                            to={`/student/class/${cls.id}`}
-                            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 flex flex-col gap-3 hover:bg-[#e6f2ec]/50 active:scale-[0.99] transition-all"
-                          >
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] text-[#0f172a]">
-                                  {cls.name}
-                                </h3>
-                                <p className="text-[12px] text-[#64748b] mt-0.5">
-                                  {cls.schedule || 'Schedule TBA'} {cls.room ? `· ${cls.room}` : ''}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] text-[#005a36]">
-                                  {rate}%
-                                </span>
-                                <p className="text-[10px] text-[#64748b]">{p} of {t} attended</p>
-                              </div>
+                      return (
+                        <Link
+                          key={cls.id}
+                          to={`/student/class/${cls.id}`}
+                          className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 hover:border-[#005a36]/40 hover:shadow-md transition-all group flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-start justify-between mb-2">
+                              <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a] group-hover:text-[#005a36] transition-colors">
+                                {cls.name}
+                              </h3>
+                              <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#005a36]">
+                                {rate}%
+                              </span>
                             </div>
+                            <p className="text-xs text-[#64748b] mb-3">
+                              {cls.schedule || 'Schedule TBA'} {cls.room ? `• ${cls.room}` : ''}
+                            </p>
+                          </div>
 
-                            {/* Progress Track */}
+                          <div className="space-y-1.5 pt-2">
+                            <div className="flex items-center justify-between text-[11px] text-[#64748b]">
+                              <span>Attendance Rate</span>
+                              <span>{p} of {t} Sessions</span>
+                            </div>
                             <div className="w-full h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-[#005a36] transition-all duration-700"
                                 style={{ width: `${rate}%` }}
                               />
                             </div>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  )}
-                </section>
-              )}
-
-              {/* ══════════ TAB 3: ATTENDANCE HISTORY ══════════ */}
-              {activeTab === 'history' && (
-                <section className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
-                      All Check-ins ({logs.length})
-                    </span>
-                    <span className="text-[12px] font-semibold text-[#005a36]">
-                      {attendancePct}% Overall
-                    </span>
+                          </div>
+                        </Link>
+                      )
+                    })}
                   </div>
+                )}
+              </div>
 
+              {/* Recent Check-ins Table (Matches Assessment Image Style) */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={18} className="text-[#005a36]" />
+                    <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
+                      Recent Attendance Records
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] overflow-hidden shadow-sm">
                   {logs.length === 0 ? (
-                    <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center text-[#64748b] text-xs">
-                      No logs found. Attend classes to generate your attendance records.
+                    <div className="p-8 text-center text-xs text-[#64748b]">
+                      No attendance sessions logged yet.
                     </div>
                   ) : (
-                    <div className="flex flex-col gap-2.5">
-                      {logs.map(log => {
-                        const isPresent = log.status === 'present' || log.status === 'late'
-                        const isLate = log.status === 'late'
-                        const dateObj = log.marked_at ? new Date(log.marked_at) : (log.attendance_sessions?.date ? new Date(log.attendance_sessions.date) : new Date())
-
-                        return (
-                          <div
-                            key={log.id}
-                            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-3.5 flex items-center justify-between shadow-sm"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isPresent ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#fee2e2] text-[#b91c1c]'}`}>
-                                {isPresent ? <Check size={16} /> : <X size={16} />}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="font-semibold text-sm text-[#0f172a]">
-                                  {log.classes?.name || 'Class Session'}
-                                </span>
-                                <span className="text-[11px] text-[#64748b]">
-                                  {format(dateObj, 'EEEE, MMM d, yyyy · h:mm a')}
-                                </span>
-                              </div>
-                            </div>
-
-                            <span className={`text-[12px] font-bold px-2.5 py-1 rounded-full ${
-                              log.status === 'present'
-                                ? 'bg-[#dcfce7] text-[#15803d]'
-                                : isLate
-                                ? 'bg-[#fef3c7] text-[#92400e]'
-                                : 'bg-[#fee2e2] text-[#b91c1c]'
-                            }`}>
-                              {log.status?.toUpperCase() || 'ABSENT'}
-                            </span>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#005a36] text-white">
+                          <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider">Date</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider">Course Name</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider hidden sm:table-cell">Time</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#e2e8f0] text-xs">
+                        {logs.slice(0, 8).map(log => {
+                          const dateObj = log.marked_at ? new Date(log.marked_at) : (log.attendance_sessions?.date ? new Date(log.attendance_sessions.date) : new Date())
+                          return (
+                            <tr key={log.id} className="hover:bg-[#f8fafc] transition-colors">
+                              <td className="px-4 py-3 font-semibold text-[#0f172a]">
+                                {format(dateObj, 'MMM d, yyyy')}
+                              </td>
+                              <td className="px-4 py-3 text-[#0f172a]">
+                                {log.classes?.name || 'Class Session'}
+                              </td>
+                              <td className="px-4 py-3 text-[#64748b] hidden sm:table-cell">
+                                {log.marked_at ? format(dateObj, 'h:mm a') : '—'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <Badge status={log.status} />
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
                   )}
-                </section>
-              )}
-            </>
-          )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column: Digital QR ID Card Widget */}
+            <div className="space-y-6">
+              <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm flex flex-col items-center text-center">
+                <div className="w-full bg-[#005a36] text-white py-2 px-3.5 rounded-[12px] mb-4 flex items-center justify-between text-xs">
+                  <span className="font-bold">Digital Student ID</span>
+                  <span className="font-mono">{profile?.student_id || 'Active'}</span>
+                </div>
+
+                {/* QR Stage with Pulse Ring */}
+                <div className="relative my-3 p-4 bg-[#f8fafc] rounded-[20px] border border-[#e2e8f0] shadow-sm flex items-center justify-center">
+                  <div
+                    className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
+                    style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+                  />
+                  <QRCodeSVG
+                    id="student-id-qr-desk"
+                    value={qrPayload}
+                    size={170}
+                    level="H"
+                    includeMargin={false}
+                    fgColor="#005a36"
+                  />
+                </div>
+
+                <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold text-[#0f172a] mt-2">
+                  {profile?.full_name || 'Student Name'}
+                </h3>
+                <p className="text-xs text-[#005a36] font-mono font-semibold">
+                  ID: {profile?.student_id || 'Ready'}
+                </p>
+
+                {checkedInToday ? (
+                  <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dcfce7] text-[#15803d] text-xs font-bold border border-[#86efac]">
+                    <CheckCircle size={13} /> Checked in at {checkInTimeString}
+                  </span>
+                ) : (
+                  <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f8fafc] text-[#64748b] text-xs border border-[#e2e8f0]">
+                    <Clock size={13} /> Ready for scan
+                  </span>
+                )}
+
+                <div className="w-full space-y-2.5 mt-6">
+                  <button
+                    onClick={() => navigate('/student/scan')}
+                    className="btn-primary w-full justify-center text-xs py-3.5"
+                  >
+                    <Camera size={15} /> Open Camera Scanner
+                  </button>
+                  <button
+                    onClick={downloadQR}
+                    className="btn-secondary w-full justify-center text-xs py-3.5"
+                  >
+                    {downloaded ? <><Check size={14} /> Saved!</> : <><Download size={14} /> Download ID QR</>}
+                  </button>
+                </div>
+              </div>
+
+              {/* Help & Support Card */}
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 text-xs text-[#64748b] space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[#005a36]">
+                  <Shield size={14} /> NDMC Attendance Rules
+                </div>
+                <p>Ensure you are within the classroom geofence before scanning the rotating kiosk token.</p>
+              </div>
+            </div>
+
+          </div>
 
         </div>
-
-        {/* ══════════ FIXED BOTTOM TAB BAR ══════════ */}
-        <nav
-          data-component="TabBar"
-          data-chrome="tab-bar"
-          className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto h-16 bg-[#ffffff] border-t border-[#e2e8f0] flex items-center justify-between px-6 z-40"
-        >
-          {/* Tab 1: Live Session */}
-          <button
-            onClick={() => setActiveTab('live')}
-            className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
-              activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'
-            }`}
-          >
-            <QrCode size={22} className={activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-            <span>Live Session</span>
-          </button>
-
-          {/* Tab 2: Classes */}
-          <button
-            onClick={() => setActiveTab('classes')}
-            className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
-              activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'
-            }`}
-          >
-            <BookOpen size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-            <span>Classes</span>
-          </button>
-
-          {/* Tab 3: History */}
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
-              activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'
-            }`}
-          >
-            <Calendar size={22} className={activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-            <span>History</span>
-          </button>
-        </nav>
-
       </div>
 
-      {/* Join Modal Overlay */}
+
+      {/* ══════════════════════════════════════════════════════════════
+          2. MOBILE PHONE LAYOUT (Visible strictly on screens < md)
+          ══════════════════════════════════════════════════════════════ */}
+      <div className="md:hidden flex justify-center">
+        <div className="w-full max-w-[420px] min-h-screen bg-[#ffffff] flex flex-col justify-between px-4 pt-5 pb-24 relative shadow-sm border-x border-[#e2e8f0]">
+
+          {/* ── Mobile Scrollable Content ── */}
+          <div className="flex flex-col gap-6 w-full">
+
+            {/* 1. Header Row */}
+            <section className="flex items-center justify-between w-full">
+              <button
+                onClick={() => navigate('/profile')}
+                aria-label="Profile settings"
+                className="w-10 h-10 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#0f172a] hover:bg-[#e2e8f0] active:scale-95 transition-all"
+              >
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+                ) : (
+                  <User size={18} />
+                )}
+              </button>
+              <div className="flex flex-col text-right">
+                <span className="text-[13px] font-bold text-[#005a36] leading-tight">
+                  {roomScheduleText}
+                </span>
+                <h1 className="text-[20px] font-bold font-['Source_Serif_4',Georgia,serif] text-[#0f172a] leading-tight mt-0.5">
+                  {activeTab === 'live' && 'Your check-in'}
+                  {activeTab === 'classes' && 'Enrolled Classes'}
+                  {activeTab === 'history' && 'Attendance History'}
+                </h1>
+              </div>
+            </section>
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-24">
+                <Spinner size="lg" />
+                <p className="text-xs text-[#64748b] mt-3 font-medium">Syncing student roll...</p>
+              </div>
+            ) : (
+              <>
+                {/* ── TAB 1: LIVE SESSION (DEFAULT MOBILE SCREEN) ── */}
+                {activeTab === 'live' && (
+                  <>
+                    {/* QR Hero Stage */}
+                    <section className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-7 flex flex-col items-center gap-4 relative shadow-sm">
+                      <div className="relative w-[220px] h-[220px] rounded-[16px] bg-[#ffffff] flex items-center justify-center overflow-hidden shadow-sm border border-[#e2e8f0]">
+                        <div
+                          className="absolute inset-[-8px] rounded-[24px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
+                          style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+                        />
+                        <QRCodeSVG
+                          id="student-live-qr"
+                          value={qrPayload}
+                          size={180}
+                          level="H"
+                          includeMargin={false}
+                          fgColor="#005a36"
+                        />
+                      </div>
+                      <div className="flex flex-col items-center gap-1.5 text-center mt-1">
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] text-[#0f172a] tracking-tight">
+                          {profile?.full_name || 'Student Name'}
+                        </span>
+                        {checkedInToday ? (
+                          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#dcfce7] text-[#15803d] font-bold text-[13px] border border-[#86efac]">
+                            <CheckCircle size={14} />
+                            Checked in at {checkInTimeString}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
+                            <Sparkles size={14} className="text-[#d97706]" />
+                            ID: {profile?.student_id || 'Ready to scan'}
+                          </span>
+                        )}
+                      </div>
+                    </section>
+
+                    {/* Actions */}
+                    <section className="flex flex-col gap-3">
+                      <button
+                        onClick={() => navigate('/student/scan')}
+                        className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
+                      >
+                        <Camera size={18} />
+                        Open camera to scan
+                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={handleRefresh}
+                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
+                        >
+                          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                          Refresh
+                        </button>
+                        <button
+                          onClick={() => setShowJoinModal(true)}
+                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
+                        >
+                          <Plus size={16} />
+                          Join Class
+                        </button>
+                        <button
+                          onClick={() => navigate('/student/my-qr')}
+                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all"
+                        >
+                          <QrCode size={16} />
+                          Card ID
+                        </button>
+                      </div>
+                    </section>
+
+                    {/* Stat Pair Band */}
+                    <section className="grid grid-cols-2 gap-4">
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex flex-col gap-2 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <Flame size={16} className="text-[#d97706]" />
+                          <span className="text-[12px] text-[#64748b] font-medium">Attendance streak</span>
+                        </div>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[32px] leading-8 text-[#005a36]">
+                          {currentStreak}
+                        </span>
+                      </div>
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex flex-col gap-2 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] text-[#64748b] font-medium">Classes done today</span>
+                        </div>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[32px] leading-8 text-[#0f172a]">
+                          {classesTodayCount}
+                        </span>
+                      </div>
+                    </section>
+
+                    {/* Attendance Progress Ring */}
+                    <section className="flex flex-col gap-3">
+                      <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
+                        This semester
+                      </span>
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-5 flex items-center gap-5 shadow-sm">
+                        <svg width="88" height="88" viewBox="0 0 88 88" className="shrink-0">
+                          <circle cx="44" cy="44" r="36" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                          <circle
+                            cx="44" cy="44" r="36" fill="none" stroke="#005a36" strokeWidth="8"
+                            strokeLinecap="round" pathLength="100" strokeDasharray={`${progressRatio} 100`}
+                            transform="rotate(-90 44 44)"
+                          />
+                          <text x="44" y="50" textAnchor="middle" className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] fill-[#005a36]">
+                            {attendancePct}%
+                          </text>
+                        </svg>
+                        <div className="flex flex-col gap-1 flex-1">
+                          <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[18px] text-[#0f172a] leading-snug">
+                            {presentCount} of {totalSessions || 1} sessions
+                          </span>
+                          <span className="text-[12px] text-[#64748b] leading-tight">
+                            {absentCount} missed · {enrollments.length} enrolled subjects
+                          </span>
+                        </div>
+                      </div>
+                    </section>
+
+                    {/* Recent Check-in History */}
+                    <section className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
+                          Recent check-ins
+                        </span>
+                        <button onClick={() => setActiveTab('history')} className="text-[12px] font-semibold text-[#005a36] hover:underline">
+                          View all
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col mt-1">
+                        {logs.length === 0 ? (
+                          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-6 text-center text-[#64748b] text-xs">
+                            No attendance records logged yet. Scan a class QR to start!
+                          </div>
+                        ) : (
+                          logs.slice(0, 4).map((log, idx, arr) => {
+                            const isPresent = log.status === 'present' || log.status === 'late'
+                            const dateObj = log.marked_at ? new Date(log.marked_at) : (log.attendance_sessions?.date ? new Date(log.attendance_sessions.date) : new Date())
+                            const dateLabel = isToday(dateObj) ? `Today · ${format(dateObj, 'h:mm a')}` : format(dateObj, 'MMM d · h:mm a')
+
+                            return (
+                              <div key={log.id || idx} className="grid grid-cols-[24px_40px_1fr_auto] items-center gap-3 py-3 relative">
+                                <div className="flex flex-col items-center relative h-full">
+                                  <div className={`w-3 h-3 rounded-full shrink-0 z-10 ${isPresent ? 'bg-[#005a36]' : 'bg-transparent border-2 border-[#cbd5e1]'}`} />
+                                  {idx < arr.length - 1 && (
+                                    <div className="absolute top-5 bottom-[-12px] left-1/2 -translate-x-1/2 w-0 border-l-2 border-dotted border-[#cbd5e1]" />
+                                  )}
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center">
+                                  <BookOpen size={18} />
+                                </div>
+                                <div className="flex flex-col min-w-0">
+                                  <span className="font-semibold text-[15px] text-[#0f172a] truncate">
+                                    {log.classes?.name || 'Class Session'}
+                                  </span>
+                                  <span className="text-[12px] text-[#64748b] truncate">
+                                    {dateLabel} · {log.status ? log.status.toUpperCase() : 'MARKED'}
+                                  </span>
+                                </div>
+                                <div className="shrink-0">
+                                  {isPresent ? <CheckCircle size={18} className="text-[#005a36]" /> : <span className="text-xs text-[#64748b] font-medium">Missed</span>}
+                                </div>
+                              </div>
+                            )
+                          })
+                        )}
+                      </div>
+                    </section>
+                  </>
+                )}
+
+                {/* ── TAB 2: ENROLLED CLASSES (MOBILE) ── */}
+                {activeTab === 'classes' && (
+                  <section className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
+                        Your Courses ({enrollments.length})
+                      </span>
+                      <button onClick={() => setShowJoinModal(true)} className="text-[12px] font-semibold text-[#005a36] flex items-center gap-1 hover:underline">
+                        <Plus size={14} /> Join New Class
+                      </button>
+                    </div>
+
+                    {enrollments.length === 0 ? (
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center flex flex-col items-center gap-3">
+                        <BookOpen size={32} className="text-[#64748b]" />
+                        <p className="text-sm font-semibold text-[#0f172a]">You haven't joined any classes yet</p>
+                        <p className="text-xs text-[#64748b]">Enter your teacher's 6-character join code to enroll.</p>
+                        <button onClick={() => setShowJoinModal(true)} className="py-2.5 px-5 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-xs mt-2">
+                          Join a Class Now
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-3">
+                        {enrollments.map(cls => {
+                          const classLogs = logs.filter(l => l.class_id === cls.id)
+                          const t = classLogs.length
+                          const p = classLogs.filter(l => l.status === 'present' || l.status === 'late').length
+                          const rate = t > 0 ? Math.round((p / t) * 100) : 0
+
+                          return (
+                            <Link
+                              key={cls.id}
+                              to={`/student/class/${cls.id}`}
+                              className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 flex flex-col gap-3 hover:bg-[#e6f2ec]/50 active:scale-[0.99] transition-all"
+                            >
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] text-[#0f172a]">
+                                    {cls.name}
+                                  </h3>
+                                  <p className="text-[12px] text-[#64748b] mt-0.5">
+                                    {cls.schedule || 'Schedule TBA'} {cls.room ? `· ${cls.room}` : ''}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] text-[#005a36]">
+                                    {rate}%
+                                  </span>
+                                  <p className="text-[10px] text-[#64748b]">{p} of {t} attended</p>
+                                </div>
+                              </div>
+
+                              <div className="w-full h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full bg-[#005a36] transition-all duration-700"
+                                  style={{ width: `${rate}%` }}
+                                />
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </section>
+                )}
+
+                {/* ── TAB 3: HISTORY (MOBILE) ── */}
+                {activeTab === 'history' && (
+                  <section className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[12px] uppercase font-bold tracking-[0.06em] text-[#005a36]">
+                        All Check-ins ({logs.length})
+                      </span>
+                      <span className="text-[12px] font-semibold text-[#005a36]">
+                        {attendancePct}% Overall
+                      </span>
+                    </div>
+
+                    {logs.length === 0 ? (
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center text-[#64748b] text-xs">
+                        No logs found. Attend classes to generate your attendance records.
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2.5">
+                        {logs.map(log => {
+                          const isPresent = log.status === 'present' || log.status === 'late'
+                          const isLate = log.status === 'late'
+                          const dateObj = log.marked_at ? new Date(log.marked_at) : (log.attendance_sessions?.date ? new Date(log.attendance_sessions.date) : new Date())
+
+                          return (
+                            <div
+                              key={log.id}
+                              className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-3.5 flex items-center justify-between shadow-sm"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isPresent ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#fee2e2] text-[#b91c1c]'}`}>
+                                  {isPresent ? <Check size={16} /> : <X size={16} />}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-sm text-[#0f172a]">
+                                    {log.classes?.name || 'Class Session'}
+                                  </span>
+                                  <span className="text-[11px] text-[#64748b]">
+                                    {format(dateObj, 'EEEE, MMM d, yyyy · h:mm a')}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <span className={`text-[12px] font-bold px-2.5 py-1 rounded-full ${
+                                log.status === 'present'
+                                  ? 'bg-[#dcfce7] text-[#15803d]'
+                                  : isLate
+                                  ? 'bg-[#fef3c7] text-[#92400e]'
+                                  : 'bg-[#fee2e2] text-[#b91c1c]'
+                              }`}>
+                                {log.status?.toUpperCase() || 'ABSENT'}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </section>
+                )}
+              </>
+            )}
+
+          </div>
+
+          {/* ── Fixed Mobile Bottom Tab Bar ── */}
+          <nav
+            data-component="TabBar"
+            className="fixed bottom-0 left-0 right-0 max-w-[420px] mx-auto h-16 bg-[#ffffff] border-t border-[#e2e8f0] flex items-center justify-between px-6 z-40"
+          >
+            <button
+              onClick={() => setActiveTab('live')}
+              className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
+                activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'
+              }`}
+            >
+              <QrCode size={22} className={activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <span>Live Session</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('classes')}
+              className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
+                activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'
+              }`}
+            >
+              <BookOpen size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <span>Classes</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('history')}
+              className={`flex flex-col items-center gap-1 flex-1 text-[10px] font-semibold transition-colors ${
+                activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'
+              }`}
+            >
+              <Calendar size={22} className={activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <span>History</span>
+            </button>
+          </nav>
+
+        </div>
+      </div>
+
+      {/* Join Class Modal */}
       {showJoinModal && (
         <JoinClassModal
           studentId={profile?.id}
