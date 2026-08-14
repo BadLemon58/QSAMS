@@ -138,15 +138,6 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
-  const [currentTime, setCurrentTime] = useState(format(new Date(), 'h:mm'))
-
-  // Live status clock
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(format(new Date(), 'h:mm'))
-    }, 15000)
-    return () => clearInterval(timer)
-  }, [])
 
   // Fetch Student Data
   const fetchData = async () => {
@@ -234,31 +225,11 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] flex justify-center selection:bg-[#ee6a2a]/20">
       
-      {/* Mobile Shell Wrapper (matches exact 393px width reference) */}
-      <div className="w-full max-w-[420px] min-h-screen bg-[#ffffff] flex flex-col justify-between px-4 pt-11 pb-24 relative shadow-sm">
-
-        {/* ══════════ TOP STATUS BAR / TIME ══════════ */}
-        <div className="fixed top-0 left-0 right-0 max-w-[420px] mx-auto h-11 px-4 flex items-center justify-between pointer-events-none z-40 bg-[#ffffff]/90 backdrop-blur-md">
-          <span className="text-[15px] font-semibold tracking-tight text-[#1a1a1a] font-mono pl-1">
-            {currentTime}
-          </span>
-          <div className="flex items-center gap-1.5 pr-1 text-[#1a1a1a]">
-            {/* Cellular Signal */}
-            <svg width="17" height="11" viewBox="0 0 17 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="0" y="7" width="2.5" height="4" rx="0.5" fill="currentColor"/>
-              <rect x="4.5" y="5" width="2.5" height="6" rx="0.5" fill="currentColor"/>
-              <rect x="9" y="2.5" width="2.5" height="8.5" rx="0.5" fill="currentColor"/>
-              <rect x="13.5" y="0" width="2.5" height="11" rx="0.5" fill="currentColor"/>
-            </svg>
-            {/* Battery */}
-            <div className="w-5 h-2.5 rounded-[3px] border border-currentColor p-[1px] flex items-center">
-              <div className="h-full w-3.5 bg-currentColor rounded-[1px]" />
-            </div>
-          </div>
-        </div>
+      {/* Mobile Shell Wrapper */}
+      <div className="w-full max-w-[420px] min-h-screen bg-[#ffffff] flex flex-col justify-between px-4 pt-5 pb-24 relative shadow-sm">
 
         {/* ══════════ MAIN SCROLLABLE CONTENT ══════════ */}
-        <div className="flex flex-col gap-6 w-full mt-2">
+        <div className="flex flex-col gap-6 w-full">
 
           {/* 1. Header Row */}
           <section className="flex items-center justify-between w-full">
