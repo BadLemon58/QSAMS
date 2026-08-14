@@ -354,3 +354,57 @@
     font-weight: 700 !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   CHALK REGISTER — STUDENT DASHBOARD DESIGN SYSTEM
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --gesso-canvas: #ffffff;
+  --gesso-surface: #ebebeb;
+  --gesso-surface-elevated: #e2e2e2;
+  --gesso-surface-recessed: #f5f5f5;
+  --gesso-fg: #1a1a1a;
+  --gesso-fg-muted: #7a7a7a;
+  --gesso-divider: rgba(0, 0, 0, 0.04);
+  --gesso-accent: #ee6a2a;
+  --gesso-accent-2: #f7b500;
+  --gesso-on-accent: #000000;
+  --gesso-data-1: #8e3500;
+  --gesso-data-2: #b24400;
+  --gesso-data-3: #d65404;
+  --gesso-data-4: #f36e2f;
+  --gesso-data-5: #ff9466;
+  --gesso-data-6: #ffbca1;
+  --gesso-font-display: "Source Serif 4", Georgia, serif;
+  --gesso-font-body: "Gambarino", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --gesso-radius-sm: 8px;
+  --gesso-radius-md: 16px;
+  --gesso-radius-lg: 24px;
+  --gesso-radius-full: 9999px;
+  --gesso-shadow-sm: none;
+  --gesso-shadow-md: none;
+  --gesso-shadow-lg: 0 1px 2px rgba(0,0,0,0.04);
+  --gesso-duration-fast: 160ms;
+  --gesso-easing-default: ease-out;
+}
+
+@keyframes gesso-qr-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.035);
+    opacity: 0.15;
+  }
+}
+
+@keyframes gesso-name-light {
+  0% {
+    background: color-mix(in srgb, #ee6a2a 18%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
