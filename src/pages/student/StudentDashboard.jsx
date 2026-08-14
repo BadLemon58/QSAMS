@@ -577,23 +577,17 @@ export default function StudentDashboard() {
                 </div>
               </button>
 
-              <div className="flex items-center gap-2.5">
-                <span className="text-[12px] sm:text-[13px] md:text-sm font-bold text-[#005a36] leading-tight text-right">
-                  {roomScheduleText}
-                </span>
-
-                <button
-                  onClick={async () => {
-                    await signOut()
-                    navigate('/login')
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748b] hover:text-[#b91c1c] hover:bg-[#fee2e2] active:scale-95 transition-all border border-[#e2e8f0] bg-[#f8fafc] shadow-sm"
-                  title="Sign out"
-                >
-                  <LogOut size={14} />
-                  <span className="hidden sm:inline">Sign out</span>
-                </button>
-              </div>
+              <button
+                onClick={async () => {
+                  await signOut()
+                  navigate('/login')
+                }}
+                className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[14px] text-xs sm:text-sm font-semibold text-[#b91c1c] hover:bg-[#fecaca] active:scale-95 transition-all border border-[#fca5a5] bg-[#fee2e2] shadow-sm"
+                title="Sign out of account"
+              >
+                <LogOut size={16} />
+                <span>Sign out</span>
+              </button>
             </section>
 
             {loading ? (
