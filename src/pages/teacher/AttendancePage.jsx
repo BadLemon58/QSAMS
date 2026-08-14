@@ -16,7 +16,7 @@ import AttendanceReportModal from '../../components/teacher/AttendanceReportModa
 import { exportSingleSessionToExcel } from '../../lib/excelExport'
 import { format } from 'date-fns'
 
-// ── Mode Toggle Button (Chalk Register Style) ─────────────────────────────
+// ── Mode Toggle Button (NDMC Forest Green Style) ───────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
   return (
     <button
@@ -24,24 +24,24 @@ function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
       onClick={onClick}
       className={`flex-1 flex flex-col items-center gap-1.5 p-4 rounded-[20px] border transition-all ${
         active
-          ? 'bg-[#ffffff] border-[#DDD9D3] shadow-sm text-[#ee6a2a]'
-          : 'bg-[#f5f5f5] border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
+          ? 'bg-[#ffffff] border-[#005a36] shadow-sm text-[#005a36]'
+          : 'bg-[#f8fafc] border-transparent text-[#64748b] hover:text-[#0f172a]'
       }`}
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-        active ? 'bg-[#ebebeb] text-[#ee6a2a]' : 'bg-[#ffffff] text-[#7a7a7a]'
+        active ? 'bg-[#e6f2ec] text-[#005a36]' : 'bg-[#ffffff] text-[#64748b]'
       }`}>
         <Icon size={20} />
       </div>
       <div className="text-center">
-        <p className={`font-semibold text-sm ${active ? 'text-[#1a1a1a]' : 'text-[#7a7a7a]'}`}>{label}</p>
-        <p className="text-[#7a7a7a] text-xs mt-0.5 hidden sm:block">{description}</p>
+        <p className={`font-semibold text-sm ${active ? 'text-[#005a36]' : 'text-[#64748b]'}`}>{label}</p>
+        <p className="text-[#64748b] text-xs mt-0.5 hidden sm:block">{description}</p>
       </div>
     </button>
   )
 }
 
-// ── Toast Notification (Chalk Register Style) ─────────────────────────────
+// ── Toast Notification ─────────────────────────────────────────────────────
 function Toast({ message, type, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 3500)
@@ -51,19 +51,17 @@ function Toast({ message, type, onDone }) {
   return (
     <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-[20px] shadow-2xl text-sm font-semibold animate-fade-in ${
       type === 'success'
-        ? 'bg-[#DCFCE7] border border-[#86EFAC] text-[#15803D]'
-        : 'bg-[#FEE2E2] border border-[#FCA5A5] text-[#B91C1C]'
+        ? 'bg-[#dcfce7] border border-[#86efac] text-[#15803d]'
+        : 'bg-[#fee2e2] border border-[#fca5a5] text-[#b91c1c]'
     }`}>
-      {type === 'success'
-        ? <CheckCircle size={18} />
-        : <AlertCircle size={18} />}
+      {type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
       {message}
     </div>
   )
 }
 
 // ══════════════════════════════════════════════════════════════
-// MAIN: AttendancePage — Dual-Method Attendance
+// MAIN: AttendancePage — Dual-Method Attendance (NDMC Style)
 // ══════════════════════════════════════════════════════════════
 export default function AttendancePage() {
   const { classId } = useParams()
@@ -256,67 +254,66 @@ export default function AttendancePage() {
   }, [markAttendance])
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
       <Navbar />
 
-      {/* Header Banner */}
-      <div className="bg-[#f5f5f5] border-b border-[rgba(0,0,0,0.06)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <button
-            onClick={() => navigate(`/teacher/class/${classId}`)}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#ee6a2a] hover:underline mb-4 transition-colors"
-          >
-            <ArrowLeft size={15} /> Back to Course
-          </button>
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Back Link */}
+        <button
+          onClick={() => navigate(`/teacher/class/${classId}`)}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
+        >
+          <ArrowLeft size={15} /> Back to Course
+        </button>
 
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        {/* Institutional Forest Green Banner (Matches Assessment Photo) */}
+        <div className="ndmc-banner mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <CalendarDays size={14} className="text-[#ee6a2a]" />
-                <span className="text-[#7a7a7a] text-xs font-bold uppercase tracking-wider">
-                  {format(new Date(), 'EEEE, MMMM d, yyyy')}
-                </span>
-              </div>
-              <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a]">
+              <span className="text-[11px] font-mono tracking-wider opacity-90 block mb-1">
+                {format(new Date(), 'EEEE, MMMM d, yyyy')} • Live Session Monitor
+              </span>
+              <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold tracking-tight text-white">
                 Take Attendance
               </h1>
               {classInfo && (
-                <p className="text-[#7a7a7a] text-xs mt-1">{classInfo.name} {classInfo.room ? `· ${classInfo.room}` : ''}</p>
+                <p className="text-xs opacity-90 mt-1">{classInfo.name} {classInfo.room ? `• ${classInfo.room}` : ''}</p>
               )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 self-start">
               <button
                 onClick={handleExportSessionExcel}
-                className="btn-secondary btn-sm flex items-center gap-1.5"
+                className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
                 title="Download formatted Excel workbook for this session"
               >
-                <FileSpreadsheet size={14} className="text-[#15803D]" /> Export Excel
+                <FileSpreadsheet size={14} className="text-[#15803d]" /> Export Excel
               </button>
               <button
                 onClick={() => setShowReportModal(true)}
-                className="btn-secondary btn-sm flex items-center gap-1.5"
+                className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
                 title="Generate Full Attendance Report"
               >
-                <FileSpreadsheet size={14} className="text-[#ee6a2a]" /> Full Report
+                <FileSpreadsheet size={14} /> Full Report
               </button>
-              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] text-xs font-bold">
-                <span className="w-2 h-2 rounded-full bg-[#15803D] animate-pulse" />
+              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />
                 <span>Session Active</span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Content Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* ── LEFT PANEL: Mode selector + Active tool ── */}
           <div className="lg:col-span-2 flex flex-col gap-4">
 
             {/* Mode Switcher */}
-            <div className="bg-[#ebebeb] p-2 rounded-[24px] flex gap-2 border border-[rgba(0,0,0,0.06)] shadow-sm">
+            <div className="bg-[#ffffff] p-2 rounded-[24px] flex gap-2 border border-[#e2e8f0] shadow-sm">
               <ModeTab
                 id="mode-kiosk"
                 icon={Tv2}
@@ -336,9 +333,9 @@ export default function AttendancePage() {
             </div>
 
             {/* Mode Tip */}
-            <div className="flex items-start gap-2.5 bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-4 py-3">
-              <Zap size={15} className="text-[#ee6a2a] shrink-0 mt-0.5" />
-              <p className="text-[#7a7a7a] text-xs leading-relaxed">
+            <div className="flex items-start gap-2.5 bg-[#ffffff] border border-[#e2e8f0] rounded-[16px] px-4 py-3 shadow-sm">
+              <Zap size={15} className="text-[#005a36] shrink-0 mt-0.5" />
+              <p className="text-[#64748b] text-xs leading-relaxed">
                 {mode === 'kiosk'
                   ? 'Project the dynamic QR on a screen. Students scan it using their QSAMS app to mark themselves present.'
                   : 'Use your camera to scan student ID cards as they enter the classroom.'}
@@ -346,7 +343,7 @@ export default function AttendancePage() {
             </div>
 
             {/* Active Tool Panel */}
-            <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-6 shadow-sm animate-fade-in">
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm animate-fade-in">
               {mode === 'kiosk' && (
                 <KioskMode classId={classId} />
               )}
@@ -363,12 +360,12 @@ export default function AttendancePage() {
           <div className="lg:col-span-3 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-[#ee6a2a]" />
-                <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#1a1a1a]">
+                <Users size={16} className="text-[#005a36]" />
+                <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#0f172a]">
                   Student Roster
                 </h2>
               </div>
-              <span className="text-xs font-semibold text-[#7a7a7a]">
+              <span className="text-xs font-semibold text-[#64748b]">
                 {roster.filter(s => s.status === 'present' || s.status === 'late').length} of {roster.length} Checked In
               </span>
             </div>

@@ -1,113 +1,131 @@
-import { useAuth } from '../../contexts/AuthContext'
-import Navbar from '../../components/common/Navbar'
+import { useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
-import { Download, Share2, Info, User, QrCode } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
+import {
+  Download, ArrowLeft, Check, Shield, Share2,
+  Sparkles, RefreshCw, User
+} from 'lucide-react'
 
 export default function MyQRPage() {
   const { profile } = useAuth()
+  const navigate = useNavigate()
+  const [downloaded, setDownloaded] = useState(false)
 
-  const qrPayload = JSON.stringify({
+  const studentQrData = JSON.stringify({
     type: 'student_id',
     studentId: profile?.student_id,
     name: profile?.full_name,
-    uid: profile?.id,
+    id: profile?.id,
   })
 
-  const handleDownload = () => {
-    const svg = document.getElementById('student-qr-svg')
+  const downloadQR = () => {
+    const svg = document.getElementById('student-id-qr')
     if (!svg) return
-    const serializer = new XMLSerializer()
-    const svgStr = serializer.serializeToString(svg)
+
+    const svgData = new XMLSerializer().serializeToString(svg)
     const canvas = document.createElement('canvas')
-    canvas.width = 400
-    canvas.height = 400
     const ctx = canvas.getContext('2d')
     const img = new Image()
+
     img.onload = () => {
+      canvas.width = img.width + 80
+      canvas.height = img.height + 80
+
       ctx.fillStyle = '#ffffff'
-      ctx.fillRect(0, 0, 400, 400)
-      ctx.drawImage(img, 0, 0, 400, 400)
-      const a = document.createElement('a')
-      a.download = `QSAMS_ID_${profile?.student_id || 'QR'}.png`
-      a.href = canvas.toDataURL('image/png')
-      a.click()
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(img, 40, 40)
+
+      const pngUrl = canvas.toDataURL('image/png')
+      const downloadLink = document.createElement('a')
+      downloadLink.href = pngUrl
+      downloadLink.download = `QSAMS-QR-${profile?.student_id || 'ID'}.png`
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      document.body.removeChild(downloadLink)
+
+      setDownloaded(true)
+      setTimeout(() => setDownloaded(false), 2500)
     }
-    img.src = 'data:image/svg+xml;base64,' + btoa(svgStr)
+
+    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
   }
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
-      <Navbar />
-      <div className="max-w-md mx-auto px-4 py-8">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[20px] bg-[#ee6a2a] mb-3 text-[#000000] shadow-sm">
-            <QrCode size={26} />
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] flex flex-col items-center justify-center p-4 selection:bg-[#005a36]/20">
+      <div className="w-full max-w-sm flex flex-col gap-4 animate-fade-in">
+        
+        {/* Back Link */}
+        <button
+          onClick={() => navigate('/student')}
+          className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-[#005a36] hover:underline transition-colors"
+        >
+          <ArrowLeft size={15} /> Dashboard
+        </button>
+
+        {/* Digital ID Card */}
+        <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-7 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
+          
+          {/* Top Banner Stripe */}
+          <div className="w-full bg-[#005a36] text-white py-2 px-4 rounded-[14px] mb-4 flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider">NDMC Digital ID</span>
+            <span className="text-[10px] font-mono opacity-90">{profile?.student_id || 'Student'}</span>
           </div>
-          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#1a1a1a]">
-            My QR ID Card
+
+          <div className="w-16 h-16 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center text-xl font-bold mb-3 shadow-sm overflow-hidden">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              profile?.full_name?.[0]?.toUpperCase() || <User size={24} />
+            )}
+          </div>
+
+          <h1 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] leading-tight">
+            {profile?.full_name || 'Student'}
           </h1>
-          <p className="text-[#7a7a7a] text-xs mt-1">
-            Show this permanent ID to your teacher for rapid attendance check-in
+          <p className="text-xs text-[#005a36] font-mono font-semibold mt-0.5">
+            Student ID: {profile?.student_id || 'Not Assigned'}
           </p>
-        </div>
 
-        {/* Chalk Register ID Card */}
-        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-7 flex flex-col items-center gap-5 shadow-sm">
-          {/* User Info */}
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-[#f7b500] text-[#000000] flex items-center justify-center text-xl font-bold mx-auto mb-2.5 shadow-sm">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-              ) : (
-                profile?.full_name?.[0]?.toUpperCase() || <User size={24} />
-              )}
-            </div>
-            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a]">
-              {profile?.full_name || 'Student Name'}
-            </h2>
-            <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-[#ffffff] text-[#ee6a2a] font-mono text-xs font-bold shadow-sm">
-              ID: {profile?.student_id || 'N/A'}
-            </span>
-          </div>
-
-          {/* QR Code Frame with Pulse Ring */}
-          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center">
+          {/* QR Code Container with Pulse Frame */}
+          <div className="relative my-5 p-5 bg-[#f8fafc] rounded-[20px] border border-[#e2e8f0] shadow-sm flex items-center justify-center">
             <div
-              className="absolute inset-[-6px] rounded-[26px] border-2 border-[rgba(0,0,0,0.06)] opacity-55 pointer-events-none"
+              className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
               style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
             />
             <QRCodeSVG
-              id="student-qr-svg"
-              value={qrPayload}
-              size={200}
+              id="student-id-qr"
+              value={studentQrData}
+              size={180}
               level="H"
               includeMargin={false}
-              fgColor="#1a1a1a"
+              fgColor="#005a36"
             />
           </div>
 
-          {/* Info Card */}
-          <div className="flex items-start gap-2.5 bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-4 py-3 w-full">
-            <Info size={15} className="text-[#7a7a7a] shrink-0 mt-0.5" />
-            <p className="text-[#7a7a7a] text-xs leading-relaxed">
-              This is your <strong>permanent student ID QR</strong>. Keep it on your device or print it for daily classroom scanning.
-            </p>
-          </div>
+          <p className="text-xs text-[#64748b] leading-relaxed max-w-xs">
+            Present this static ID QR code to your instructor for rapid scanner verification
+          </p>
 
-          {/* Actions */}
-          <div className="flex gap-2.5 w-full">
-            <button onClick={handleDownload} className="btn-secondary flex-1 justify-center py-3.5">
-              <Download size={15} />
-              Download PNG
-            </button>
+          {/* Action Buttons */}
+          <div className="flex gap-2.5 w-full mt-6">
             <button
-              onClick={() => navigator.share?.({ title: 'My QSAMS QR', text: `Student ID: ${profile?.student_id}` })}
-              className="btn-primary flex-1 justify-center py-3.5"
+              onClick={downloadQR}
+              className="btn-primary flex-1 justify-center text-xs py-3.5"
             >
-              <Share2 size={15} />
-              Share ID
+              {downloaded ? (
+                <><Check size={15} /> Saved!</>
+              ) : (
+                <><Download size={15} /> Save to Gallery</>
+              )}
             </button>
           </div>
+        </div>
+
+        {/* Security Indicator */}
+        <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#64748b]">
+          <Shield size={12} className="text-[#005a36]" />
+          <span>Official Notre Dame of Midsayap College QR Credential</span>
         </div>
       </div>
     </div>

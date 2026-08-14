@@ -1,181 +1,165 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
-import Badge from '../../components/common/Badge'
 import Spinner from '../../components/common/Spinner'
-import { ArrowLeft, Calendar, Clock, BookOpen, CheckCircle } from 'lucide-react'
+import Badge from '../../components/common/Badge'
+import {
+  ArrowLeft, BookOpen, Clock, MapPin,
+  Calendar, CheckCircle, AlertTriangle, User
+} from 'lucide-react'
 import { format, parseISO } from 'date-fns'
 
 export default function StudentClassPage() {
   const { classId } = useParams()
   const { profile } = useAuth()
-  const [classData, setClassData] = useState(null)
+  const navigate = useNavigate()
+
+  const [classInfo, setClassInfo] = useState(null)
+  const [sessions, setSessions] = useState([])
   const [logs, setLogs] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!profile?.id || !classId) return
-    const load = async () => {
-      try {
-        const [{ data: cls }, { data: attendanceLogs }] = await Promise.all([
-          supabase
-            .from('classes')
-            .select('*')
-            .eq('id', classId)
-            .single(),
-          supabase
-            .from('attendance_logs')
-            .select('*, attendance_sessions(date)')
-            .eq('class_id', classId)
-            .eq('student_id', profile.id)
-            .order('marked_at', { ascending: false })
-        ])
-        setClassData(cls)
-        setLogs(attendanceLogs || [])
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+    const fetchClassData = async () => {
+      setLoading(true)
+
+      const [{ data: cls }, { data: sessList }, { data: logList }] = await Promise.all([
+        supabase.from('classes').select('*, profiles:teacher_id(full_name)').eq('id', classId).single(),
+        supabase.from('attendance_sessions').select('*').eq('class_id', classId).order('date', { ascending: false }),
+        supabase.from('attendance_logs').select('*').eq('class_id', classId).eq('student_id', profile.id),
+      ])
+
+      setClassInfo(cls)
+      setSessions(sessList || [])
+      setLogs(logList || [])
+      setLoading(false)
     }
-    load()
-  }, [profile?.id, classId])
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#ffffff] flex flex-col justify-center items-center py-20">
-        <Spinner size="xl" />
-      </div>
-    )
-  }
+    if (classId && profile?.id) {
+      fetchClassData()
+    }
+  }, [classId, profile?.id])
 
-  if (!classData) {
-    return (
-      <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] flex flex-col justify-center items-center py-20">
-        <p className="text-sm text-[#7a7a7a]">Class not found.</p>
-        <Link to="/student" className="btn-secondary mt-4">Return to Dashboard</Link>
-      </div>
-    )
-  }
+  const totalSessions = sessions.length
+  const presentCount = logs.filter(l => l.status === 'present' || l.status === 'late').length
+  const rate = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0
 
-  const total = logs.length
-  const present = logs.filter(l => l.status === 'present' || l.status === 'late').length
-  const absent = logs.filter(l => l.status === 'absent').length
-  const rate = total > 0 ? Math.round((present / total) * 100) : 0
+  const logMap = new Map(logs.map(l => [l.session_id, l]))
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center"><Spinner size="xl" /></div>
+  )
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
       <Navbar />
 
-      {/* Header Banner */}
-      <div className="bg-[#f5f5f5] border-b border-[rgba(0,0,0,0.06)]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Link
-            to="/student"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#ee6a2a] hover:underline mb-4 transition-colors"
-          >
-            <ArrowLeft size={15} /> Back to Dashboard
-          </Link>
+      {/* Main Container */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Back Link */}
+        <button
+          onClick={() => navigate('/student')}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
+        >
+          <ArrowLeft size={15} /> Back to Dashboard
+        </button>
 
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <span className="text-xs uppercase font-bold tracking-wider text-[#7a7a7a]">Course Attendance</span>
-              <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a] mt-0.5 mb-2">
-                {classData.name}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4 text-[#7a7a7a] text-xs">
-                {classData.schedule && (
-                  <div className="flex items-center gap-1.5 bg-[#ffffff] px-3 py-1 rounded-full border border-[rgba(0,0,0,0.06)]">
-                    <Clock size={13} className="text-[#ee6a2a]" /> {classData.schedule}
-                  </div>
-                )}
-                {classData.room && (
-                  <div className="flex items-center gap-1.5 bg-[#ffffff] px-3 py-1 rounded-full border border-[rgba(0,0,0,0.06)]">
-                    <BookOpen size={13} className="text-[#ee6a2a]" /> {classData.room}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Attendance Progress Ring Mini */}
-            <div className="bg-[#ffffff] border border-[rgba(0,0,0,0.06)] rounded-[20px] p-4 flex items-center gap-4 shadow-sm min-w-[240px]">
-              <svg width="60" height="60" viewBox="0 0 60 60" className="shrink-0">
-                <circle cx="30" cy="30" r="24" fill="none" stroke="#ebebeb" strokeWidth="6" />
-                <circle
-                  cx="30"
-                  cy="30"
-                  r="24"
-                  fill="none"
-                  stroke="#ee6a2a"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  pathLength="100"
-                  strokeDasharray={`${rate} 100`}
-                  transform="rotate(-90 30 30)"
-                />
-                <text x="30" y="35" textAnchor="middle" className="font-['Source_Serif_4',Georgia,serif] font-bold text-[14px] fill-[#1a1a1a]">
-                  {rate}%
-                </text>
-              </svg>
-              <div className="flex flex-col">
-                <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[15px] text-[#1a1a1a]">
-                  {present} of {total} sessions
-                </span>
-                <span className="text-[11px] text-[#7a7a7a] mt-0.5">
-                  {absent} missed session{absent === 1 ? '' : 's'}
-                </span>
-              </div>
-            </div>
+        {/* Institutional Forest Green Header Banner */}
+        <div className="ndmc-banner mb-6">
+          <span className="text-[11px] font-mono tracking-wider opacity-90 block mb-1">
+            Student Course Attendance
+          </span>
+          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            {classInfo?.name}
+          </h1>
+          {classInfo?.description && (
+            <p className="text-xs opacity-90 mt-1">{classInfo.description}</p>
+          )}
+          <div className="flex flex-wrap gap-2.5 text-xs mt-3">
+            {classInfo?.profiles?.full_name && (
+              <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
+                <User size={12} /> Instructor: {classInfo.profiles.full_name}
+              </span>
+            )}
+            {classInfo?.schedule && (
+              <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
+                <Clock size={12} /> {classInfo.schedule}
+              </span>
+            )}
+            {classInfo?.room && (
+              <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
+                <MapPin size={12} /> {classInfo.room}
+              </span>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] overflow-hidden shadow-sm">
-          <div className="px-6 py-4 border-b border-[rgba(0,0,0,0.06)] flex items-center justify-between">
+        {/* Stat Summary Band */}
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-4 text-center shadow-sm">
+            <span className="text-xs text-[#64748b] font-bold uppercase tracking-wider">Attendance Rate</span>
+            <p className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold text-[#005a36] mt-1">{rate}%</p>
+          </div>
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-4 text-center shadow-sm">
+            <span className="text-xs text-[#64748b] font-bold uppercase tracking-wider">Attended</span>
+            <p className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold text-[#15803d] mt-1">{presentCount}</p>
+          </div>
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-4 text-center shadow-sm">
+            <span className="text-xs text-[#64748b] font-bold uppercase tracking-wider">Total Sessions</span>
+            <p className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold text-[#0f172a] mt-1">{totalSessions}</p>
+          </div>
+        </div>
+
+        {/* Session Attendance Records */}
+        <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] overflow-hidden shadow-sm">
+          <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-[#ee6a2a]" />
-              <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#1a1a1a]">
-                Attendance History
+              <Calendar size={16} className="text-[#005a36]" />
+              <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a]">
+                Course Attendance History
               </h2>
             </div>
-            <span className="text-xs font-semibold text-[#7a7a7a]">
-              {logs.length} Total Record{logs.length === 1 ? '' : 's'}
-            </span>
+            <span className="text-xs font-semibold text-[#64748b]">{sessions.length} Recorded</span>
           </div>
 
-          {logs.length === 0 ? (
-            <div className="p-12 text-center text-[#7a7a7a] text-xs">
+          {sessions.length === 0 ? (
+            <div className="p-10 text-center text-[#64748b] text-xs">
               No attendance sessions recorded for this class yet.
             </div>
           ) : (
-            <div className="divide-y divide-[rgba(0,0,0,0.06)]">
-              {logs.map(log => {
-                const dateObj = log.attendance_sessions?.date
-                  ? parseISO(log.attendance_sessions.date)
-                  : parseISO(log.marked_at)
+            <div className="divide-y divide-[#e2e8f0]">
+              {sessions.map(sess => {
+                const log = logMap.get(sess.id)
+                const status = log ? log.status : 'absent'
+
                 return (
-                  <div key={log.id} className="flex items-center justify-between px-6 py-4 hover:bg-[#e2e2e2]/50 transition-colors">
+                  <div
+                    key={sess.id}
+                    className="px-6 py-3.5 flex items-center justify-between hover:bg-[#f8fafc] transition-colors"
+                  >
                     <div>
-                      <p className="text-sm font-semibold text-[#1a1a1a]">
-                        {format(dateObj, 'EEEE, MMMM d, yyyy')}
+                      <p className="font-semibold text-sm text-[#0f172a]">
+                        {format(parseISO(sess.date), 'EEEE, MMMM d, yyyy')}
                       </p>
-                      <p className="text-xs text-[#7a7a7a] mt-0.5">
-                        Recorded at {format(parseISO(log.marked_at), 'h:mm a')} • Method: {log.method || 'QR'}
+                      <p className="text-xs text-[#64748b] flex items-center gap-1.5 mt-0.5">
+                        <Clock size={11} className="text-[#005a36]" />
+                        {log?.marked_at
+                          ? `Recorded at ${format(parseISO(log.marked_at), 'h:mm a')}`
+                          : 'Unrecorded / Missed'}
                       </p>
                     </div>
-                    <div>
-                      <Badge status={log.status} />
-                    </div>
+
+                    <Badge status={status} />
                   </div>
                 )
               })}
             </div>
           )}
         </div>
+
       </div>
     </div>
   )

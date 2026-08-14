@@ -147,23 +147,23 @@ export default function KioskMode({ classId }) {
     <div className="flex flex-col items-center gap-5">
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-1.5 bg-[#ffffff] border border-[rgba(0,0,0,0.06)] rounded-full px-3.5 py-1 mb-2 text-xs font-bold text-[#ee6a2a] shadow-sm">
+        <div className="inline-flex items-center gap-1.5 bg-[#e6f2ec] border border-[#005a36]/20 rounded-full px-3.5 py-1 mb-2 text-xs font-bold text-[#005a36] shadow-sm">
           <Tv2 size={13} />
           <span>Kiosk Projection</span>
         </div>
-        <p className="text-[#7a7a7a] text-xs">Students scan this QR code using the QSAMS mobile app</p>
+        <p className="text-[#64748b] text-xs">Students scan this QR code using the QSAMS mobile app</p>
       </div>
 
       {/* QR Code Container with Pulse Ring */}
       <div className="relative">
         {creating ? (
-          <div className="w-[220px] h-[220px] rounded-[20px] bg-[#ffffff] flex items-center justify-center shadow-sm">
-            <div className="w-8 h-8 border-3 border-[#ebebeb] border-t-[#ee6a2a] rounded-full animate-spin" />
+          <div className="w-[220px] h-[220px] rounded-[20px] bg-[#ffffff] flex items-center justify-center shadow-sm border border-[#e2e8f0]">
+            <div className="w-8 h-8 border-3 border-[#e2e8f0] border-t-[#005a36] rounded-full animate-spin" />
           </div>
         ) : session ? (
-          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center">
+          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
             <div
-              className="absolute inset-[-6px] rounded-[26px] border-2 border-[rgba(0,0,0,0.06)] opacity-55 pointer-events-none"
+              className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
               style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
             />
             <QRCodeSVG
@@ -171,32 +171,32 @@ export default function KioskMode({ classId }) {
               size={210}
               level="H"
               includeMargin={false}
-              fgColor="#1a1a1a"
+              fgColor="#005a36"
             />
           </div>
         ) : null}
 
         {isExpiringSoon && session && (
-          <div className="absolute inset-0 rounded-[20px] border-2 border-[#ee6a2a] animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-[20px] border-2 border-[#d97706] animate-pulse pointer-events-none" />
         )}
       </div>
 
       {/* Timer Bar */}
       {session && (
         <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-          <div className="w-full h-2 bg-[#ffffff] rounded-full overflow-hidden border border-[rgba(0,0,0,0.06)]">
+          <div className="w-full h-2 bg-[#e2e8f0] rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full bg-[#ee6a2a] transition-all duration-1000"
+              className="h-full rounded-full bg-[#005a36] transition-all duration-1000"
               style={{ width: `${pct}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-between w-full text-xs font-semibold text-[#7a7a7a]">
+          <div className="flex items-center justify-between w-full text-xs font-semibold text-[#64748b]">
             <span className="flex items-center gap-1">
-              <Clock size={12} className="text-[#ee6a2a]" />
+              <Clock size={12} className="text-[#005a36]" />
               Token expires in
             </span>
-            <span className="font-mono font-bold text-[#1a1a1a]">
+            <span className="font-mono font-bold text-[#0f172a]">
               {formatTime(timeLeft)}
             </span>
           </div>
@@ -204,13 +204,13 @@ export default function KioskMode({ classId }) {
       )}
 
       {/* Security Note */}
-      <div className="flex items-center gap-1.5 text-[11px] text-[#7a7a7a]">
-        <Shield size={12} className="text-[#ee6a2a]" />
+      <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
+        <Shield size={12} className="text-[#005a36]" />
         <span>Rotating token prevents photo proxy attendance</span>
       </div>
 
       {error && (
-        <div className="text-[#B91C1C] text-xs bg-[#FEE2E2] border border-[#FCA5A5] rounded-[14px] px-3.5 py-2">
+        <div className="text-[#b91c1c] text-xs bg-[#fee2e2] border border-[#fca5a5] rounded-[14px] px-3.5 py-2">
           {error}
         </div>
       )}

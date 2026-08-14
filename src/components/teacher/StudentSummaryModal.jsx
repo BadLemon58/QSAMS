@@ -74,18 +74,18 @@ export default function StudentSummaryModal({ student, classId, className, onClo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
-      <div className="bg-[#ffffff] text-[#1a1a1a] w-full max-w-lg p-6 rounded-[24px] shadow-2xl border border-[rgba(0,0,0,0.06)] relative max-h-[90vh] flex flex-col">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-lg p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative max-h-[90vh] flex flex-col">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#ebebeb] flex items-center justify-center text-[#7a7a7a] hover:text-[#1a1a1a] transition-colors"
+          className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
           <X size={16} />
         </button>
 
         {/* Student Profile Header */}
         <div className="flex items-center gap-3.5 mb-5 pr-8">
-          <div className="w-12 h-12 rounded-full bg-[#f7b500] text-[#000000] flex items-center justify-center text-lg font-bold shadow-sm shrink-0 overflow-hidden">
+          <div className="w-12 h-12 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center text-lg font-bold shadow-sm shrink-0 overflow-hidden">
             {student?.avatar_url ? (
               <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -93,10 +93,10 @@ export default function StudentSummaryModal({ student, classId, className, onClo
             )}
           </div>
           <div>
-            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a] leading-tight">
+            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] leading-tight">
               {student?.full_name}
             </h2>
-            <p className="text-xs text-[#7a7a7a] font-mono mt-0.5">
+            <p className="text-xs text-[#005a36] font-mono font-semibold mt-0.5">
               ID: {student?.student_id || 'N/A'} • {className}
             </p>
           </div>
@@ -104,54 +104,54 @@ export default function StudentSummaryModal({ student, classId, className, onClo
 
         {/* Stats Summary Grid */}
         <div className="grid grid-cols-4 gap-2 mb-5">
-          <div className="bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] p-2.5 text-center">
-            <p className={`font-['Source_Serif_4',Georgia,serif] text-xl font-bold ${stats.rate >= 80 ? 'text-[#15803D]' : stats.rate >= 60 ? 'text-[#A16207]' : 'text-[#B91C1C]'}`}>
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-2.5 text-center">
+            <p className={`font-['Source_Serif_4',Georgia,serif] text-xl font-bold ${stats.rate >= 80 ? 'text-[#15803d]' : stats.rate >= 60 ? 'text-[#d97706]' : 'text-[#b91c1c]'}`}>
               {stats.rate}%
             </p>
-            <p className="text-[10px] uppercase tracking-wider text-[#7a7a7a] font-bold mt-0.5">Rate</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#64748b] font-bold mt-0.5">Rate</p>
           </div>
-          <div className="bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] p-2.5 text-center">
-            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#15803D]">{stats.present}</p>
-            <p className="text-[10px] uppercase tracking-wider text-[#7a7a7a] font-bold mt-0.5">Present</p>
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-2.5 text-center">
+            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#15803d]">{stats.present}</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#64748b] font-bold mt-0.5">Present</p>
           </div>
-          <div className="bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] p-2.5 text-center">
-            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#A16207]">{stats.late}</p>
-            <p className="text-[10px] uppercase tracking-wider text-[#7a7a7a] font-bold mt-0.5">Late</p>
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-2.5 text-center">
+            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#d97706]">{stats.late}</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#64748b] font-bold mt-0.5">Late</p>
           </div>
-          <div className="bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] p-2.5 text-center">
-            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#B91C1C]">{stats.absent}</p>
-            <p className="text-[10px] uppercase tracking-wider text-[#7a7a7a] font-bold mt-0.5">Absent</p>
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-2.5 text-center">
+            <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#b91c1c]">{stats.absent}</p>
+            <p className="text-[10px] uppercase tracking-wider text-[#64748b] font-bold mt-0.5">Absent</p>
           </div>
         </div>
 
         {/* Attendance History List */}
-        <h3 className="text-xs font-bold text-[#7a7a7a] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <Calendar size={13} className="text-[#ee6a2a]" /> Session History ({logs.length})
+        <h3 className="text-xs font-bold text-[#005a36] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <Calendar size={13} /> Session History ({logs.length})
         </h3>
 
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[160px]">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10">
               <Spinner size="md" />
-              <p className="text-xs text-[#7a7a7a] mt-2 font-medium">Loading records...</p>
+              <p className="text-xs text-[#64748b] mt-2 font-medium">Loading records...</p>
             </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-10 bg-[#f5f5f5] rounded-[16px]">
-              <AlertTriangle size={24} className="text-[#7a7a7a] mx-auto mb-2" />
-              <p className="text-xs text-[#7a7a7a]">No attendance sessions recorded yet</p>
+            <div className="text-center py-10 bg-[#f8fafc] rounded-[16px]">
+              <AlertTriangle size={24} className="text-[#64748b] mx-auto mb-2" />
+              <p className="text-xs text-[#64748b]">No attendance sessions recorded yet</p>
             </div>
           ) : (
             logs.map(log => (
               <div
                 key={log.sessionId}
-                className="flex items-center justify-between bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-3.5 py-2.5 hover:bg-[#ebebeb] transition-colors"
+                className="flex items-center justify-between bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] px-3.5 py-2.5 hover:bg-[#e6f2ec]/40 transition-colors"
               >
                 <div>
-                  <p className="text-sm font-semibold text-[#1a1a1a]">
+                  <p className="text-sm font-semibold text-[#0f172a]">
                     {format(parseISO(log.date), 'EEEE, MMM d, yyyy')}
                   </p>
-                  <p className="text-[11px] text-[#7a7a7a] flex items-center gap-1.5 mt-0.5">
-                    <Clock size={11} className="text-[#ee6a2a]" />
+                  <p className="text-[11px] text-[#64748b] flex items-center gap-1.5 mt-0.5">
+                    <Clock size={11} className="text-[#005a36]" />
                     {log.markedAt
                       ? format(parseISO(log.markedAt), 'h:mm a')
                       : 'Unmarked'}
@@ -166,7 +166,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-[rgba(0,0,0,0.06)] mt-4">
+        <div className="pt-4 border-t border-[#e2e8f0] mt-4">
           <button onClick={onClose} className="btn-secondary w-full justify-center text-sm py-3">
             Close Summary
           </button>

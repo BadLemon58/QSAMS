@@ -30,27 +30,27 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
     <div className="flex flex-col gap-4 font-['Gambarino',system-ui,sans-serif]">
       {/* Stat Pair Cards */}
       <div className="grid grid-cols-4 gap-2.5">
-        <div className="bg-[#ebebeb] rounded-[18px] p-3 text-center border border-[rgba(0,0,0,0.06)]">
-          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a]">{counts.total}</p>
-          <p className="text-[#7a7a7a] text-[10px] uppercase font-bold tracking-wider">Enrolled</p>
+        <div className="bg-[#ffffff] rounded-[18px] p-3 text-center border border-[#e2e8f0] shadow-sm">
+          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a]">{counts.total}</p>
+          <p className="text-[#64748b] text-[10px] uppercase font-bold tracking-wider">Enrolled</p>
         </div>
-        <div className="bg-[#ebebeb] rounded-[18px] p-3 text-center border border-[rgba(0,0,0,0.06)]">
-          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#15803D]">{counts.present}</p>
-          <p className="text-[#7a7a7a] text-[10px] uppercase font-bold tracking-wider">Present</p>
+        <div className="bg-[#ffffff] rounded-[18px] p-3 text-center border border-[#e2e8f0] shadow-sm">
+          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#15803d]">{counts.present}</p>
+          <p className="text-[#64748b] text-[10px] uppercase font-bold tracking-wider">Present</p>
         </div>
-        <div className="bg-[#ebebeb] rounded-[18px] p-3 text-center border border-[rgba(0,0,0,0.06)]">
-          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#A16207]">{counts.late}</p>
-          <p className="text-[#7a7a7a] text-[10px] uppercase font-bold tracking-wider">Late</p>
+        <div className="bg-[#ffffff] rounded-[18px] p-3 text-center border border-[#e2e8f0] shadow-sm">
+          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#d97706]">{counts.late}</p>
+          <p className="text-[#64748b] text-[10px] uppercase font-bold tracking-wider">Late</p>
         </div>
-        <div className="bg-[#ebebeb] rounded-[18px] p-3 text-center border border-[rgba(0,0,0,0.06)]">
-          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#B91C1C]">{counts.absent}</p>
-          <p className="text-[#7a7a7a] text-[10px] uppercase font-bold tracking-wider">Absent</p>
+        <div className="bg-[#ffffff] rounded-[18px] p-3 text-center border border-[#e2e8f0] shadow-sm">
+          <p className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#b91c1c]">{counts.absent}</p>
+          <p className="text-[#64748b] text-[10px] uppercase font-bold tracking-wider">Absent</p>
         </div>
       </div>
 
       {/* Search Input */}
       <div className="relative">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
         <input
           type="text"
           className="input-field pl-10"
@@ -60,66 +60,67 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
         />
       </div>
 
-      {/* Table Card */}
-      <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] overflow-hidden shadow-sm">
+      {/* Table Card (Matches Institutional Assessment Table Style from Image) */}
+      <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] overflow-hidden shadow-sm">
         {loading ? (
           <div className="p-8 text-center">
-            <div className="w-6 h-6 border-2 border-[#ebebeb] border-t-[#ee6a2a] rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-[#7a7a7a] text-xs font-semibold">Loading classroom roster...</p>
+            <div className="w-6 h-6 border-2 border-[#e2e8f0] border-t-[#005a36] rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-[#64748b] text-xs font-semibold">Loading classroom roster...</p>
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
-            <p className="text-[#7a7a7a] text-xs">No students matching search filter</p>
+            <p className="text-[#64748b] text-xs">No students matching search filter</p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[rgba(0,0,0,0.06)] bg-[#f5f5f5]/60">
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-[#7a7a7a] uppercase tracking-wider">#</th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-[#7a7a7a] uppercase tracking-wider">Student</th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-[#7a7a7a] uppercase tracking-wider hidden sm:table-cell">ID</th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-[#7a7a7a] uppercase tracking-wider">Status</th>
-                <th className="text-left px-4 py-3 text-[10px] font-bold text-[#7a7a7a] uppercase tracking-wider">Override</th>
+              {/* Forest Green Table Header like the Assessment screenshot */}
+              <tr className="bg-[#005a36] text-[#ffffff]">
+                <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-white">#</th>
+                <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-white">Student Name</th>
+                <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-white hidden sm:table-cell">ID Number</th>
+                <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-white">Status</th>
+                <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-white">Override</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[rgba(0,0,0,0.06)]">
+            <tbody className="divide-y divide-[#e2e8f0]">
               {filtered.map((student, idx) => (
                 <tr
                   key={student.id}
-                  className="hover:bg-[#e2e2e2]/60 transition-colors group"
+                  className="hover:bg-[#f8fafc] transition-colors group"
                 >
-                  <td className="px-4 py-3 text-[#7a7a7a] text-xs font-mono">{idx + 1}</td>
+                  <td className="px-4 py-3 text-[#64748b] text-xs font-mono">{idx + 1}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-[#f7b500] text-[#000000] flex items-center justify-center text-xs font-bold shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden">
                         {student.avatar_url ? (
                           <img src={student.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : (
                           student.full_name?.[0]?.toUpperCase() || <User size={12} />
                         )}
                       </div>
-                      <span className="text-sm font-semibold text-[#1a1a1a]">{student.full_name}</span>
+                      <span className="text-sm font-semibold text-[#0f172a]">{student.full_name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-xs text-[#7a7a7a] hidden sm:table-cell font-mono">
+                  <td className="px-4 py-3 text-xs text-[#64748b] hidden sm:table-cell font-mono">
                     {student.student_id || '—'}
                   </td>
                   <td className="px-4 py-3">
                     {student.status ? (
                       <Badge status={student.status} />
                     ) : (
-                      <span className="text-[#7a7a7a] text-xs italic">Unrecorded</span>
+                      <span className="text-[#94a3b8] text-xs italic">Unrecorded</span>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     {updating === student.id ? (
-                      <div className="w-4 h-4 border-2 border-[#DDD9D3] border-t-[#ee6a2a] rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[#cbd5e1] border-t-[#005a36] rounded-full animate-spin" />
                     ) : (
                       <div className="relative inline-block">
                         <select
                           value={student.status || ''}
                           onChange={e => handleChange(student.id, e.target.value)}
-                          className="appearance-none bg-[#ffffff] border border-[#DDD9D3] text-[#1a1a1a] text-xs font-semibold rounded-[12px] pl-2.5 pr-6 py-1.5 cursor-pointer hover:border-[#ee6a2a] focus:outline-none focus:border-[#ee6a2a] shadow-sm transition-colors"
+                          className="appearance-none bg-[#ffffff] border border-[#cbd5e1] text-[#0f172a] text-xs font-semibold rounded-[12px] pl-2.5 pr-6 py-1.5 cursor-pointer hover:border-[#005a36] focus:outline-none focus:border-[#005a36] shadow-sm transition-colors"
                         >
                           <option value="" disabled>Mark...</option>
                           {STATUS_OPTIONS.map(s => (
@@ -128,7 +129,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
                             </option>
                           ))}
                         </select>
-                        <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#7a7a7a] pointer-events-none" />
+                        <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
                       </div>
                     )}
                   </td>

@@ -39,25 +39,35 @@
 }
 
 @layer components {
-  /* Chalk Register Surface Card */
+  /* Institutional Surface Card */
   .glass-card {
-    background: #ebebeb;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
-    color: #1a1a1a;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 
-  /* Chalk Display Heading */
+  /* NDMC Institutional Banner (Matches Assessment Image) */
+  .ndmc-banner {
+    background: #005a36;
+    color: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 2px 6px rgba(0, 90, 54, 0.15);
+  }
+
+  /* Display Heading */
   .display-title {
     font-family: 'Source Serif 4', Georgia, serif;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #0f172a;
   }
 
-  /* Primary Brand Button (Chalk Orange) */
+  /* Primary Brand Button (NDMC Forest Green) */
   .btn-primary {
-    background: #ee6a2a;
-    color: #000000;
+    background: #005a36;
+    color: #ffffff;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 16px;
@@ -68,22 +78,24 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 90, 54, 0.2);
   }
 
   .btn-primary:hover {
-    background: color-mix(in srgb, #ee6a2a 90%, black 10%);
+    background: #00462a;
     transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 90, 54, 0.25);
   }
 
   .btn-primary:active {
     transform: scale(0.98);
   }
 
-  /* Secondary Button (Chalk Surface Button) */
+  /* Secondary Button (Crisp White / Slate Border) */
   .btn-secondary {
-    background: #ebebeb;
-    color: #1a1a1a;
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+    color: #005a36;
+    border: 1px solid #cbd5e1;
     padding: 0.75rem 1.5rem;
     border-radius: 16px;
     font-weight: 600;
@@ -96,7 +108,8 @@
   }
 
   .btn-secondary:hover {
-    background: #e2e2e2;
+    background: #f1f5f9;
+    border-color: #94a3b8;
   }
 
   .btn-secondary:active {
@@ -105,9 +118,9 @@
 
   /* Destructive / Danger Button */
   .btn-danger {
-    background: #FEE2E2;
-    color: #B91C1C;
-    border: 1px solid #FCA5A5;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
     padding: 0.75rem 1.5rem;
     border-radius: 16px;
     font-weight: 600;
@@ -120,14 +133,14 @@
   }
 
   .btn-danger:hover {
-    background: #FECACA;
+    background: #fecaca;
   }
 
   /* Success Button */
   .btn-success {
-    background: #DCFCE7;
-    color: #15803D;
-    border: 1px solid #86EFAC;
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
     padding: 0.75rem 1.5rem;
     border-radius: 16px;
     font-weight: 600;
@@ -140,7 +153,7 @@
   }
 
   .btn-success:hover {
-    background: #BBF7D0;
+    background: #bbf7d0;
   }
 
   .btn-sm {
@@ -149,34 +162,34 @@
     border-radius: 12px;
   }
 
-  /* Input styles (Recessed Surface #f5f5f5) */
+  /* Input styles (Recessed Surface #f8fafc) */
   .input-field {
     width: 100%;
-    background: #f5f5f5;
-    border: 1px solid #DDD9D3;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
     border-radius: 16px;
     padding: 0.75rem 1rem;
-    color: #1a1a1a;
+    color: #0f172a;
     font-size: 0.9rem;
     transition: all 0.16s ease-out;
     outline: none;
   }
 
   .input-field:focus {
-    border-color: #ee6a2a;
-    box-shadow: 0 0 0 3px rgba(238, 106, 42, 0.15);
+    border-color: #005a36;
+    box-shadow: 0 0 0 3px rgba(0, 90, 54, 0.15);
     background: #ffffff;
   }
 
   .input-field::placeholder {
-    color: #7a7a7a;
+    color: #94a3b8;
   }
 
   /* Status badges */
   .badge-present {
-    background: #DCFCE7;
-    color: #15803D;
-    border: 1px solid #86EFAC;
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
     padding: 0.2rem 0.65rem;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -187,9 +200,9 @@
   }
 
   .badge-absent {
-    background: #FEE2E2;
-    color: #B91C1C;
-    border: 1px solid #FCA5A5;
+    background: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
     padding: 0.2rem 0.65rem;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -200,9 +213,9 @@
   }
 
   .badge-late {
-    background: #FEF9C3;
-    color: #A16207;
-    border: 1px solid #FDE047;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
     padding: 0.2rem 0.65rem;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -213,9 +226,9 @@
   }
 
   .badge-excused {
-    background: #E0E7FF;
-    color: #3730A3;
-    border: 1px solid #C7D2FE;
+    background: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
     padding: 0.2rem 0.65rem;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -231,7 +244,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #ee6a2a;
+    background: #005a36;
     animation: pulse 2s infinite;
   }
 }
@@ -293,7 +306,7 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 6mm 8mm 6mm 8mm;
+    margin: 6mm 8mm;
   }
 
   html, body {
@@ -347,41 +360,41 @@
   }
 
   #printable-report th {
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
+    background-color: #005a36 !important;
+    color: #ffffff !important;
     font-weight: 700 !important;
   }
 }
 
 /* ══════════════════════════════════════════════════════════════
-   CHALK REGISTER — STUDENT DASHBOARD DESIGN SYSTEM
+   NDMC INSTITUTIONAL DESIGN SYSTEM
    ══════════════════════════════════════════════════════════════ */
 :root {
-  --gesso-canvas: #ffffff;
-  --gesso-surface: #ebebeb;
-  --gesso-surface-elevated: #e2e2e2;
-  --gesso-surface-recessed: #f5f5f5;
-  --gesso-fg: #1a1a1a;
-  --gesso-fg-muted: #7a7a7a;
-  --gesso-divider: rgba(0, 0, 0, 0.04);
-  --gesso-accent: #ee6a2a;
-  --gesso-accent-2: #f7b500;
-  --gesso-on-accent: #000000;
-  --gesso-data-1: #8e3500;
-  --gesso-data-2: #b24400;
-  --gesso-data-3: #d65404;
-  --gesso-data-4: #f36e2f;
-  --gesso-data-5: #ff9466;
-  --gesso-data-6: #ffbca1;
+  --gesso-canvas: #f4f6f8;
+  --gesso-surface: #ffffff;
+  --gesso-surface-elevated: #f1f5f9;
+  --gesso-surface-recessed: #f8fafc;
+  --gesso-fg: #0f172a;
+  --gesso-fg-muted: #64748b;
+  --gesso-divider: #e2e8f0;
+  --gesso-accent: #005a36;
+  --gesso-accent-2: #d97706;
+  --gesso-on-accent: #ffffff;
+  --gesso-data-1: #005a36;
+  --gesso-data-2: #047857;
+  --gesso-data-3: #059669;
+  --gesso-data-4: #10b981;
+  --gesso-data-5: #34d399;
+  --gesso-data-6: #6ee7b7;
   --gesso-font-display: "Source Serif 4", Georgia, serif;
   --gesso-font-body: "Gambarino", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --gesso-radius-sm: 8px;
   --gesso-radius-md: 16px;
   --gesso-radius-lg: 24px;
   --gesso-radius-full: 9999px;
-  --gesso-shadow-sm: none;
-  --gesso-shadow-md: none;
-  --gesso-shadow-lg: 0 1px 2px rgba(0,0,0,0.04);
+  --gesso-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --gesso-shadow-md: 0 2px 4px rgba(0,0,0,0.06);
+  --gesso-shadow-lg: 0 4px 6px -1px rgba(0,0,0,0.08);
   --gesso-duration-fast: 160ms;
   --gesso-easing-default: ease-out;
 }
@@ -399,7 +412,7 @@
 
 @keyframes gesso-name-light {
   0% {
-    background: color-mix(in srgb, #ee6a2a 18%, transparent);
+    background: color-mix(in srgb, #005a36 18%, transparent);
   }
   100% {
     background: transparent;

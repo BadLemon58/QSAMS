@@ -144,253 +144,257 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
       <Navbar />
 
-      {/* Header Banner */}
-      <div className="bg-[#f5f5f5] border-b border-[rgba(0,0,0,0.06)]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <button
-            onClick={() => navigate(isTeacher ? '/teacher' : '/student')}
-            className="inline-flex items-center gap-2 text-xs font-semibold text-[#ee6a2a] hover:underline mb-4 transition-colors"
-          >
-            <ArrowLeft size={15} /> Back to Dashboard
-          </button>
-          <span className="text-xs uppercase font-bold tracking-wider text-[#7a7a7a]">Account Settings</span>
-          <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a] mt-0.5 mb-1">
+      {/* Header Container */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <button
+          onClick={() => navigate(isTeacher ? '/teacher' : '/student')}
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
+        >
+          <ArrowLeft size={15} /> Back to Dashboard
+        </button>
+
+        {/* Institutional Forest Green Header Banner */}
+        <div className="ndmc-banner mb-6">
+          <span className="text-[11px] font-mono tracking-wider opacity-90 block mb-1">
+            NDMC Account & Identity Settings
+          </span>
+          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold tracking-tight text-white">
             User Profile
           </h1>
-          <p className="text-[#7a7a7a] text-xs">
-            Manage your personal profile picture, identity details, and account security
+          <p className="text-xs opacity-90 mt-1">
+            Manage your personal profile picture, identity details, and account credentials
           </p>
         </div>
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="space-y-6">
 
-        {/* ── CARD 1: Profile & Avatar ── */}
-        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-6 sm:p-8 shadow-sm">
-          <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a] mb-5 flex items-center gap-2">
-            <User size={18} className="text-[#ee6a2a]" /> Personal Information
-          </h2>
+          {/* ── CARD 1: Profile & Avatar ── */}
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-5 flex items-center gap-2">
+              <User size={18} className="text-[#005a36]" /> Personal Information
+            </h2>
 
-          {profileMessage && (
-            <div className={`flex items-center gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
-              profileMessage.type === 'success'
-                ? 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]'
-                : 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]'
-            }`}>
-              {profileMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
-              <span>{profileMessage.text}</span>
-            </div>
-          )}
-
-          {/* Avatar Section */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-6 border-b border-[rgba(0,0,0,0.06)] mb-6">
-            <div className="relative group">
-              <div className="w-20 h-20 rounded-full bg-[#f7b500] text-[#000000] flex items-center justify-center text-2xl font-bold shadow-sm overflow-hidden border-2 border-[#ffffff]">
-                {uploadingAvatar ? (
-                  <Spinner size="md" />
-                ) : avatarUrl ? (
-                  <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  profile?.full_name?.[0]?.toUpperCase() || <User size={30} />
-                )}
+            {profileMessage && (
+              <div className={`flex items-center gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
+                profileMessage.type === 'success'
+                  ? 'bg-[#dcfce7] text-[#15803d] border border-[#86efac]'
+                  : 'bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5]'
+              }`}>
+                {profileMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+                <span>{profileMessage.text}</span>
               </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className="absolute bottom-0 right-0 p-1.5 rounded-full bg-[#ee6a2a] text-[#000000] hover:scale-105 transition-transform shadow-md"
-                title="Change Photo"
-              >
-                <Camera size={13} />
-              </button>
-            </div>
+            )}
 
-            <div className="space-y-2">
-              <p className="text-sm font-semibold text-[#1a1a1a]">Profile Picture</p>
-              <p className="text-xs text-[#7a7a7a]">JPG, PNG or GIF up to 2MB</p>
-              <div className="flex flex-wrap gap-2 pt-1">
+            {/* Avatar Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5 pb-6 border-b border-[#e2e8f0] mb-6">
+              <div className="relative group">
+                <div className="w-20 h-20 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center text-2xl font-bold shadow-sm overflow-hidden border-2 border-[#ffffff]">
+                  {uploadingAvatar ? (
+                    <Spinner size="md" />
+                  ) : avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                  ) : (
+                    profile?.full_name?.[0]?.toUpperCase() || <User size={30} />
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  className="btn-secondary btn-sm"
+                  className="absolute bottom-0 right-0 p-1.5 rounded-full bg-[#005a36] text-[#ffffff] hover:bg-[#00482b] transition-transform shadow-md"
+                  title="Change Photo"
                 >
-                  Upload New Photo
+                  <Camera size={13} />
                 </button>
-                {avatarUrl && (
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-[#0f172a]">Profile Picture</p>
+                <p className="text-xs text-[#64748b]">JPG, PNG or GIF up to 2MB</p>
+                <div className="flex flex-wrap gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={handleRemoveAvatar}
+                    onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingAvatar}
-                    className="px-3 py-1.5 rounded-[12px] bg-[#ffffff] text-[#B91C1C] border border-[#FCA5A5] text-xs font-semibold hover:bg-[#FEE2E2] transition-colors flex items-center gap-1"
+                    className="btn-secondary btn-sm"
                   >
-                    <Trash2 size={12} /> Remove
+                    Upload New Photo
                   </button>
-                )}
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      disabled={uploadingAvatar}
+                      className="px-3 py-1.5 rounded-[12px] bg-[#ffffff] text-[#b91c1c] border border-[#fca5a5] text-xs font-semibold hover:bg-[#fee2e2] transition-colors flex items-center gap-1"
+                    >
+                      <Trash2 size={12} /> Remove
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
             </div>
-          </div>
 
-          {/* Profile Form */}
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
-                  <input
-                    type="text"
-                    className="input-field pl-10"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
-                  <input
-                    type="email"
-                    className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#ebebeb]"
-                    value={user?.email || ''}
-                    disabled
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                  User Role
-                </label>
-                <div className="relative">
-                  <Shield size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
-                  <input
-                    type="text"
-                    className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#ebebeb] capitalize"
-                    value={profile?.role || 'user'}
-                    disabled
-                  />
-                </div>
-              </div>
-
-              {profile?.student_id && (
+            {/* Profile Form */}
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                    Student ID
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    Full Name
                   </label>
                   <div className="relative">
-                    <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
+                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="text"
-                      className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#ebebeb] font-mono"
-                      value={profile?.student_id}
+                      className="input-field pl-10"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <input
+                      type="email"
+                      className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9]"
+                      value={user?.email || ''}
                       disabled
                     />
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="pt-2 flex justify-end">
-              <button
-                type="submit"
-                disabled={savingProfile}
-                className="btn-primary"
-              >
-                {savingProfile ? <Spinner size="sm" /> : <Save size={15} />}
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    User Role
+                  </label>
+                  <div className="relative">
+                    <Shield size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <input
+                      type="text"
+                      className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] capitalize"
+                      value={profile?.role || 'user'}
+                      disabled
+                    />
+                  </div>
+                </div>
 
-        {/* ── CARD 2: Security & Password Change ── */}
-        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-6 sm:p-8 shadow-sm">
-          <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a] mb-2 flex items-center gap-2">
-            <KeyRound size={18} className="text-[#ee6a2a]" /> Security & Password
-          </h2>
-          <p className="text-[#7a7a7a] text-xs mb-5">
-            Ensure your account is using a strong password of at least 6 characters
-          </p>
+                {profile?.student_id && (
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                      Student ID
+                    </label>
+                    <div className="relative">
+                      <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                      <input
+                        type="text"
+                        className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] font-mono font-bold text-[#005a36]"
+                        value={profile?.student_id}
+                        disabled
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-          {passwordMessage && (
-            <div className={`flex items-center gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
-              passwordMessage.type === 'success'
-                ? 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]'
-                : 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]'
-            }`}>
-              {passwordMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
-              <span>{passwordMessage.text}</span>
-            </div>
-          )}
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="btn-primary"
+                >
+                  {savingProfile ? <Spinner size="sm" /> : <Save size={15} />}
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
 
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                  New Password
-                </label>
-                <div className="relative">
-                  <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
-                  <input
-                    type="password"
-                    className="input-field pl-10"
-                    placeholder="Min. 6 characters"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    required
-                  />
+          {/* ── CARD 2: Security & Password Change ── */}
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2 flex items-center gap-2">
+              <KeyRound size={18} className="text-[#005a36]" /> Security & Password
+            </h2>
+            <p className="text-[#64748b] text-xs mb-5">
+              Ensure your account is protected with a password of at least 6 characters
+            </p>
+
+            {passwordMessage && (
+              <div className={`flex items-center gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
+                passwordMessage.type === 'success'
+                  ? 'bg-[#dcfce7] text-[#15803d] border border-[#86efac]'
+                  : 'bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5]'
+              }`}>
+                {passwordMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+                <span>{passwordMessage.text}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    New Password
+                  </label>
+                  <div className="relative">
+                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <input
+                      type="password"
+                      className="input-field pl-10"
+                      placeholder="Min. 6 characters"
+                      value={newPassword}
+                      onChange={e => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <div className="relative">
+                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <input
+                      type="password"
+                      className="input-field pl-10"
+                      placeholder="Repeat new password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
-                  Confirm New Password
-                </label>
-                <div className="relative">
-                  <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#7a7a7a]" />
-                  <input
-                    type="password"
-                    className="input-field pl-10"
-                    placeholder="Repeat new password"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
+              <div className="pt-2 flex justify-end">
+                <button
+                  type="submit"
+                  disabled={savingPassword || !newPassword}
+                  className="btn-primary"
+                >
+                  {savingPassword ? <Spinner size="sm" /> : <Save size={15} />}
+                  Update Password
+                </button>
               </div>
-            </div>
+            </form>
+          </div>
 
-            <div className="pt-2 flex justify-end">
-              <button
-                type="submit"
-                disabled={savingPassword || !newPassword}
-                className="btn-primary"
-              >
-                {savingPassword ? <Spinner size="sm" /> : <Save size={15} />}
-                Update Password
-              </button>
-            </div>
-          </form>
         </div>
-
       </div>
     </div>
   )

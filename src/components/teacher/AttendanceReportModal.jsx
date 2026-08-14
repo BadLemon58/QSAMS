@@ -141,19 +141,19 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/40 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:static font-['Gambarino',system-ui,sans-serif]">
-      <div className="bg-[#ffffff] text-[#1a1a1a] w-full max-w-4xl p-6 sm:p-8 rounded-[24px] shadow-2xl border border-[rgba(0,0,0,0.06)] animate-fade-in relative my-auto max-h-[92vh] flex flex-col print:max-h-none print:shadow-none print:border-none print:bg-white print:text-black print:p-0">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-4xl p-6 sm:p-8 rounded-[24px] shadow-2xl border border-[#e2e8f0] animate-fade-in relative my-auto max-h-[92vh] flex flex-col print:max-h-none print:shadow-none print:border-none print:bg-white print:text-black print:p-0">
 
         {/* Modal Controls (Hidden in Print) */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-[rgba(0,0,0,0.06)] print:hidden">
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#e2e8f0] print:hidden">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#ebebeb] text-[#ee6a2a] flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center">
               <FileSpreadsheet size={18} />
             </div>
             <div>
-              <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a] leading-none">
+              <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] leading-none">
                 Attendance Report
               </h2>
-              <p className="text-xs text-[#7a7a7a] mt-1">Export Excel or print the official attendance summary</p>
+              <p className="text-xs text-[#64748b] mt-1">Export Excel or print the official attendance summary</p>
             </div>
           </div>
 
@@ -164,7 +164,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
               className="btn-secondary btn-sm flex items-center gap-1.5"
               title="Download formatted Excel workbook (.xlsx)"
             >
-              <FileSpreadsheet size={14} className="text-[#15803D]" />
+              <FileSpreadsheet size={14} className="text-[#15803d]" />
               <span>Export Excel</span>
             </button>
             <button
@@ -178,7 +178,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
             </button>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-[#ebebeb] flex items-center justify-center text-[#7a7a7a] hover:text-[#1a1a1a] transition-colors ml-1"
+              className="w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors ml-1"
             >
               <X size={16} />
             </button>
@@ -189,37 +189,37 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         <div id="printable-report" className="flex-1 overflow-y-auto print:overflow-visible">
 
           {/* Institutional Header */}
-          <div className="text-center pb-4 mb-4 print:pb-1.5 print:mb-2 border-b border-[rgba(0,0,0,0.06)] print:border-slate-300 print:text-black">
-            <p className="text-xs print:text-[9.5px] font-bold uppercase tracking-widest text-[#ee6a2a] print:text-slate-800">
+          <div className="text-center pb-4 mb-4 print:pb-1.5 print:mb-2 border-b border-[#e2e8f0] print:border-slate-300 print:text-black">
+            <p className="text-xs print:text-[9.5px] font-bold uppercase tracking-widest text-[#005a36] print:text-slate-800">
               Notre Dame of Midsayap College
             </p>
-            <h1 className="font-['Source_Serif_4',Georgia,serif] text-xl sm:text-2xl print:text-base font-bold text-[#1a1a1a] print:text-black tracking-tight mt-0.5">
+            <h1 className="font-['Source_Serif_4',Georgia,serif] text-xl sm:text-2xl print:text-base font-bold text-[#0f172a] print:text-black tracking-tight mt-0.5">
               QR Code-Based Student Attendance Monitoring System (QSAMS)
             </h1>
-            <p className="text-xs print:text-[9px] text-[#7a7a7a] print:text-slate-600 font-medium mt-0.5">
+            <p className="text-xs print:text-[9px] text-[#64748b] print:text-slate-600 font-medium mt-0.5">
               Official Class Attendance Summary Report
             </p>
           </div>
 
-          {/* Class Metadata Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-1.5 bg-[#f5f5f5] print:bg-slate-50 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[18px] print:rounded-lg p-4 print:p-2 mb-5 print:mb-2">
+          {/* Class Metadata Grid (Assessment Style) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-1.5 bg-[#f8fafc] print:bg-slate-50 border border-[#e2e8f0] print:border-slate-200 rounded-[18px] print:rounded-lg p-4 print:p-2 mb-5 print:mb-2">
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Class Name</p>
-              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">{classInfo?.name}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#64748b] tracking-wider">Class Name</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#0f172a] print:text-black truncate">{classInfo?.name}</p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Teacher</p>
-              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#64748b] tracking-wider">Teacher</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#0f172a] print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Schedule & Room</p>
-              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#64748b] tracking-wider">Schedule & Room</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#0f172a] print:text-black truncate">
                 {classInfo?.schedule || 'N/A'} {classInfo?.room ? `(${classInfo.room})` : ''}
               </p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Report Date</p>
-              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#64748b] tracking-wider">Report Date</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#0f172a] print:text-black">
                 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
@@ -227,49 +227,49 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 print:gap-1 mb-5 print:mb-2">
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#1a1a1a] print:text-black">{overallStats.totalStudents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Enrolled</p>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#0f172a] print:text-black">{overallStats.totalStudents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Enrolled</p>
             </div>
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#1a1a1a] print:text-indigo-700">{overallStats.totalSessions}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Sessions</p>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#005a36] print:text-emerald-700">{overallStats.totalSessions}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Sessions</p>
             </div>
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#15803D] print:text-emerald-700">{overallStats.totalPresents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Present</p>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#15803d] print:text-emerald-700">{overallStats.totalPresents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Present</p>
             </div>
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#A16207] print:text-amber-700">{overallStats.totalLates}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Late</p>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#d97706] print:text-amber-700">{overallStats.totalLates}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Late</p>
             </div>
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#B91C1C] print:text-red-700">{overallStats.totalAbsents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Absent</p>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#b91c1c] print:text-red-700">{overallStats.totalAbsents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Absent</p>
             </div>
-            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
-              <p className={`font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold ${overallStats.averageRate >= 80 ? 'text-[#15803D]' : overallStats.averageRate >= 60 ? 'text-[#A16207]' : 'text-[#B91C1C]'}`}>
+            <div className="bg-[#f8fafc] print:bg-slate-100 border border-[#e2e8f0] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className={`font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold ${overallStats.averageRate >= 80 ? 'text-[#15803d]' : overallStats.averageRate >= 60 ? 'text-[#d97706]' : 'text-[#b91c1c]'}`}>
                 {overallStats.averageRate}%
               </p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Avg Rate</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#64748b] font-bold mt-0.5">Avg Rate</p>
             </div>
           </div>
 
-          {/* Student Table */}
+          {/* Student Table (Forest Green Head) */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner size="lg" />
-              <p className="text-xs text-[#7a7a7a] mt-3">Compiling attendance records...</p>
+              <p className="text-xs text-[#64748b] mt-3">Compiling attendance records...</p>
             </div>
           ) : reportData.length === 0 ? (
-            <div className="p-8 text-center bg-[#f5f5f5] rounded-[18px]">
-              <p className="text-[#7a7a7a] text-xs">No attendance data recorded yet.</p>
+            <div className="p-8 text-center bg-[#f8fafc] rounded-[18px]">
+              <p className="text-[#64748b] text-xs">No attendance data recorded yet.</p>
             </div>
           ) : (
-            <div className="border border-[rgba(0,0,0,0.06)] print:border-slate-300 rounded-[18px] print:rounded-none overflow-hidden">
+            <div className="border border-[#e2e8f0] print:border-slate-300 rounded-[18px] print:rounded-none overflow-hidden shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[#f5f5f5] print:bg-slate-100 border-b border-[rgba(0,0,0,0.06)] print:border-slate-300 text-[10px] print:text-[8px] font-bold uppercase tracking-wider text-[#7a7a7a] print:text-black">
+                  <tr className="bg-[#005a36] text-white print:bg-[#005a36] print:text-white border-b border-[#00482b] text-[10px] print:text-[8px] font-bold uppercase tracking-wider">
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5 w-8">#</th>
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5">Student Name</th>
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5">ID Number</th>
@@ -279,16 +279,16 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center">Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[rgba(0,0,0,0.06)] print:divide-slate-200 text-xs print:text-[8.5px]">
+                <tbody className="divide-y divide-[#e2e8f0] print:divide-slate-200 text-xs print:text-[8.5px]">
                   {reportData.map((row, idx) => (
-                    <tr key={row.id} className="hover:bg-[#f5f5f5] print:hover:bg-transparent">
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-[#7a7a7a] print:text-black font-mono">{idx + 1}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-semibold text-[#1a1a1a] print:text-black">{row.name}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-mono text-[#7a7a7a] print:text-black">{row.studentId}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#15803D] print:text-black">{row.present}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#A16207] print:text-black">{row.late}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#B91C1C] print:text-black">{row.absent}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#1a1a1a] print:text-black">{row.rate}%</td>
+                    <tr key={row.id} className="hover:bg-[#f8fafc] print:hover:bg-transparent">
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-[#64748b] print:text-black font-mono">{idx + 1}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-semibold text-[#0f172a] print:text-black">{row.name}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-mono text-[#64748b] print:text-black">{row.studentId}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#15803d] print:text-black">{row.present}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#d97706] print:text-black">{row.late}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#b91c1c] print:text-black">{row.absent}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#005a36] print:text-black">{row.rate}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -297,16 +297,16 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
           )}
 
           {/* Institutional Sign-off Footer */}
-          <div className="mt-8 print:mt-4 pt-4 border-t border-[rgba(0,0,0,0.06)] print:border-slate-300 grid grid-cols-2 gap-8 text-center text-xs print:text-[8.5px]">
+          <div className="mt-8 print:mt-4 pt-4 border-t border-[#e2e8f0] print:border-slate-300 grid grid-cols-2 gap-8 text-center text-xs print:text-[8.5px]">
             <div>
-              <div className="border-b border-[rgba(0,0,0,0.2)] print:border-black w-48 mx-auto mb-1" />
-              <p className="font-bold text-[#1a1a1a]">{teacherName || 'Course Instructor'}</p>
-              <p className="text-[#7a7a7a]">Faculty Signature</p>
+              <div className="border-b border-[#0f172a]/20 print:border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-[#0f172a]">{teacherName || 'Course Instructor'}</p>
+              <p className="text-[#64748b]">Faculty Signature</p>
             </div>
             <div>
-              <div className="border-b border-[rgba(0,0,0,0.2)] print:border-black w-48 mx-auto mb-1" />
-              <p className="font-bold text-[#1a1a1a]">Office of Academic Affairs</p>
-              <p className="text-[#7a7a7a]">Verified & Recorded</p>
+              <div className="border-b border-[#0f172a]/20 print:border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-[#0f172a]">Office of Academic Affairs</p>
+              <p className="text-[#64748b]">Verified & Recorded</p>
             </div>
           </div>
         </div>

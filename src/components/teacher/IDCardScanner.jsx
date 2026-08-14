@@ -81,27 +81,27 @@ export default function IDCardScanner({ onScan, onError }) {
       <div className="relative w-full max-w-sm">
         <div
           id={SCANNER_ID}
-          className="w-full rounded-[20px] overflow-hidden bg-[#f5f5f5] min-h-[280px] flex items-center justify-center border border-[#DDD9D3]"
+          className="w-full rounded-[20px] overflow-hidden bg-[#f8fafc] min-h-[280px] flex items-center justify-center border border-[#cbd5e1]"
         />
 
         {status === 'idle' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f5f5f5]">
-            <div className="w-14 h-14 rounded-full bg-[#ffffff] flex items-center justify-center text-[#7a7a7a] shadow-sm">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f8fafc]">
+            <div className="w-14 h-14 rounded-full bg-[#ffffff] flex items-center justify-center text-[#64748b] shadow-sm border border-[#e2e8f0]">
               <Camera size={26} />
             </div>
-            <p className="text-[#7a7a7a] text-xs font-semibold">Camera is off</p>
+            <p className="text-[#64748b] text-xs font-semibold">Camera is off</p>
           </div>
         )}
 
         {status === 'requesting' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm">
             <Spinner size="lg" />
-            <p className="text-[#1a1a1a] text-xs font-semibold">Requesting camera access...</p>
+            <p className="text-[#0f172a] text-xs font-semibold">Requesting camera access...</p>
           </div>
         )}
 
         {status === 'success' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#DCFCE7] text-[#15803D] p-4 text-center animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#dcfce7] text-[#15803d] p-4 text-center animate-fade-in border border-[#86efac]">
             <CheckCircle size={40} />
             <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-base">QR ID Scanned!</p>
             <p className="text-xs">Marking student in roster...</p>
@@ -110,13 +110,13 @@ export default function IDCardScanner({ onScan, onError }) {
 
         {status === 'scanning' && (
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-[15%] border-2 border-dashed border-[#ee6a2a] rounded-2xl animate-pulse" />
+            <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
           </div>
         )}
       </div>
 
       {status === 'error' && (
-        <div className="w-full max-w-sm flex items-start gap-2.5 bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5] rounded-[16px] px-4 py-3 text-xs font-semibold animate-fade-in">
+        <div className="w-full max-w-sm flex items-start gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 text-xs font-semibold animate-fade-in">
           <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <div>
             <p className="font-bold">Camera Error</p>
@@ -150,7 +150,7 @@ export default function IDCardScanner({ onScan, onError }) {
       </div>
 
       {status === 'scanning' && (
-        <p className="text-[#7a7a7a] text-xs text-center">
+        <p className="text-[#64748b] text-xs text-center">
           Point camera at the student's static or digital ID QR
         </p>
       )}
