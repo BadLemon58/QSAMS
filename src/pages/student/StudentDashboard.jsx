@@ -7,7 +7,7 @@ import { format, isToday } from 'date-fns'
 import {
   Camera, RefreshCw, Share2, Plus, X, Flame, CheckCircle,
   AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft,
-  Users, User, ChevronRight, Sparkles, Check, Download, Shield
+  Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut
 } from 'lucide-react'
 import Spinner from '../../components/common/Spinner'
 import Navbar from '../../components/common/Navbar'
@@ -131,7 +131,7 @@ function JoinClassModal({ studentId, onClose, onEnrolled }) {
 
 // ── Main Component: Responsive Student Dashboard ─────────────────────────
 export default function StudentDashboard() {
-  const { profile } = useAuth()
+  const { profile, signOut } = useAuth()
   const navigate = useNavigate()
 
   // Mobile/Tablet tab state
@@ -558,23 +558,41 @@ export default function StudentDashboard() {
               <button
                 onClick={() => navigate('/profile')}
                 aria-label="Profile settings"
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#0f172a] hover:bg-[#e2e8f0] active:scale-95 transition-all shadow-sm"
+                className="flex items-center gap-2.5 group text-left"
               >
-                {profile?.avatar_url ? (
-                  <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <User size={18} />
-                )}
+                <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden border border-[#e2e8f0]">
+                  {profile?.avatar_url ? (
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    profile?.full_name?.[0]?.toUpperCase() || <User size={18} />
+                  )}
+                </div>
+                <div className="hidden xs:block">
+                  <p className="text-xs font-bold text-[#0f172a] leading-none group-hover:text-[#005a36] transition-colors truncate max-w-[120px] sm:max-w-[180px]">
+                    {profile?.full_name || 'Student'}
+                  </p>
+                  <p className="text-[11px] text-[#64748b] font-mono leading-none mt-1">
+                    {profile?.student_id || 'Student Portal'}
+                  </p>
+                </div>
               </button>
-              <div className="flex flex-col text-right">
-                <span className="text-[13px] md:text-sm font-bold text-[#005a36] leading-tight">
+
+              <div className="flex items-center gap-2.5">
+                <span className="text-[12px] sm:text-[13px] md:text-sm font-bold text-[#005a36] leading-tight text-right">
                   {roomScheduleText}
                 </span>
-                <h1 className="text-[20px] md:text-[24px] font-bold font-['Source_Serif_4',Georgia,serif] text-[#0f172a] leading-tight mt-0.5">
-                  {activeTab === 'live' && 'Your check-in'}
-                  {activeTab === 'classes' && 'Enrolled Classes'}
-                  {activeTab === 'history' && 'Attendance History'}
-                </h1>
+
+                <button
+                  onClick={async () => {
+                    await signOut()
+                    navigate('/login')
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-[#64748b] hover:text-[#b91c1c] hover:bg-[#fee2e2] active:scale-95 transition-all border border-[#e2e8f0] bg-[#f8fafc] shadow-sm"
+                  title="Sign out"
+                >
+                  <LogOut size={14} />
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
               </div>
             </section>
 
