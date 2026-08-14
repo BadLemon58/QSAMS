@@ -16,6 +16,9 @@ import StudentDashboard from '../pages/student/StudentDashboard'
 import MyQRPage from '../pages/student/MyQRPage'
 import ScanPage from '../pages/student/ScanPage'
 import StudentClassPage from '../pages/student/StudentClassPage'
+// Common / Shared Pages
+import ProfilePage from '../pages/common/ProfilePage'
+import DebugPanel from '../components/common/DebugPanel'
 
 // ── Protected Route Wrapper ─────────────────────────────────
 function ProtectedRoute({ children, allowedRole }) {
@@ -56,6 +59,7 @@ function RootRedirect() {
 
 export default function AppRouter() {
   return (
+    <>
     <Routes>
       {/* Public */}
       <Route path="/login"    element={<LoginPage />} />
@@ -89,8 +93,15 @@ export default function AppRouter() {
         <ProtectedRoute allowedRole="student"><StudentClassPage /></ProtectedRoute>
       } />
 
+      {/* ── Shared Routes ── */}
+      <Route path="/profile" element={
+        <ProtectedRoute><ProfilePage /></ProtectedRoute>
+      } />
+
       {/* 404 */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <DebugPanel />
+    </>
   )
 }

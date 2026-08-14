@@ -290,3 +290,31 @@
   color: #94a3b8 !important;
   font-size: 0.8rem !important;
 }
+
+/* Print layout optimizations */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  nav,
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .glass-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  #printable-report {
+    width: 100% !important;
+    color: #000000 !important;
+  }
+}

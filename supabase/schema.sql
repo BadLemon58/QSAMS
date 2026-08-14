@@ -184,6 +184,11 @@ CREATE POLICY "Allow authenticated update logs"
   TO authenticated
   USING (true);
 
+CREATE POLICY "Allow authenticated delete logs"
+  ON public.attendance_logs FOR DELETE
+  TO authenticated
+  USING (student_id = auth.uid());
+
 -- ============================================================
 -- SAMPLE SEED DATA (optional — remove before production)
 -- ============================================================

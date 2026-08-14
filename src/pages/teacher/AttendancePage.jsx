@@ -9,8 +9,10 @@ import RosterTable from '../../components/teacher/RosterTable'
 import Spinner from '../../components/common/Spinner'
 import {
   Tv2, ScanLine, ArrowLeft, CheckCircle,
-  AlertCircle, Users, CalendarDays, Zap
+  AlertCircle, Users, CalendarDays, Zap,
+  Download, FileSpreadsheet
 } from 'lucide-react'
+import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 
 // ── Mode toggle button ──────────────────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
@@ -69,12 +71,52 @@ export default function AttendancePage() {
   // UI state
   const [mode, setMode] = useState('kiosk') // 'kiosk' | 'idcard'
   const [toast, setToast] = useState(null)
+  const [showReportModal, setShowReportModal] = useState(false)
 
   // Data state
   const [classInfo, setClassInfo] = useState(null)
   const [session, setSession] = useState(null)
   const [roster, setRoster] = useState([])
   const [loadingRoster, setLoadingRoster] = useState(true)
+
+  // ── Quick CSV Export for current session ───────────────────
+  const exportSessionCSV = () => {
+    if (roster.length === 0) {
+      showToast('No students to export in this session.', 'error')
+      return
+    }
+
+    const headers = ['#', 'Student Name', 'Student ID', 'Status', 'Session Date', 'Time Marked']
+    const rows = roster.map((s, idx) => [
+      idx + 1,
+      `"${(s.full_name || '').replace(/"/g, '""')}"`,
+      `"${s.student_id || '—'}"`,
+      s.status || 'unmarked',
+      session?.date || new Date().toISOString().slice(0, 10),
+      s.status ? new Date().toLocaleTimeString() : 'N/A'
+    ])
+
+    const csvContent = [
+      `"QSAMS ATTENDANCE SESSION REPORT"`,
+      `"Class: ${classInfo?.name || 'Class'}"`,
+      `"Date: ${session?.date || new Date().toLocaleDateString('en-US')}"`,
+      `"Teacher: ${profile?.full_name || 'Teacher'}"`,
+      '',
+      headers.join(','),
+      ...rows.map(r => r.join(','))
+    ].join('\r\n')
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `Session_Attendance_${classInfo?.name?.replace(/\s+/g, '_') || 'Class'}_${session?.date || new Date().toISOString().slice(0, 10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+    showToast('Downloaded session CSV!', 'success')
+  }
 
   // ── Load class info ────────────────────────────────────────
   useEffect(() => {
@@ -279,7 +321,21 @@ export default function AttendancePage() {
               )}
             </div>
 
-            <div className="flex items-center gap-2 self-start">
+            <div className="flex flex-wrap items-center gap-2 self-start">
+              <button
+                onClick={exportSessionCSV}
+                className="btn-secondary btn-sm flex items-center gap-1.5"
+                title="Download CSV for this active session"
+              >
+                <Download size={14} /> Export CSV
+              </button>
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="btn-secondary btn-sm flex items-center gap-1.5"
+                title="Generate Full Attendance Report"
+              >
+                <FileSpreadsheet size={14} className="text-emerald-400" /> Full Report
+              </button>
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <span className="pulse-dot" />
                 <span className="text-emerald-400 text-xs font-medium">Session Active</span>
@@ -357,6 +413,16 @@ export default function AttendancePage() {
           </div>
         </div>
       </div>
+
+      {/* Full Report Modal */}
+      {showReportModal && (
+        <AttendanceReportModal
+          classId={classId}
+          classInfo={classInfo}
+          teacherName={profile?.full_name}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
 
       {/* Toast */}
       {toast && (

@@ -91,6 +91,35 @@ export function AuthProvider({ children }) {
     await supabase.auth.signOut()
   }
 
+  const updateProfile = async (updates) => {
+    if (!user) return { error: new Error('No active user') }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('id', user.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      if (data) setProfile(data)
+      return { data, error: null }
+    } catch (err) {
+      return { data: null, error: err }
+    }
+  }
+
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({ password: newPassword })
+    return { data, error }
+  }
+
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id)
+    }
+  }
+
   if (!isSupabaseConfigured) {
     return (
       <div className="min-h-screen bg-[#0a0f1e] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
@@ -120,7 +149,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, updateProfile, updatePassword, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

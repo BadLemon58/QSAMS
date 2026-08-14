@@ -9,8 +9,11 @@ import { QRCodeSVG } from 'qrcode.react'
 import {
   ArrowLeft, ClipboardList, Users, UserPlus,
   CalendarDays, ChevronRight, Clock, MapPin,
-  X, AlertCircle, Search, QrCode, Copy, Check, Sparkles
+  X, AlertCircle, Search, QrCode, Copy, Check, Sparkles,
+  Trash2, BarChart2, FileSpreadsheet, AlertTriangle
 } from 'lucide-react'
+import StudentSummaryModal from '../../components/teacher/StudentSummaryModal'
+import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 
 // ── Join Code & QR Modal ───────────────────────────────────────────────────
 function JoinCodeModal({ classInfo, onClose }) {
@@ -181,12 +184,16 @@ export default function ClassDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showEnroll, setShowEnroll] = useState(false)
   const [showJoinCode, setShowJoinCode] = useState(false)
+  const [showReport, setShowReport] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [studentToRemove, setStudentToRemove] = useState(null)
+  const [removing, setRemoving] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       const [{ data: cls }, { data: enr }, { data: sess }] = await Promise.all([
         supabase.from('classes').select('*').eq('id', classId).single(),
-        supabase.from('enrollments').select('profiles(id, full_name, student_id)').eq('class_id', classId),
+        supabase.from('enrollments').select('profiles(id, full_name, student_id, avatar_url)').eq('class_id', classId),
         supabase.from('attendance_sessions').select('*').eq('class_id', classId).order('created_at', { ascending: false }).limit(10),
       ])
 
@@ -216,13 +223,30 @@ export default function ClassDetailPage() {
       }, async () => {
         const { data: enr } = await supabase
           .from('enrollments')
-          .select('profiles(id, full_name, student_id)')
+          .select('profiles(id, full_name, student_id, avatar_url)')
           .eq('class_id', classId)
         setStudents((enr || []).map(e => e.profiles).filter(Boolean))
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [classId])
+
+  // Remove student from class
+  const handleRemoveStudent = async () => {
+    if (!studentToRemove) return
+    setRemoving(true)
+    const { error } = await supabase
+      .from('enrollments')
+      .delete()
+      .eq('class_id', classId)
+      .eq('student_id', studentToRemove.id)
+
+    if (!error) {
+      setStudents(prev => prev.filter(s => s.id !== studentToRemove.id))
+      setStudentToRemove(null)
+    }
+    setRemoving(false)
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center"><Spinner size="xl" /></div>
@@ -256,6 +280,9 @@ export default function ClassDetailPage() {
               <button onClick={() => setShowJoinCode(true)} className="btn-secondary btn-sm flex items-center gap-1.5">
                 <QrCode size={14} className="text-indigo-400" /> Join Code & QR
               </button>
+              <button onClick={() => setShowReport(true)} className="btn-secondary btn-sm flex items-center gap-1.5">
+                <FileSpreadsheet size={14} className="text-emerald-400" /> Attendance Report
+              </button>
               <button onClick={() => setShowEnroll(true)} className="btn-secondary btn-sm">
                 <UserPlus size={14} /> Enroll Student
               </button>
@@ -288,14 +315,35 @@ export default function ClassDetailPage() {
             ) : (
               <div className="divide-y divide-white/5">
                 {students.map((s, i) => (
-                  <div key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors">
+                  <div key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-white/[0.02] transition-colors group">
                     <span className="text-slate-600 text-sm w-5 text-right">{i + 1}</span>
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
-                      {s.full_name?.[0]?.toUpperCase()}
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center text-xs font-bold text-white overflow-hidden flex-shrink-0">
+                      {s.avatar_url ? (
+                        <img src={s.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        s.full_name?.[0]?.toUpperCase() || '?'
+                      )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-slate-200">{s.full_name}</p>
-                      <p className="text-xs text-slate-500 font-mono">{s.student_id || '—'}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-200 truncate">{s.full_name}</p>
+                      <p className="text-xs text-slate-500 font-mono">{s.student_id || 'No ID'}</p>
+                    </div>
+                    <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => setSelectedStudent(s)}
+                        className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 text-xs flex items-center gap-1 transition-colors"
+                        title="View student attendance history"
+                      >
+                        <BarChart2 size={13} />
+                        <span className="hidden sm:inline">Stats</span>
+                      </button>
+                      <button
+                        onClick={() => setStudentToRemove(s)}
+                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs transition-colors"
+                        title="Remove student from this class"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -342,6 +390,56 @@ export default function ClassDetailPage() {
           classInfo={classInfo}
           onClose={() => setShowJoinCode(false)}
         />
+      )}
+
+      {showReport && (
+        <AttendanceReportModal
+          classId={classId}
+          classInfo={classInfo}
+          teacherName={profile?.full_name}
+          onClose={() => setShowReport(false)}
+        />
+      )}
+
+      {selectedStudent && (
+        <StudentSummaryModal
+          student={selectedStudent}
+          classId={classId}
+          className={classInfo?.name}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
+
+      {/* Delete Student Confirmation Modal */}
+      {studentToRemove && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="glass-card w-full max-w-sm p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+              <AlertTriangle size={24} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-1">Remove Student?</h3>
+            <p className="text-slate-400 text-xs mb-5">
+              Are you sure you want to remove <span className="text-white font-semibold">{studentToRemove.full_name}</span> from this class?
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setStudentToRemove(null)}
+                className="btn-secondary flex-1 justify-center"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveStudent}
+                disabled={removing}
+                className="btn-danger flex-1 justify-center"
+              >
+                {removing ? <Spinner size="sm" /> : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
