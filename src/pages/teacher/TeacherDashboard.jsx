@@ -6,10 +6,11 @@ import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import {
   BookOpen, Plus, Users, Calendar, Clock,
-  ChevronRight, MapPin, X, AlertCircle
+  ChevronRight, MapPin, X, AlertCircle, Sparkles
 } from 'lucide-react'
+import { format } from 'date-fns'
 
-// ── Create Class Modal ─────────────────────────────────────────────────────
+// ── Create Class Modal (Chalk Register Style) ─────────────────────────────
 function CreateClassModal({ onClose, onCreated }) {
   const { profile } = useAuth()
   const [form, setForm] = useState({ name: '', description: '', schedule: '', room: '' })
@@ -33,47 +34,64 @@ function CreateClassModal({ onClose, onCreated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="glass-card w-full max-w-md p-6 animate-fade-in">
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-white">Create New Class</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
-            <X size={20} />
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#1a1a1a] w-full max-w-md p-7 rounded-[24px] shadow-2xl border border-[rgba(0,0,0,0.06)] relative">
+        <button
+          onClick={onClose}
+          className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#ebebeb] flex items-center justify-center text-[#7a7a7a] hover:text-[#1a1a1a] transition-colors"
+        >
+          <X size={16} />
+        </button>
+
+        <div className="mb-5">
+          <span className="text-xs uppercase font-bold tracking-wider text-[#7a7a7a]">Faculty Portal</span>
+          <h2 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#1a1a1a] mt-0.5">
+            Create New Class
+          </h2>
+          <p className="text-[#7a7a7a] text-xs mt-1">Set up a course section to start tracking attendance</p>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5 mb-4 text-red-400 text-sm">
+          <div className="flex items-center gap-2 bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5] rounded-[16px] px-4 py-3 mb-4 text-xs font-semibold">
             <AlertCircle size={15} />
-            {error}
+            <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Class Name *</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
+              Class Name *
+            </label>
             <input
               type="text"
               className="input-field"
-              placeholder="CS101 - Introduction to Programming"
+              placeholder="e.g. CS101 - Programming Logic"
               value={form.name}
               onChange={e => setForm({ ...form, name: e.target.value })}
               required
+              autoFocus
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
+              Description
+            </label>
             <textarea
               className="input-field resize-none"
               rows={2}
-              placeholder="Brief course description..."
+              placeholder="Brief course outline or subject description..."
               value={form.description}
               onChange={e => setForm({ ...form, description: e.target.value })}
             />
           </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Schedule</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
+                Schedule
+              </label>
               <input
                 type="text"
                 className="input-field"
@@ -83,21 +101,24 @@ function CreateClassModal({ onClose, onCreated }) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1.5">Room</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#7a7a7a] mb-1.5">
+                Room
+              </label>
               <input
                 type="text"
                 className="input-field"
-                placeholder="Room 201"
+                placeholder="Room 204"
                 value={form.room}
                 onChange={e => setForm({ ...form, room: e.target.value })}
               />
             </div>
           </div>
-          <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center">
+
+          <div className="flex gap-2.5 pt-2">
+            <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center py-3">
               Cancel
             </button>
-            <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
+            <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center py-3">
               {loading ? <Spinner size="sm" /> : 'Create Class'}
             </button>
           </div>
@@ -107,37 +128,41 @@ function CreateClassModal({ onClose, onCreated }) {
   )
 }
 
-// ── Class Card ─────────────────────────────────────────────────────────────
+// ── Class Card (Chalk Register Style) ──────────────────────────────────────
 function ClassCard({ cls }) {
   return (
     <Link
       to={`/teacher/class/${cls.id}`}
-      className="glass-card p-5 group hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-200 block"
+      className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[22px] p-5 group hover:bg-[#e2e2e2] active:scale-[0.99] transition-all block shadow-sm flex flex-col justify-between"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center flex-shrink-0">
-          <BookOpen size={18} className="text-white" />
+      <div>
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-10 h-10 rounded-xl bg-[#ffffff] text-[#ee6a2a] flex items-center justify-center shadow-sm">
+            <BookOpen size={18} />
+          </div>
+          <div className="w-7 h-7 rounded-full bg-[#f5f5f5] flex items-center justify-center text-[#7a7a7a] group-hover:text-[#1a1a1a] transition-colors">
+            <ChevronRight size={15} />
+          </div>
         </div>
-        <ChevronRight size={16} className="text-slate-600 group-hover:text-indigo-400 transition-colors mt-1" />
+
+        <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#1a1a1a] text-base mb-1 group-hover:text-[#ee6a2a] transition-colors">
+          {cls.name}
+        </h3>
+        {cls.description && (
+          <p className="text-[#7a7a7a] text-xs mb-3 line-clamp-2 leading-relaxed">{cls.description}</p>
+        )}
       </div>
 
-      <h3 className="font-semibold text-white text-sm mb-1 line-clamp-2 group-hover:text-indigo-200 transition-colors">
-        {cls.name}
-      </h3>
-      {cls.description && (
-        <p className="text-slate-500 text-xs mb-3 line-clamp-2">{cls.description}</p>
-      )}
-
-      <div className="space-y-1.5 mt-3 pt-3 border-t border-white/5">
+      <div className="space-y-1.5 pt-3 border-t border-[rgba(0,0,0,0.06)] mt-3">
         {cls.schedule && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Clock size={11} />
+          <div className="flex items-center gap-1.5 text-xs text-[#7a7a7a]">
+            <Clock size={12} className="text-[#ee6a2a]" />
             <span>{cls.schedule}</span>
           </div>
         )}
         {cls.room && (
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <MapPin size={11} />
+          <div className="flex items-center gap-1.5 text-xs text-[#7a7a7a]">
+            <MapPin size={12} className="text-[#ee6a2a]" />
             <span>{cls.room}</span>
           </div>
         )}
@@ -175,74 +200,94 @@ export default function TeacherDashboard() {
   useEffect(() => { fetchClasses() }, [profile?.id])
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
       <Navbar />
 
-      {/* Hero banner */}
-      <div className="relative overflow-hidden border-b border-white/5">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/30 to-purple-900/20" />
-        <div className="absolute top-0 right-0 w-96 h-48 bg-indigo-600/10 rounded-full blur-3xl" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <p className="text-indigo-400 text-sm font-medium mb-1">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </p>
-          <h1 className="text-3xl font-bold text-white">
-            Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'},{' '}
-            <span className="gradient-text">{profile?.full_name?.split(' ')[0] || 'Teacher'}</span>
-          </h1>
-          <p className="text-slate-400 mt-1">Manage your classes and take attendance below.</p>
+      {/* Institutional Top Banner */}
+      <div className="bg-[#f5f5f5] border-b border-[rgba(0,0,0,0.06)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase font-bold tracking-wider text-[#7a7a7a] mb-1">
+              {format(new Date(), 'EEEE, MMMM d, yyyy')}
+            </p>
+            <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a]">
+              Welcome, {profile?.full_name || 'Faculty Member'}
+            </h1>
+            <p className="text-[#7a7a7a] text-xs mt-1">
+              Notre Dame of Midsayap College — Smart Attendance Management
+            </p>
+          </div>
+
+          <button
+            id="create-class-btn"
+            onClick={() => setShowModal(true)}
+            className="btn-primary self-start sm:self-center py-3 px-5 text-sm shadow-sm"
+          >
+            <Plus size={16} />
+            Create New Class
+          </button>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Stats row */}
+        {/* Stat Pair Band */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-          {[
-            { label: 'Total Classes', value: classes.length, icon: BookOpen, color: 'from-indigo-600 to-purple-600' },
-            { label: "Today's Date", value: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), icon: Calendar, color: 'from-sky-600 to-indigo-600' },
-            { label: 'Active Sessions', value: '—', icon: Users, color: 'from-emerald-600 to-teal-600' },
-          ].map(({ label, value, icon: Icon, color }) => (
-            <div key={label} className="glass-card p-4 flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center flex-shrink-0`}>
-                <Icon size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-white">{value}</p>
-                <p className="text-slate-500 text-xs">{label}</p>
-              </div>
+          <div className="bg-[#ebebeb] rounded-[20px] p-5 flex flex-col gap-1 border border-[rgba(0,0,0,0.06)]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7a7a7a]">Total Classes</span>
+            <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a]">
+              {classes.length}
+            </span>
+          </div>
+
+          <div className="bg-[#ebebeb] rounded-[20px] p-5 flex flex-col gap-1 border border-[rgba(0,0,0,0.06)]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7a7a7a]">Academic Day</span>
+            <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a]">
+              {format(new Date(), 'MMM d')}
+            </span>
+          </div>
+
+          <div className="bg-[#ebebeb] rounded-[20px] p-5 flex flex-col gap-1 border border-[rgba(0,0,0,0.06)] col-span-2 sm:col-span-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7a7a7a]">Status</span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#15803D] animate-pulse" />
+              <span className="font-semibold text-sm text-[#1a1a1a]">Live System Ready</span>
             </div>
-          ))}
+          </div>
         </div>
 
-        {/* Classes header */}
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-white">My Classes</h2>
-          <button
-            id="create-class-btn"
-            onClick={() => setShowModal(true)}
-            className="btn-primary btn-sm"
-          >
-            <Plus size={15} />
-            New Class
-          </button>
+        {/* Classes Section Header */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <BookOpen size={18} className="text-[#ee6a2a]" />
+            <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#1a1a1a]">
+              Active Class Sections
+            </h2>
+          </div>
+          <span className="text-xs font-semibold text-[#7a7a7a]">
+            {classes.length} Total Course{classes.length === 1 ? '' : 's'}
+          </span>
         </div>
 
-        {/* Classes grid */}
+        {/* Classes Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Spinner size="lg" />
           </div>
         ) : classes.length === 0 ? (
-          <div className="text-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center mx-auto mb-4">
-              <BookOpen size={24} className="text-slate-600" />
+          <div className="bg-[#ebebeb] rounded-[24px] border border-[rgba(0,0,0,0.06)] p-12 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-full bg-[#f5f5f5] text-[#7a7a7a] flex items-center justify-center mx-auto mb-3">
+              <BookOpen size={24} />
             </div>
-            <h3 className="text-white font-medium mb-1">No classes yet</h3>
-            <p className="text-slate-500 text-sm mb-4">Create your first class to get started</p>
+            <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#1a1a1a] mb-1">
+              No classes created yet
+            </h3>
+            <p className="text-xs text-[#7a7a7a] mb-5">
+              Click the button below to add your first course section and generate student join codes.
+            </p>
             <button onClick={() => setShowModal(true)} className="btn-primary">
               <Plus size={16} />
-              Create Class
+              Create First Class
             </button>
           </div>
         ) : (

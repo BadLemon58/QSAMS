@@ -3,7 +3,7 @@ const variants = {
   absent:  'badge-absent',
   late:    'badge-late',
   excused: 'badge-excused',
-  default: 'bg-slate-700/60 text-slate-300 border border-slate-600/50 px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1',
+  default: 'bg-[#f5f5f5] text-[#7a7a7a] border border-[rgba(0,0,0,0.06)] px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center gap-1',
 }
 
 const dots = {

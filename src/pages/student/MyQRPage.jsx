@@ -1,12 +1,11 @@
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import { QRCodeSVG } from 'qrcode.react'
-import { Download, Share2, Info } from 'lucide-react'
+import { Download, Share2, Info, User, QrCode } from 'lucide-react'
 
 export default function MyQRPage() {
   const { profile } = useAuth()
 
-  // The QR value is a JSON payload containing the student's unique student_id
   const qrPayload = JSON.stringify({
     type: 'student_id',
     studentId: profile?.student_id,
@@ -37,59 +36,76 @@ export default function MyQRPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-10">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white">My QR ID Card</h1>
-          <p className="text-slate-400 text-sm mt-1">Show this to your teacher for attendance scanning</p>
+      <div className="max-w-md mx-auto px-4 py-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[20px] bg-[#ee6a2a] mb-3 text-[#000000] shadow-sm">
+            <QrCode size={26} />
+          </div>
+          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#1a1a1a]">
+            My QR ID Card
+          </h1>
+          <p className="text-[#7a7a7a] text-xs mt-1">
+            Show this permanent ID to your teacher for rapid attendance check-in
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="glass-card p-8 flex flex-col items-center gap-6">
-          {/* User info */}
+        {/* Chalk Register ID Card */}
+        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-7 flex flex-col items-center gap-5 shadow-sm">
+          {/* User Info */}
           <div className="text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white mx-auto mb-3 shadow-lg shadow-indigo-500/30">
-              {profile?.full_name?.[0]?.toUpperCase() || '?'}
+            <div className="w-16 h-16 rounded-full bg-[#f7b500] text-[#000000] flex items-center justify-center text-xl font-bold mx-auto mb-2.5 shadow-sm">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
+              ) : (
+                profile?.full_name?.[0]?.toUpperCase() || <User size={24} />
+              )}
             </div>
-            <h2 className="text-xl font-bold text-white">{profile?.full_name}</h2>
-            <p className="text-indigo-400 font-mono text-sm mt-1">
-              {profile?.student_id || 'No Student ID'}
-            </p>
+            <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a]">
+              {profile?.full_name || 'Student Name'}
+            </h2>
+            <span className="inline-block mt-1 px-3 py-0.5 rounded-full bg-[#ffffff] text-[#ee6a2a] font-mono text-xs font-bold shadow-sm">
+              ID: {profile?.student_id || 'N/A'}
+            </span>
           </div>
 
-          {/* QR Code */}
-          <div className="p-5 bg-white rounded-2xl shadow-2xl shadow-indigo-500/20">
+          {/* QR Code Frame with Pulse Ring */}
+          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center">
+            <div
+              className="absolute inset-[-6px] rounded-[26px] border-2 border-[rgba(0,0,0,0.06)] opacity-55 pointer-events-none"
+              style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+            />
             <QRCodeSVG
               id="student-qr-svg"
               value={qrPayload}
-              size={220}
+              size={200}
               level="H"
               includeMargin={false}
-              fgColor="#1e1b4b"
+              fgColor="#1a1a1a"
             />
           </div>
 
-          {/* Info */}
-          <div className="flex items-start gap-2 bg-indigo-500/10 border border-indigo-500/20 rounded-xl px-4 py-3 w-full">
-            <Info size={14} className="text-indigo-400 flex-shrink-0 mt-0.5" />
-            <p className="text-indigo-300/80 text-xs leading-relaxed">
-              This is your <strong>static QR ID</strong>. It is permanently tied to your student account and does not expire. Keep it accessible for easy teacher scanning.
+          {/* Info Card */}
+          <div className="flex items-start gap-2.5 bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-4 py-3 w-full">
+            <Info size={15} className="text-[#7a7a7a] shrink-0 mt-0.5" />
+            <p className="text-[#7a7a7a] text-xs leading-relaxed">
+              This is your <strong>permanent student ID QR</strong>. Keep it on your device or print it for daily classroom scanning.
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 w-full">
-            <button onClick={handleDownload} className="btn-secondary flex-1 justify-center">
+          <div className="flex gap-2.5 w-full">
+            <button onClick={handleDownload} className="btn-secondary flex-1 justify-center py-3.5">
               <Download size={15} />
-              Download
+              Download PNG
             </button>
             <button
               onClick={() => navigator.share?.({ title: 'My QSAMS QR', text: `Student ID: ${profile?.student_id}` })}
-              className="btn-primary flex-1 justify-center"
+              className="btn-primary flex-1 justify-center py-3.5"
             >
               <Share2 size={15} />
-              Share
+              Share ID
             </button>
           </div>
         </div>

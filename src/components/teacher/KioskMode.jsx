@@ -7,12 +7,6 @@ import { RefreshCw, Clock, Shield, Tv2 } from 'lucide-react'
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
-/**
- * KioskMode — displays a rotating, time-sensitive QR code for students to scan.
- *
- * Props:
- *   classId: string  — the class for which to generate the session
- */
 export default function KioskMode({ classId }) {
   const { profile } = useAuth()
   const [session, setSession] = useState(null)
@@ -20,7 +14,6 @@ export default function KioskMode({ classId }) {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
-  // Helper to get location wrapped in a Promise
   const getLocation = () => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
@@ -36,29 +29,24 @@ export default function KioskMode({ classId }) {
         },
         (error) => {
           console.warn('Geolocation error:', error)
-          resolve(null) // Return null if denied or errored
+          resolve(null)
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       )
     })
   }
 
-  // Generate or rotate attendance session in Supabase
   const createSession = async () => {
     setCreating(true)
     setError('')
 
     const token = uuidv4()
     const expiresAt = new Date(Date.now() + TOKEN_DURATION_MS).toISOString()
-    
-    // Get today's date in YYYY-MM-DD local time
-    const today = new Date().toLocaleDateString('en-CA') // outputs YYYY-MM-DD
+    const today = new Date().toLocaleDateString('en-CA')
 
-    // Try to grab location first
     const loc = await getLocation()
 
-    // Check for an existing active session for this class today
-    const { data: existingSession, error: checkErr } = await supabase
+    const { data: existingSession } = await supabase
       .from('attendance_sessions')
       .select('*')
       .eq('class_id', classId)
@@ -70,7 +58,6 @@ export default function KioskMode({ classId }) {
     let resultError = null
 
     if (existingSession) {
-      // Rotate token on the existing session
       const { data, error } = await supabase
         .from('attendance_sessions')
         .update({
@@ -86,14 +73,12 @@ export default function KioskMode({ classId }) {
       resultData = data
       resultError = error
     } else {
-      // Deactivate any old active sessions just in case (from previous days)
       await supabase
         .from('attendance_sessions')
         .update({ is_active: false })
         .eq('class_id', classId)
         .eq('is_active', true)
 
-      // Create a brand new session for today
       const { data, error } = await supabase
         .from('attendance_sessions')
         .insert({
@@ -124,11 +109,10 @@ export default function KioskMode({ classId }) {
     setCreating(false)
   }
 
-  // Countdown timer
   useEffect(() => {
     if (!session) return
     if (timeLeft <= 0) {
-      createSession() // Auto-rotate when token expires
+      createSession()
       return
     }
 
@@ -142,7 +126,6 @@ export default function KioskMode({ classId }) {
     return () => clearInterval(interval)
   }, [session, timeLeft])
 
-  // Start session on mount
   useEffect(() => {
     createSession()
   }, [classId])
@@ -154,90 +137,85 @@ export default function KioskMode({ classId }) {
   }
 
   const pct = session ? (timeLeft / (TOKEN_DURATION_MS / 1000)) * 100 : 0
-  const isExpiringSoon = timeLeft < 60 && timeLeft > 0
+  const isExpiringSoon = timeLeft < 5 && timeLeft > 0
 
-  // QR value includes classId + sessionId for verification
   const qrValue = session
     ? JSON.stringify({ type: 'attendance', sessionId: session.id, token: session.session_token, classId })
     : ''
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex flex-col items-center gap-5">
       {/* Header */}
       <div className="text-center">
-        <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/30 rounded-full px-4 py-1.5 mb-3">
-          <Tv2 size={14} className="text-indigo-400" />
-          <span className="text-indigo-300 text-xs font-semibold uppercase tracking-wide">Kiosk Mode Active</span>
+        <div className="inline-flex items-center gap-1.5 bg-[#ffffff] border border-[rgba(0,0,0,0.06)] rounded-full px-3.5 py-1 mb-2 text-xs font-bold text-[#ee6a2a] shadow-sm">
+          <Tv2 size={13} />
+          <span>Kiosk Projection</span>
         </div>
-        <p className="text-slate-400 text-sm">Students scan this code with the QSAMS app</p>
+        <p className="text-[#7a7a7a] text-xs">Students scan this QR code using the QSAMS mobile app</p>
       </div>
 
-      {/* QR Code Card */}
+      {/* QR Code Container with Pulse Ring */}
       <div className="relative">
         {creating ? (
-          <div className="w-72 h-72 rounded-2xl bg-white flex items-center justify-center">
-            <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+          <div className="w-[220px] h-[220px] rounded-[20px] bg-[#ffffff] flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 border-3 border-[#ebebeb] border-t-[#ee6a2a] rounded-full animate-spin" />
           </div>
         ) : session ? (
-          <div className={`p-5 bg-white rounded-2xl shadow-2xl transition-all duration-500 ${
-            isExpiringSoon ? 'shadow-red-500/20' : 'shadow-indigo-500/20'
-          }`}>
+          <div className="relative p-5 bg-[#ffffff] rounded-[20px] shadow-sm flex items-center justify-center">
+            <div
+              className="absolute inset-[-6px] rounded-[26px] border-2 border-[rgba(0,0,0,0.06)] opacity-55 pointer-events-none"
+              style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+            />
             <QRCodeSVG
               value={qrValue}
-              size={240}
+              size={210}
               level="H"
               includeMargin={false}
-              fgColor="#1e1b4b"
+              fgColor="#1a1a1a"
             />
           </div>
         ) : null}
 
-        {/* Expiring overlay */}
         {isExpiringSoon && session && (
-          <div className="absolute inset-0 rounded-2xl border-2 border-red-500 animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-[20px] border-2 border-[#ee6a2a] animate-pulse pointer-events-none" />
         )}
       </div>
 
-      {/* Timer ring */}
+      {/* Timer Bar */}
       {session && (
         <div className="flex flex-col items-center gap-2 w-full max-w-xs">
-          {/* Progress bar */}
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-[#ffffff] rounded-full overflow-hidden border border-[rgba(0,0,0,0.06)]">
             <div
-              className={`h-full rounded-full transition-all duration-1000 ${
-                isExpiringSoon
-                  ? 'bg-gradient-to-r from-red-500 to-orange-400'
-                  : 'bg-gradient-to-r from-indigo-500 to-purple-500'
-              }`}
+              className="h-full rounded-full bg-[#ee6a2a] transition-all duration-1000"
               style={{ width: `${pct}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-between w-full text-sm">
-            <span className="flex items-center gap-1.5 text-slate-400">
-              <Clock size={13} />
+          <div className="flex items-center justify-between w-full text-xs font-semibold text-[#7a7a7a]">
+            <span className="flex items-center gap-1">
+              <Clock size={12} className="text-[#ee6a2a]" />
               Token expires in
             </span>
-            <span className={`font-mono font-bold tabular-nums ${isExpiringSoon ? 'text-red-400' : 'text-white'}`}>
+            <span className="font-mono font-bold text-[#1a1a1a]">
               {formatTime(timeLeft)}
             </span>
           </div>
         </div>
       )}
 
-      {/* Security note */}
-      <div className="flex items-center gap-2 text-xs text-slate-500">
-        <Shield size={12} />
-        QR code auto-rotates every 15 seconds for security
+      {/* Security Note */}
+      <div className="flex items-center gap-1.5 text-[11px] text-[#7a7a7a]">
+        <Shield size={12} className="text-[#ee6a2a]" />
+        <span>Rotating token prevents photo proxy attendance</span>
       </div>
 
       {error && (
-        <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+        <div className="text-[#B91C1C] text-xs bg-[#FEE2E2] border border-[#FCA5A5] rounded-[14px] px-3.5 py-2">
           {error}
         </div>
       )}
 
-      {/* Manual refresh */}
+      {/* Manual Refresh */}
       <button
         onClick={createSession}
         disabled={creating}

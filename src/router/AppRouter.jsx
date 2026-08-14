@@ -26,7 +26,7 @@ function ProtectedRoute({ children, allowedRole }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0f1e]">
+      <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
         <Spinner size="lg" />
       </div>
     )
@@ -46,7 +46,7 @@ function RootRedirect() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0a0f1e]">
+      <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
         <Spinner size="lg" />
       </div>
     )

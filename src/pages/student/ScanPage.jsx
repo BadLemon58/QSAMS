@@ -6,23 +6,23 @@ import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import {
   Camera, CameraOff, CheckCircle, AlertTriangle,
-  RotateCcw, Info, ScanLine
+  RotateCcw, Info, ScanLine, MapPin
 } from 'lucide-react'
 
 const SCANNER_ID = 'student-qr-scanner'
 
 // Haversine distance in meters
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371e3; // metres
-  const p1 = lat1 * Math.PI/180;
-  const p2 = lat2 * Math.PI/180;
-  const dp = (lat2-lat1) * Math.PI/180;
-  const dl = (lon2-lon1) * Math.PI/180;
+  const R = 6371e3
+  const p1 = lat1 * Math.PI/180
+  const p2 = lat2 * Math.PI/180
+  const dp = (lat2-lat1) * Math.PI/180
+  const dl = (lon2-lon1) * Math.PI/180
   const a = Math.sin(dp/2) * Math.sin(dp/2) +
             Math.cos(p1) * Math.cos(p2) *
-            Math.sin(dl/2) * Math.sin(dl/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
+            Math.sin(dl/2) * Math.sin(dl/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
 }
 
 const getLocation = () => {
@@ -58,7 +58,6 @@ export default function ScanPage() {
       try { await scannerRef.current.stop(); await scannerRef.current.clear() } catch (_) {}
       scannerRef.current = null
     }
-    // DO NOT setStatus('idle') here, because it overwrites error/success states immediately
   }, [])
 
   const startScanner = useCallback(async () => {
@@ -91,7 +90,6 @@ export default function ScanPage() {
           if (decodedText === lastToken) return
           isProcessingRef.current = true
 
-          // Parse payload
           let payload
           try {
             payload = JSON.parse(decodedText)
@@ -102,6 +100,7 @@ export default function ScanPage() {
             return
           }
 
+          // Enrollment QR
           if (payload.type === 'class_enrollment') {
             setLastToken(decodedText)
             const { error: enrollErr } = await supabase
@@ -136,7 +135,7 @@ export default function ScanPage() {
 
           setLastToken(decodedText)
 
-          // Verify session is still valid and not expired
+          // Verify session is still valid
           const { data: session, error: sessErr } = await supabase
             .from('attendance_sessions')
             .select('*')
@@ -159,32 +158,31 @@ export default function ScanPage() {
             return
           }
 
-          // --- GEOLOCATION VERIFICATION ---
+          // Geolocation Verification
           if (session.latitude && session.longitude) {
-            setStatus('requesting');
-            setErrorMsg('Verifying your location...');
+            setStatus('requesting')
+            setErrorMsg('Verifying classroom location...')
             
-            const loc = await getLocation();
+            const loc = await getLocation()
             if (!loc) {
-              setErrorMsg('Location access is required to check in. Please enable location services in your browser.');
-              setStatus('error');
-              await stopScanner();
-              return;
+              setErrorMsg('Location access is required to check in. Please enable location permissions.')
+              setStatus('error')
+              await stopScanner()
+              return
             }
 
-            const distance = calculateDistance(loc.latitude, loc.longitude, session.latitude, session.longitude);
-            const maxRadius = session.radius_meters || 100;
+            const distance = calculateDistance(loc.latitude, loc.longitude, session.latitude, session.longitude)
+            const maxRadius = session.radius_meters || 100
 
             if (distance > maxRadius) {
-              setErrorMsg(`You are too far from the classroom (${Math.round(distance)}m away). Geolocation verification failed.`);
-              setStatus('error');
-              await stopScanner();
-              return;
+              setErrorMsg(`You are too far from the classroom (${Math.round(distance)}m away). Location verification failed.`)
+              setStatus('error')
+              await stopScanner()
+              return
             }
           }
-          // --- END GEOLOCATION VERIFICATION ---
 
-          // Check if student is enrolled
+          // Check enrollment
           const { data: enrollment, error: enrollCheckErr } = await supabase
             .from('enrollments')
             .select('id')
@@ -214,13 +212,12 @@ export default function ScanPage() {
             return
           }
 
-          // Determine status (on time vs late based on 15-min grace window)
+          // Grace period check
           const createdAt = new Date(session.created_at)
           const now = new Date()
           const diffMin = (now - createdAt) / 60000
           const markStatus = diffMin <= 15 ? 'present' : 'late'
 
-          // Insert attendance log
           const { error: logErr } = await supabase
             .from('attendance_logs')
             .insert({
@@ -244,10 +241,10 @@ export default function ScanPage() {
           }
 
           setStatus('success')
-          setSuccessMsg(`You have been marked "${markStatus}" — attendance recorded!`)
+          setSuccessMsg(`You have been marked "${markStatus.toUpperCase()}" — attendance recorded!`)
           await stopScanner()
         },
-        () => { /* frame with no QR — ok */ }
+        () => {}
       )
       setStatus('scanning')
     } catch (err) {
@@ -259,119 +256,110 @@ export default function ScanPage() {
   useEffect(() => { return () => { stopScanner() } }, [stopScanner])
 
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-10">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 mb-4 shadow-lg shadow-purple-500/30">
-            <ScanLine size={26} className="text-white" />
+      <div className="max-w-lg mx-auto px-4 py-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-[20px] bg-[#ee6a2a] mb-3 text-[#000000] shadow-sm">
+            <ScanLine size={26} />
           </div>
-          <h1 className="text-2xl font-bold text-white">Scan Attendance QR</h1>
-          <p className="text-slate-400 text-sm mt-1">Point your camera at the QR code projected by your teacher</p>
+          <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#1a1a1a]">
+            Scan Attendance QR
+          </h1>
+          <p className="text-[#7a7a7a] text-xs mt-1">
+            Point camera at the live attendance QR displayed by your teacher
+          </p>
         </div>
 
-        <div className="glass-card p-6 flex flex-col items-center gap-5">
+        <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-6 flex flex-col items-center gap-5 shadow-sm">
 
-          {/* Scanner viewport */}
+          {/* Scanner Viewport */}
           <div className="relative w-full">
             <div
               id={SCANNER_ID}
-              className="w-full rounded-2xl overflow-hidden bg-slate-900 min-h-[280px] flex items-center justify-center"
+              className="w-full rounded-[20px] overflow-hidden bg-[#f5f5f5] min-h-[280px] flex items-center justify-center border border-[#DDD9D3]"
             />
 
-            {/* Idle overlay */}
+            {/* Idle Overlay */}
             {status === 'idle' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-900/90 border border-white/5">
-                <Camera size={36} className="text-slate-600" />
-                <p className="text-slate-500 text-sm">Camera is off</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f5f5f5]">
+                <Camera size={36} className="text-[#7a7a7a]" />
+                <p className="text-[#7a7a7a] text-xs font-semibold">Camera is ready</p>
               </div>
             )}
 
             {status === 'requesting' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-900/95">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm">
                 <Spinner size="lg" />
-                <p className="text-slate-400 text-sm">Requesting camera...</p>
+                <p className="text-[#1a1a1a] text-xs font-semibold">Requesting camera access...</p>
               </div>
             )}
 
             {status === 'scanning' && (
               <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute inset-[12%]">
-                  <span className="absolute top-0 left-0 w-7 h-7 border-t-2 border-l-2 border-purple-400 rounded-tl" />
-                  <span className="absolute top-0 right-0 w-7 h-7 border-t-2 border-r-2 border-purple-400 rounded-tr" />
-                  <span className="absolute bottom-0 left-0 w-7 h-7 border-b-2 border-l-2 border-purple-400 rounded-bl" />
-                  <span className="absolute bottom-0 right-0 w-7 h-7 border-b-2 border-r-2 border-purple-400 rounded-br" />
-                </div>
+                <div className="absolute inset-[12%] border-2 border-dashed border-[#ee6a2a]/60 rounded-2xl animate-pulse" />
               </div>
             )}
 
             {status === 'success' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-900/70 border border-emerald-500/40 animate-fade-in">
-                <CheckCircle size={48} className="text-emerald-400" />
-                <p className="text-emerald-300 font-bold text-lg">Attendance Recorded!</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#DCFCE7] text-[#15803D] p-4 text-center animate-fade-in">
+                <CheckCircle size={44} />
+                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg">Attendance Logged!</p>
               </div>
             )}
 
             {status === 'already_marked' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-indigo-900/70 border border-indigo-500/40 animate-fade-in">
-                <CheckCircle size={48} className="text-indigo-400" />
-                <p className="text-indigo-300 font-bold">Already Marked</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#E0E7FF] text-[#3730A3] p-4 text-center animate-fade-in">
+                <CheckCircle size={44} />
+                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg">Already Marked</p>
               </div>
             )}
           </div>
 
-          {/* Status messages */}
+          {/* Status Messages */}
           {(status === 'success' || status === 'already_marked') && successMsg && (
-            <div className={`w-full flex items-start gap-3 rounded-xl px-4 py-3 animate-fade-in ${
-              status === 'success'
-                ? 'bg-emerald-500/10 border border-emerald-500/30'
-                : 'bg-indigo-500/10 border border-indigo-500/30'
+            <div className={`w-full flex items-start gap-2.5 rounded-[16px] px-4 py-3 text-xs font-semibold ${
+              status === 'success' ? 'bg-[#DCFCE7] text-[#15803D]' : 'bg-[#E0E7FF] text-[#3730A3]'
             }`}>
-              <CheckCircle size={18} className={status === 'success' ? 'text-emerald-400' : 'text-indigo-400'} />
-              <p className={`text-sm ${status === 'success' ? 'text-emerald-300' : 'text-indigo-300'}`}>{successMsg}</p>
+              <CheckCircle size={16} className="shrink-0 mt-0.5" />
+              <p>{successMsg}</p>
             </div>
           )}
 
           {status === 'error' && (
-            <div className="w-full flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 animate-fade-in">
-              <AlertTriangle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-red-400 text-sm">{errorMsg}</p>
+            <div className="w-full flex items-start gap-2.5 bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5] rounded-[16px] px-4 py-3 text-xs font-semibold animate-fade-in">
+              <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <p>{errorMsg}</p>
             </div>
           )}
 
           {/* Controls */}
-          <div className="flex gap-3">
+          <div className="flex gap-2.5 w-full">
             {(status === 'idle' || status === 'error') && (
-              <button onClick={startScanner} className="btn-primary">
+              <button onClick={startScanner} className="btn-primary flex-1 justify-center py-3.5">
                 <Camera size={16} />
-                Start Scanning
+                Open Camera to Scan
               </button>
             )}
             {(status === 'success' || status === 'already_marked') && (
-              <button onClick={() => { setStatus('idle'); setLastToken(null) }} className="btn-secondary">
+              <button onClick={() => { setStatus('idle'); setLastToken(null) }} className="btn-secondary flex-1 justify-center py-3.5">
                 <RotateCcw size={15} />
                 Scan Another
               </button>
             )}
             {(status === 'scanning' || status === 'requesting') && (
-              <button onClick={stopScanner} className="btn-danger">
+              <button onClick={stopScanner} className="btn-danger flex-1 justify-center py-3.5">
                 <CameraOff size={16} />
-                Stop
-              </button>
-            )}
-            {status === 'error' && (
-              <button onClick={startScanner} className="btn-secondary">
-                <RotateCcw size={15} />
-                Retry
+                Stop Camera
               </button>
             )}
           </div>
 
-          {/* Hint */}
-          <div className="flex items-start gap-2 bg-slate-800/40 border border-slate-700/30 rounded-xl px-4 py-3 w-full">
-            <Info size={14} className="text-slate-500 flex-shrink-0 mt-0.5" />
-            <p className="text-slate-500 text-xs leading-relaxed">
-              Scan only the <strong className="text-slate-400">QSAMS attendance QR</strong> projected by your teacher. The QR must be active and not expired. You can only mark attendance once per session.
+          {/* Guidelines */}
+          <div className="flex items-start gap-2.5 bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-4 py-3 w-full">
+            <Info size={15} className="text-[#7a7a7a] shrink-0 mt-0.5" />
+            <p className="text-[#7a7a7a] text-xs leading-relaxed">
+              Scan the live dynamic attendance QR shown in class. Once scanned, your attendance is immediately synchronized with your teacher's roster.
             </p>
           </div>
         </div>

@@ -122,9 +122,9 @@ export function AuthProvider({ children }) {
 
   if (!isSupabaseConfigured) {
     return (
-      <div className="min-h-screen bg-[#0a0f1e] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
-        <div className="max-w-md bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-2xl">
-          <div className="w-14 h-14 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+      <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] flex flex-col items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] p-8 rounded-[24px] shadow-sm">
+          <div className="w-14 h-14 bg-[#ffffff] text-[#ee6a2a] rounded-[20px] flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
             ⚡
           </div>
           <h2 className="text-xl font-bold text-white mb-2">Vercel Environment Variables Missing</h2>

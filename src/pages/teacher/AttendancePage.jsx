@@ -14,33 +14,34 @@ import {
 } from 'lucide-react'
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import { exportSingleSessionToExcel } from '../../lib/excelExport'
+import { format } from 'date-fns'
 
-// ── Mode toggle button ──────────────────────────────────────
+// ── Mode Toggle Button (Chalk Register Style) ─────────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
   return (
     <button
       id={id}
       onClick={onClick}
-      className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-2xl border transition-all duration-200 ${
+      className={`flex-1 flex flex-col items-center gap-1.5 p-4 rounded-[20px] border transition-all ${
         active
-          ? 'bg-indigo-500/15 border-indigo-500/50 shadow-lg shadow-indigo-500/10'
-          : 'bg-slate-900/40 border-slate-700/40 hover:border-slate-600/60 hover:bg-slate-800/40'
+          ? 'bg-[#ffffff] border-[#DDD9D3] shadow-sm text-[#ee6a2a]'
+          : 'bg-[#f5f5f5] border-transparent text-[#7a7a7a] hover:text-[#1a1a1a]'
       }`}
     >
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-        active ? 'bg-indigo-500/25 text-indigo-300' : 'bg-slate-800 text-slate-500'
+        active ? 'bg-[#ebebeb] text-[#ee6a2a]' : 'bg-[#ffffff] text-[#7a7a7a]'
       }`}>
         <Icon size={20} />
       </div>
       <div className="text-center">
-        <p className={`font-semibold text-sm ${active ? 'text-indigo-300' : 'text-slate-400'}`}>{label}</p>
-        <p className="text-slate-600 text-xs mt-0.5 hidden sm:block">{description}</p>
+        <p className={`font-semibold text-sm ${active ? 'text-[#1a1a1a]' : 'text-[#7a7a7a]'}`}>{label}</p>
+        <p className="text-[#7a7a7a] text-xs mt-0.5 hidden sm:block">{description}</p>
       </div>
     </button>
   )
 }
 
-// ── Toast notification ──────────────────────────────────────
+// ── Toast Notification (Chalk Register Style) ─────────────────────────────
 function Toast({ message, type, onDone }) {
   useEffect(() => {
     const t = setTimeout(onDone, 3500)
@@ -48,14 +49,14 @@ function Toast({ message, type, onDone }) {
   }, [onDone])
 
   return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-medium animate-fade-in ${
+    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-[20px] shadow-2xl text-sm font-semibold animate-fade-in ${
       type === 'success'
-        ? 'bg-emerald-900/90 border border-emerald-500/40 text-emerald-300'
-        : 'bg-red-900/90 border border-red-500/40 text-red-300'
+        ? 'bg-[#DCFCE7] border border-[#86EFAC] text-[#15803D]'
+        : 'bg-[#FEE2E2] border border-[#FCA5A5] text-[#B91C1C]'
     }`}>
       {type === 'success'
-        ? <CheckCircle size={18} className="text-emerald-400" />
-        : <AlertCircle size={18} className="text-red-400" />}
+        ? <CheckCircle size={18} />
+        : <AlertCircle size={18} />}
       {message}
     </div>
   )
@@ -80,7 +81,7 @@ export default function AttendancePage() {
   const [roster, setRoster] = useState([])
   const [loadingRoster, setLoadingRoster] = useState(true)
 
-  // ── Excel Export for current session ──────────────────────
+  // Excel export
   const handleExportSessionExcel = () => {
     if (roster.length === 0) {
       showToast('No students to export in this session.', 'error')
@@ -97,7 +98,7 @@ export default function AttendancePage() {
     showToast('Downloaded session Excel report!', 'success')
   }
 
-  // ── Load class info ────────────────────────────────────────
+  // Load class info
   useEffect(() => {
     const fetchClass = async () => {
       const { data } = await supabase
@@ -110,7 +111,7 @@ export default function AttendancePage() {
     fetchClass()
   }, [classId])
 
-  // ── Load active session ────────────────────────────────────
+  // Load active session
   useEffect(() => {
     const fetchSession = async () => {
       const { data } = await supabase
@@ -125,7 +126,6 @@ export default function AttendancePage() {
     }
     fetchSession()
 
-    // Real-time: update when session changes
     const channel = supabase
       .channel(`session:${classId}`)
       .on('postgres_changes', {
@@ -138,21 +138,19 @@ export default function AttendancePage() {
     return () => { supabase.removeChannel(channel) }
   }, [classId])
 
-  // ── Load roster + current attendance logs ──────────────────
+  // Load roster + current attendance logs
   const loadRoster = useCallback(async () => {
     setLoadingRoster(true)
 
-    // Fetch enrolled students
     const { data: enrollments } = await supabase
       .from('enrollments')
-      .select('student_id, profiles(id, full_name, student_id)')
+      .select('student_id, profiles(id, full_name, student_id, avatar_url)')
       .eq('class_id', classId)
 
     if (!enrollments) { setLoadingRoster(false); return }
 
     const students = enrollments.map(e => e.profiles).filter(Boolean)
 
-    // Fetch attendance logs for today's active session
     let logs = []
     if (session?.id) {
       const { data: logData } = await supabase
@@ -162,13 +160,11 @@ export default function AttendancePage() {
       logs = logData || []
     }
 
-    // Merge: attach current status to each student
     const merged = students.map(s => {
       const log = logs.find(l => l.student_id === s.id)
       return { ...s, status: log?.status || null, log_id: log?.id || null }
     })
 
-    // Sort: marked students first, then alphabetically
     merged.sort((a, b) => {
       if (a.status && !b.status) return -1
       if (!a.status && b.status) return 1
@@ -181,7 +177,6 @@ export default function AttendancePage() {
 
   useEffect(() => { loadRoster() }, [loadRoster])
 
-  // Real-time roster refresh when logs change
   useEffect(() => {
     if (!session?.id) return
     const channel = supabase
@@ -195,14 +190,13 @@ export default function AttendancePage() {
     return () => { supabase.removeChannel(channel) }
   }, [session?.id, loadRoster])
 
-  // ── Mark attendance (used by both scanner and manual override) ──
+  // Mark attendance
   const markAttendance = useCallback(async (studentId, status, method = 'manual') => {
     if (!session?.id) {
       showToast('No active session. Please generate a QR first.', 'error')
       return false
     }
 
-    // Upsert: insert or update if already marked
     const { error } = await supabase
       .from('attendance_logs')
       .upsert({
@@ -219,25 +213,19 @@ export default function AttendancePage() {
       return false
     }
 
-    // Eagerly update local state so the dropdown updates instantly
     setRoster(prev => prev.map(s => s.id === studentId ? { ...s, status } : s))
-
     showToast(`Marked ${status}!`, 'success')
     return true
   }, [session, classId])
 
-  // ── ID Card scanner: decode student_id from QR payload ────
+  // ID Card scanner handler
   const handleIDCardScan = useCallback(async (rawValue) => {
-    // Try to find student by their student_id string
     let targetStudentId = rawValue
-
-    // If it's a JSON payload (from QSAMS student QR), parse it
     try {
       const parsed = JSON.parse(rawValue)
       targetStudentId = parsed.studentId || parsed.id || rawValue
-    } catch (_) { /* plain string student_id — ok */ }
+    } catch (_) {}
 
-    // Look up the profile uuid from the student_id string
     const { data: found } = await supabase
       .from('profiles')
       .select('id, full_name')
@@ -249,7 +237,6 @@ export default function AttendancePage() {
       return
     }
 
-    // Check enrollment
     const enrolled = roster.find(s => s.id === found.id)
     if (!enrolled) {
       showToast(`${found.full_name} is not enrolled in this class.`, 'error')
@@ -264,102 +251,102 @@ export default function AttendancePage() {
     setToast({ message, type, key: Date.now() })
   }
 
-  // ── Manual override handler ─────────────────────────────────
   const handleManualOverride = useCallback((studentId, status) => {
     return markAttendance(studentId, status, 'manual')
   }, [markAttendance])
 
-  // ── Render ──────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0a0f1e]">
+    <div className="min-h-screen bg-[#ffffff] text-[#1a1a1a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#ee6a2a]/20">
       <Navbar />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* Back button + Header */}
-        <div className="mb-8">
+      {/* Header Banner */}
+      <div className="bg-[#f5f5f5] border-b border-[rgba(0,0,0,0.06)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => navigate(`/teacher/class/${classId}`)}
-            className="flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#ee6a2a] hover:underline mb-4 transition-colors"
           >
-            <ArrowLeft size={16} />
-            Back to Class
+            <ArrowLeft size={15} /> Back to Course
           </button>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <CalendarDays size={16} className="text-indigo-400" />
-                <span className="text-indigo-400 text-sm font-medium">
-                  {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                <CalendarDays size={14} className="text-[#ee6a2a]" />
+                <span className="text-[#7a7a7a] text-xs font-bold uppercase tracking-wider">
+                  {format(new Date(), 'EEEE, MMMM d, yyyy')}
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Take Attendance</h1>
+              <h1 className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#1a1a1a]">
+                Take Attendance
+              </h1>
               {classInfo && (
-                <p className="text-slate-400 text-sm mt-1">{classInfo.name}</p>
+                <p className="text-[#7a7a7a] text-xs mt-1">{classInfo.name} {classInfo.room ? `· ${classInfo.room}` : ''}</p>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 self-start">
+            <div className="flex flex-wrap items-center gap-2.5 self-start">
               <button
                 onClick={handleExportSessionExcel}
                 className="btn-secondary btn-sm flex items-center gap-1.5"
                 title="Download formatted Excel workbook for this session"
               >
-                <FileSpreadsheet size={14} className="text-emerald-400" /> Export Excel
+                <FileSpreadsheet size={14} className="text-[#15803D]" /> Export Excel
               </button>
               <button
                 onClick={() => setShowReportModal(true)}
                 className="btn-secondary btn-sm flex items-center gap-1.5"
                 title="Generate Full Attendance Report"
               >
-                <FileSpreadsheet size={14} className="text-indigo-400" /> Full Report
+                <FileSpreadsheet size={14} className="text-[#ee6a2a]" /> Full Report
               </button>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <span className="pulse-dot" />
-                <span className="text-emerald-400 text-xs font-medium">Session Active</span>
+              <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC] text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#15803D] animate-pulse" />
+                <span>Session Active</span>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* ── LEFT PANEL: Mode selector + Active tool ── */}
-          <div className="lg:col-span-2 flex flex-col gap-5">
+          <div className="lg:col-span-2 flex flex-col gap-4">
 
-            {/* Mode Toggle */}
-            <div className="glass-card p-2 flex gap-2">
+            {/* Mode Switcher */}
+            <div className="bg-[#ebebeb] p-2 rounded-[24px] flex gap-2 border border-[rgba(0,0,0,0.06)] shadow-sm">
               <ModeTab
                 id="mode-kiosk"
                 icon={Tv2}
                 label="Kiosk Mode"
-                description="Display QR for students to scan"
+                description="Project QR for student scan"
                 active={mode === 'kiosk'}
                 onClick={() => setMode('kiosk')}
               />
               <ModeTab
                 id="mode-idcard"
                 icon={ScanLine}
-                label="ID Card Mode"
-                description="Scan student QR with camera"
+                label="ID Scanner"
+                description="Scan student QR cards"
                 active={mode === 'idcard'}
                 onClick={() => setMode('idcard')}
               />
             </div>
 
             {/* Mode Tip */}
-            <div className="flex items-start gap-2 bg-slate-800/40 border border-slate-700/30 rounded-xl px-4 py-3">
-              <Zap size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
-              <p className="text-slate-400 text-xs leading-relaxed">
+            <div className="flex items-start gap-2.5 bg-[#f5f5f5] border border-[rgba(0,0,0,0.06)] rounded-[16px] px-4 py-3">
+              <Zap size={15} className="text-[#ee6a2a] shrink-0 mt-0.5" />
+              <p className="text-[#7a7a7a] text-xs leading-relaxed">
                 {mode === 'kiosk'
-                  ? 'Project this QR code on a screen. Students scan it using the QSAMS mobile scanner to mark themselves present.'
-                  : 'Use this to scan each student\'s printed or displayed QR ID card as they walk in.'}
+                  ? 'Project the dynamic QR on a screen. Students scan it using their QSAMS app to mark themselves present.'
+                  : 'Use your camera to scan student ID cards as they enter the classroom.'}
               </p>
             </div>
 
             {/* Active Tool Panel */}
-            <div className="glass-card p-6 animate-fade-in">
+            <div className="bg-[#ebebeb] border border-[rgba(0,0,0,0.06)] rounded-[24px] p-6 shadow-sm animate-fade-in">
               {mode === 'kiosk' && (
                 <KioskMode classId={classId} />
               )}
@@ -372,15 +359,17 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {/* ── RIGHT PANEL: Roster ── */}
+          {/* ── RIGHT PANEL: Roster Table ── */}
           <div className="lg:col-span-3 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-white flex items-center gap-2">
-                <Users size={16} className="text-indigo-400" />
-                Student Roster
-              </h2>
-              <span className="text-slate-500 text-xs">
-                {roster.filter(s => s.status === 'present' || s.status === 'late').length} / {roster.length} present
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-[#ee6a2a]" />
+                <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#1a1a1a]">
+                  Student Roster
+                </h2>
+              </div>
+              <span className="text-xs font-semibold text-[#7a7a7a]">
+                {roster.filter(s => s.status === 'present' || s.status === 'late').length} of {roster.length} Checked In
               </span>
             </div>
 

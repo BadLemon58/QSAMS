@@ -3,13 +3,6 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react'
 import Spinner from '../common/Spinner'
 
-/**
- * IDCardScanner — opens the teacher's camera to scan a student's static QR code.
- *
- * Props:
- *   onScan(studentId: string)  — called when a valid QR is decoded
- *   onError(message: string)   — called on unrecoverable errors
- */
 export default function IDCardScanner({ onScan, onError }) {
   const scannerRef = useRef(null)
   const [status, setStatus] = useState('idle') // idle | requesting | scanning | error | success
@@ -21,12 +14,11 @@ export default function IDCardScanner({ onScan, onError }) {
     setStatus('requesting')
     setErrorMsg('')
 
-    // Request camera permission explicitly first
     try {
       await navigator.mediaDevices.getUserMedia({ video: true })
     } catch (permErr) {
       const msg = permErr.name === 'NotAllowedError'
-        ? 'Camera permission was denied. Please allow camera access in your browser settings and try again.'
+        ? 'Camera permission denied. Please allow camera access in your browser settings.'
         : `Could not access camera: ${permErr.message}`
       setErrorMsg(msg)
       setStatus('error')
@@ -46,19 +38,17 @@ export default function IDCardScanner({ onScan, onError }) {
           aspectRatio: 1.0,
         },
         (decodedText) => {
-          // Prevent rapid duplicate scans
           if (decodedText === lastScanned) return
           setLastScanned(decodedText)
           setStatus('success')
           onScan?.(decodedText)
 
-          // Reset after 2 seconds to allow next scan
           setTimeout(() => {
             setLastScanned(null)
             setStatus('scanning')
-          }, 2000)
+          }, 1800)
         },
-        () => { /* QR not found in frame — ignore */ }
+        () => {}
       )
       setStatus('scanning')
     } catch (err) {
@@ -81,97 +71,87 @@ export default function IDCardScanner({ onScan, onError }) {
     setLastScanned(null)
   }
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => { stopScanner() }
   }, [])
 
   return (
-    <div className="flex flex-col items-center gap-5">
-      {/* Scanner viewport */}
+    <div className="flex flex-col items-center gap-4">
+      {/* Scanner Viewport */}
       <div className="relative w-full max-w-sm">
-        {/* The div html5-qrcode will mount its video into */}
         <div
           id={SCANNER_ID}
-          className="w-full rounded-2xl overflow-hidden bg-slate-900/60 min-h-[300px] flex items-center justify-center"
+          className="w-full rounded-[20px] overflow-hidden bg-[#f5f5f5] min-h-[280px] flex items-center justify-center border border-[#DDD9D3]"
         />
 
-        {/* Overlay states shown on top */}
         {status === 'idle' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-2xl bg-slate-900/80 border border-white/10">
-            <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
-              <Camera size={28} className="text-slate-400" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f5f5f5]">
+            <div className="w-14 h-14 rounded-full bg-[#ffffff] flex items-center justify-center text-[#7a7a7a] shadow-sm">
+              <Camera size={26} />
             </div>
-            <p className="text-slate-400 text-sm">Camera is off</p>
+            <p className="text-[#7a7a7a] text-xs font-semibold">Camera is off</p>
           </div>
         )}
 
         {status === 'requesting' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-slate-900/90">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm">
             <Spinner size="lg" />
-            <p className="text-slate-400 text-sm">Requesting camera access...</p>
+            <p className="text-[#1a1a1a] text-xs font-semibold">Requesting camera access...</p>
           </div>
         )}
 
         {status === 'success' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-900/60 border border-emerald-500/40 animate-fade-in">
-            <CheckCircle size={40} className="text-emerald-400" />
-            <p className="text-emerald-300 font-semibold">QR Scanned!</p>
-            <p className="text-emerald-400/70 text-xs">Processing...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#DCFCE7] text-[#15803D] p-4 text-center animate-fade-in">
+            <CheckCircle size={40} />
+            <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-base">QR ID Scanned!</p>
+            <p className="text-xs">Marking student in roster...</p>
           </div>
         )}
 
-        {/* Scanning corners overlay */}
         {status === 'scanning' && (
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-[15%] border-2 border-transparent">
-              <span className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-indigo-400 rounded-tl" />
-              <span className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-indigo-400 rounded-tr" />
-              <span className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-indigo-400 rounded-bl" />
-              <span className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-indigo-400 rounded-br" />
-            </div>
+            <div className="absolute inset-[15%] border-2 border-dashed border-[#ee6a2a] rounded-2xl animate-pulse" />
           </div>
         )}
       </div>
 
-      {/* Error message */}
       {status === 'error' && (
-        <div className="w-full max-w-sm flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 animate-fade-in">
-          <AlertTriangle size={18} className="text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="w-full max-w-sm flex items-start gap-2.5 bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5] rounded-[16px] px-4 py-3 text-xs font-semibold animate-fade-in">
+          <AlertTriangle size={16} className="shrink-0 mt-0.5" />
           <div>
-            <p className="text-red-400 text-sm font-medium">Camera Error</p>
-            <p className="text-red-400/70 text-xs mt-0.5">{errorMsg}</p>
+            <p className="font-bold">Camera Error</p>
+            <p className="mt-0.5 text-[11px]">{errorMsg}</p>
           </div>
         </div>
       )}
 
-      {/* Control buttons */}
-      <div className="flex gap-3">
+      {/* Control Buttons */}
+      <div className="flex gap-2.5">
         {(status === 'idle' || status === 'error') && (
-          <button onClick={startScanner} className="btn-primary">
-            <Camera size={16} />
-            Start Camera
+          <button onClick={startScanner} className="btn-primary py-3 px-5 text-xs">
+            <Camera size={15} />
+            Start Camera Scanner
           </button>
         )}
 
         {(status === 'scanning' || status === 'success' || status === 'requesting') && (
-          <button onClick={stopScanner} className="btn-danger">
-            <CameraOff size={16} />
+          <button onClick={stopScanner} className="btn-danger py-3 px-5 text-xs">
+            <CameraOff size={15} />
             Stop Camera
           </button>
         )}
 
         {status === 'error' && (
-          <button onClick={startScanner} className="btn-secondary">
-            <RotateCcw size={16} />
+          <button onClick={startScanner} className="btn-secondary py-3 px-5 text-xs">
+            <RotateCcw size={15} />
             Retry
           </button>
         )}
       </div>
 
       {status === 'scanning' && (
-        <p className="text-slate-500 text-xs text-center">
-          Point the camera at a student's QR ID card
+        <p className="text-[#7a7a7a] text-xs text-center">
+          Point camera at the student's static or digital ID QR
         </p>
       )}
     </div>

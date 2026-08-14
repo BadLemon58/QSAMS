@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Spinner from '../common/Spinner'
 import {
-  X, Download, Printer, FileSpreadsheet, Users,
-  Calendar, CheckCircle, Clock, AlertTriangle, Sparkles
+  X, Printer, FileSpreadsheet, Users,
+  Calendar, CheckCircle, Clock, AlertTriangle
 } from 'lucide-react'
 import { exportAttendanceReportToExcel } from '../../lib/excelExport'
 
@@ -64,7 +64,6 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         let absent = 0
         let excused = 0
 
-        // Map logs against sessions
         allSessions.forEach(sess => {
           const log = studentLogs.find(l => l.session_id === sess.id)
           if (!log) {
@@ -123,7 +122,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
     }
   }, [classId])
 
-  // ── Export Excel Handler ────────────────────────────────────
+  // Export Excel
   const handleExportExcel = () => {
     exportAttendanceReportToExcel({
       classInfo,
@@ -135,24 +134,26 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
     })
   }
 
-  // ── Print / Save as PDF Handler ───────────────────────────
+  // Print
   const handlePrint = () => {
     window.print()
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md overflow-y-auto print:p-0 print:bg-white print:static">
-      <div className="glass-card w-full max-w-4xl p-6 sm:p-8 animate-fade-in relative my-auto max-h-[92vh] flex flex-col print:max-h-none print:shadow-none print:border-none print:bg-white print:text-black print:p-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/40 backdrop-blur-sm overflow-y-auto print:p-0 print:bg-white print:static font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#1a1a1a] w-full max-w-4xl p-6 sm:p-8 rounded-[24px] shadow-2xl border border-[rgba(0,0,0,0.06)] animate-fade-in relative my-auto max-h-[92vh] flex flex-col print:max-h-none print:shadow-none print:border-none print:bg-white print:text-black print:p-0">
 
         {/* Modal Controls (Hidden in Print) */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/10 print:hidden">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-[rgba(0,0,0,0.06)] print:hidden">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#ebebeb] text-[#ee6a2a] flex items-center justify-center">
               <FileSpreadsheet size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white leading-none">Attendance Report</h2>
-              <p className="text-xs text-slate-400 mt-1">Export or print the official attendance summary</p>
+              <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#1a1a1a] leading-none">
+                Attendance Report
+              </h2>
+              <p className="text-xs text-[#7a7a7a] mt-1">Export Excel or print the official attendance summary</p>
             </div>
           </div>
 
@@ -163,7 +164,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
               className="btn-secondary btn-sm flex items-center gap-1.5"
               title="Download formatted Excel workbook (.xlsx)"
             >
-              <FileSpreadsheet size={14} className="text-emerald-400" />
+              <FileSpreadsheet size={14} className="text-[#15803D]" />
               <span>Export Excel</span>
             </button>
             <button
@@ -177,9 +178,9 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors ml-2"
+              className="w-8 h-8 rounded-full bg-[#ebebeb] flex items-center justify-center text-[#7a7a7a] hover:text-[#1a1a1a] transition-colors ml-1"
             >
-              <X size={20} />
+              <X size={16} />
             </button>
           </div>
         </div>
@@ -188,37 +189,37 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         <div id="printable-report" className="flex-1 overflow-y-auto print:overflow-visible">
 
           {/* Institutional Header */}
-          <div className="text-center pb-4 mb-4 print:pb-1.5 print:mb-2 border-b border-white/10 print:border-slate-300 print:text-black">
-            <p className="text-xs print:text-[9.5px] font-bold uppercase tracking-widest text-indigo-400 print:text-slate-800">
+          <div className="text-center pb-4 mb-4 print:pb-1.5 print:mb-2 border-b border-[rgba(0,0,0,0.06)] print:border-slate-300 print:text-black">
+            <p className="text-xs print:text-[9.5px] font-bold uppercase tracking-widest text-[#ee6a2a] print:text-slate-800">
               Notre Dame of Midsayap College
             </p>
-            <h1 className="text-xl sm:text-2xl print:text-base font-black text-white print:text-black tracking-tight mt-0.5">
+            <h1 className="font-['Source_Serif_4',Georgia,serif] text-xl sm:text-2xl print:text-base font-bold text-[#1a1a1a] print:text-black tracking-tight mt-0.5">
               QR Code-Based Student Attendance Monitoring System (QSAMS)
             </h1>
-            <p className="text-xs print:text-[9px] text-slate-400 print:text-slate-600 font-medium mt-0.5">
+            <p className="text-xs print:text-[9px] text-[#7a7a7a] print:text-slate-600 font-medium mt-0.5">
               Official Class Attendance Summary Report
             </p>
           </div>
 
-          {/* Class Metadata & Info Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-1.5 bg-slate-900/50 print:bg-slate-50 border border-white/5 print:border-slate-200 rounded-xl print:rounded-lg p-4 print:p-2 mb-5 print:mb-2 print:text-black">
+          {/* Class Metadata Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-1.5 bg-[#f5f5f5] print:bg-slate-50 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[18px] print:rounded-lg p-4 print:p-2 mb-5 print:mb-2">
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Class Name</p>
-              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">{classInfo?.name}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Class Name</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">{classInfo?.name}</p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Teacher</p>
-              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Teacher</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Schedule & Room</p>
-              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Schedule & Room</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black truncate">
                 {classInfo?.schedule || 'N/A'} {classInfo?.room ? `(${classInfo.room})` : ''}
               </p>
             </div>
             <div>
-              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Report Date</p>
-              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-[#7a7a7a] tracking-wider">Report Date</p>
+              <p className="text-sm print:text-[10px] font-semibold text-[#1a1a1a] print:text-black">
                 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
@@ -226,78 +227,68 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
 
           {/* Quick Metrics Bar */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 print:gap-1 mb-5 print:mb-2">
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="text-lg print:text-xs font-bold text-white print:text-black">{overallStats.totalStudents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Enrolled</p>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#1a1a1a] print:text-black">{overallStats.totalStudents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Enrolled</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="text-lg print:text-xs font-bold text-indigo-400 print:text-indigo-700">{overallStats.totalSessions}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Sessions</p>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#1a1a1a] print:text-indigo-700">{overallStats.totalSessions}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Sessions</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="text-lg print:text-xs font-bold text-emerald-400 print:text-emerald-700">{overallStats.totalPresents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Present</p>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#15803D] print:text-emerald-700">{overallStats.totalPresents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Present</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="text-lg print:text-xs font-bold text-yellow-400 print:text-amber-700">{overallStats.totalLates}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Late</p>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#A16207] print:text-amber-700">{overallStats.totalLates}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Late</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className="text-lg print:text-xs font-bold text-red-400 print:text-red-700">{overallStats.totalAbsents}</p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Absent</p>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold text-[#B91C1C] print:text-red-700">{overallStats.totalAbsents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Absent</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
-              <p className={`text-lg print:text-xs font-bold ${overallStats.averageRate >= 80 ? 'text-emerald-400 print:text-emerald-700' : overallStats.averageRate >= 60 ? 'text-yellow-400 print:text-amber-700' : 'text-red-400 print:text-red-700'}`}>
+            <div className="bg-[#ebebeb] print:bg-slate-100 border border-[rgba(0,0,0,0.06)] print:border-slate-200 rounded-[14px] print:rounded-md p-2.5 print:p-1 text-center">
+              <p className={`font-['Source_Serif_4',Georgia,serif] text-lg print:text-xs font-bold ${overallStats.averageRate >= 80 ? 'text-[#15803D]' : overallStats.averageRate >= 60 ? 'text-[#A16207]' : 'text-[#B91C1C]'}`}>
                 {overallStats.averageRate}%
               </p>
-              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Avg Rate</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-[#7a7a7a] font-bold mt-0.5">Avg Rate</p>
             </div>
           </div>
 
-          {/* Student Roster Attendance Table */}
+          {/* Student Table */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Spinner size="lg" />
-              <p className="text-sm text-slate-400 mt-2">Compiling class attendance statistics...</p>
+              <p className="text-xs text-[#7a7a7a] mt-3">Compiling attendance records...</p>
             </div>
           ) : reportData.length === 0 ? (
-            <div className="p-8 text-center bg-slate-900/40 rounded-xl border border-white/5">
-              <p className="text-slate-400 text-sm">No students enrolled in this class yet.</p>
+            <div className="p-8 text-center bg-[#f5f5f5] rounded-[18px]">
+              <p className="text-[#7a7a7a] text-xs">No attendance data recorded yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-white/10 print:border-slate-300 rounded-xl print:rounded-none">
-              <table className="w-full text-left text-xs print:text-[9px] border-collapse">
+            <div className="border border-[rgba(0,0,0,0.06)] print:border-slate-300 rounded-[18px] print:rounded-none overflow-hidden">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/80 print:bg-slate-100 border-b border-white/10 print:border-slate-300 text-slate-400 print:text-slate-800">
-                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-center w-8">#</th>
-                    <th className="py-2.5 px-3 print:py-1 print:px-2 font-semibold uppercase tracking-wider">Student Name</th>
-                    <th className="py-2.5 px-3 print:py-1 print:px-2 font-semibold uppercase tracking-wider">Student ID</th>
-                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-emerald-400 print:text-emerald-800">Present</th>
-                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-yellow-400 print:text-amber-800">Late</th>
-                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-red-400 print:text-red-800">Absent</th>
-                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-indigo-400 print:text-indigo-800">Excused</th>
-                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-center">Attended</th>
-                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-right">Rate (%)</th>
+                  <tr className="bg-[#f5f5f5] print:bg-slate-100 border-b border-[rgba(0,0,0,0.06)] print:border-slate-300 text-[10px] print:text-[8px] font-bold uppercase tracking-wider text-[#7a7a7a] print:text-black">
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 w-8">#</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5">Student Name</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5">ID Number</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center">Present</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center">Late</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center">Absent</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center">Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 print:divide-slate-200">
-                  {reportData.map((st, idx) => (
-                    <tr key={st.id} className="hover:bg-white/[0.02] print:hover:bg-transparent">
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center text-slate-500 print:text-slate-600 font-mono">{idx + 1}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-2 font-medium text-slate-200 print:text-black">{st.name}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-2 text-slate-400 print:text-slate-700 font-mono">{st.studentId}</td>
-                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-emerald-400 print:text-emerald-800">{st.present}</td>
-                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-yellow-400 print:text-amber-800">{st.late}</td>
-                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-red-400 print:text-red-800">{st.absent}</td>
-                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-indigo-400 print:text-indigo-800">{st.excused}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-semibold text-slate-200 print:text-black">
-                        {st.totalAttended} / {sessions.length}
-                      </td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-right font-bold">
-                        <span className={st.rate >= 80 ? 'text-emerald-400 print:text-emerald-800' : st.rate >= 60 ? 'text-yellow-400 print:text-amber-800' : 'text-red-400 print:text-red-800'}>
-                          {st.rate}%
-                        </span>
-                      </td>
+                <tbody className="divide-y divide-[rgba(0,0,0,0.06)] print:divide-slate-200 text-xs print:text-[8.5px]">
+                  {reportData.map((row, idx) => (
+                    <tr key={row.id} className="hover:bg-[#f5f5f5] print:hover:bg-transparent">
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-[#7a7a7a] print:text-black font-mono">{idx + 1}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-semibold text-[#1a1a1a] print:text-black">{row.name}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 font-mono text-[#7a7a7a] print:text-black">{row.studentId}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#15803D] print:text-black">{row.present}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#A16207] print:text-black">{row.late}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#B91C1C] print:text-black">{row.absent}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-bold text-[#1a1a1a] print:text-black">{row.rate}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -305,20 +296,20 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
             </div>
           )}
 
-          {/* Institutional Sign-off in Print View */}
-          <div className="hidden print:grid grid-cols-2 gap-8 mt-6 pt-4 text-black text-[9.5px]">
-            <div className="border-t border-slate-400 pt-1 text-center">
-              <p className="font-bold">{teacherName || 'Subject Teacher'}</p>
-              <p className="text-slate-500">Instructor Signature & Date</p>
+          {/* Institutional Sign-off Footer */}
+          <div className="mt-8 print:mt-4 pt-4 border-t border-[rgba(0,0,0,0.06)] print:border-slate-300 grid grid-cols-2 gap-8 text-center text-xs print:text-[8.5px]">
+            <div>
+              <div className="border-b border-[rgba(0,0,0,0.2)] print:border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-[#1a1a1a]">{teacherName || 'Course Instructor'}</p>
+              <p className="text-[#7a7a7a]">Faculty Signature</p>
             </div>
-            <div className="border-t border-slate-400 pt-1 text-center">
-              <p className="font-bold">NDMC Academic Affairs / Department Head</p>
-              <p className="text-slate-500">Verified & Approved By</p>
+            <div>
+              <div className="border-b border-[rgba(0,0,0,0.2)] print:border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-[#1a1a1a]">Office of Academic Affairs</p>
+              <p className="text-[#7a7a7a]">Verified & Recorded</p>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   )
