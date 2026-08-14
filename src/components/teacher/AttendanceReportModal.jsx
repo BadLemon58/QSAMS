@@ -188,69 +188,69 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         <div id="printable-report" className="flex-1 overflow-y-auto print:overflow-visible">
 
           {/* Institutional Header */}
-          <div className="text-center pb-5 mb-5 border-b border-white/10 print:border-slate-300 print:text-black">
-            <p className="text-xs font-bold uppercase tracking-widest text-indigo-400 print:text-slate-800">
+          <div className="text-center pb-4 mb-4 print:pb-1.5 print:mb-2 border-b border-white/10 print:border-slate-300 print:text-black">
+            <p className="text-xs print:text-[9.5px] font-bold uppercase tracking-widest text-indigo-400 print:text-slate-800">
               Notre Dame of Midsayap College
             </p>
-            <h1 className="text-xl sm:text-2xl font-black text-white print:text-black tracking-tight mt-0.5">
+            <h1 className="text-xl sm:text-2xl print:text-base font-black text-white print:text-black tracking-tight mt-0.5">
               QR Code-Based Student Attendance Monitoring System (QSAMS)
             </h1>
-            <p className="text-xs text-slate-400 print:text-slate-600 font-medium mt-1">
+            <p className="text-xs print:text-[9px] text-slate-400 print:text-slate-600 font-medium mt-0.5">
               Official Class Attendance Summary Report
             </p>
           </div>
 
           {/* Class Metadata & Info Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-900/50 print:bg-slate-50 border border-white/5 print:border-slate-200 rounded-xl p-4 mb-6 print:text-black">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 print:gap-1.5 bg-slate-900/50 print:bg-slate-50 border border-white/5 print:border-slate-200 rounded-xl print:rounded-lg p-4 print:p-2 mb-5 print:mb-2 print:text-black">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Class Name</p>
-              <p className="text-sm font-semibold text-white print:text-black truncate">{classInfo?.name}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Class Name</p>
+              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">{classInfo?.name}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Teacher</p>
-              <p className="text-sm font-semibold text-white print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Teacher</p>
+              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">{teacherName || 'Authorized Faculty'}</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Schedule & Room</p>
-              <p className="text-sm font-semibold text-white print:text-black truncate">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Schedule & Room</p>
+              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black truncate">
                 {classInfo?.schedule || 'N/A'} {classInfo?.room ? `(${classInfo.room})` : ''}
               </p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Report Date</p>
-              <p className="text-sm font-semibold text-white print:text-black">
+              <p className="text-[10px] print:text-[8px] uppercase font-bold text-slate-500 tracking-wider">Report Date</p>
+              <p className="text-sm print:text-[10px] font-semibold text-white print:text-black">
                 {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </p>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mb-6">
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold text-white print:text-black">{overallStats.totalStudents}</p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Enrolled</p>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 print:gap-1 mb-5 print:mb-2">
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="text-lg print:text-xs font-bold text-white print:text-black">{overallStats.totalStudents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Enrolled</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold text-indigo-400 print:text-indigo-700">{overallStats.totalSessions}</p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Sessions</p>
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="text-lg print:text-xs font-bold text-indigo-400 print:text-indigo-700">{overallStats.totalSessions}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Sessions</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold text-emerald-400 print:text-emerald-700">{overallStats.totalPresents}</p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Present</p>
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="text-lg print:text-xs font-bold text-emerald-400 print:text-emerald-700">{overallStats.totalPresents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Present</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold text-yellow-400 print:text-amber-700">{overallStats.totalLates}</p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Late</p>
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="text-lg print:text-xs font-bold text-yellow-400 print:text-amber-700">{overallStats.totalLates}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Late</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className="text-lg font-bold text-red-400 print:text-red-700">{overallStats.totalAbsents}</p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Absent</p>
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className="text-lg print:text-xs font-bold text-red-400 print:text-red-700">{overallStats.totalAbsents}</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Absent</p>
             </div>
-            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl p-2.5 text-center">
-              <p className={`text-lg font-bold ${overallStats.averageRate >= 80 ? 'text-emerald-400 print:text-emerald-700' : overallStats.averageRate >= 60 ? 'text-yellow-400 print:text-amber-700' : 'text-red-400 print:text-red-700'}`}>
+            <div className="bg-slate-900/40 print:bg-slate-100 border border-white/5 print:border-slate-200 rounded-xl print:rounded-md p-2.5 print:p-1 text-center">
+              <p className={`text-lg print:text-xs font-bold ${overallStats.averageRate >= 80 ? 'text-emerald-400 print:text-emerald-700' : overallStats.averageRate >= 60 ? 'text-yellow-400 print:text-amber-700' : 'text-red-400 print:text-red-700'}`}>
                 {overallStats.averageRate}%
               </p>
-              <p className="text-[10px] uppercase text-slate-400 font-semibold mt-0.5">Avg Rate</p>
+              <p className="text-[10px] print:text-[7.5px] uppercase text-slate-400 font-semibold mt-0.5">Avg Rate</p>
             </div>
           </div>
 
@@ -265,35 +265,35 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
               <p className="text-slate-400 text-sm">No students enrolled in this class yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-white/10 print:border-slate-300 rounded-xl">
-              <table className="w-full text-left text-xs border-collapse">
+            <div className="overflow-x-auto border border-white/10 print:border-slate-300 rounded-xl print:rounded-none">
+              <table className="w-full text-left text-xs print:text-[9px] border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/80 print:bg-slate-100 border-b border-white/10 print:border-slate-300 text-slate-400 print:text-slate-700">
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center w-10">#</th>
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Student Name</th>
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider">Student ID</th>
-                    <th className="py-2.5 px-2.5 font-semibold uppercase tracking-wider text-center text-emerald-400 print:text-emerald-800">Present</th>
-                    <th className="py-2.5 px-2.5 font-semibold uppercase tracking-wider text-center text-yellow-400 print:text-amber-800">Late</th>
-                    <th className="py-2.5 px-2.5 font-semibold uppercase tracking-wider text-center text-red-400 print:text-red-800">Absent</th>
-                    <th className="py-2.5 px-2.5 font-semibold uppercase tracking-wider text-center text-indigo-400 print:text-indigo-800">Excused</th>
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-center">Attended</th>
-                    <th className="py-2.5 px-3 font-semibold uppercase tracking-wider text-right">Rate (%)</th>
+                  <tr className="bg-slate-900/80 print:bg-slate-100 border-b border-white/10 print:border-slate-300 text-slate-400 print:text-slate-800">
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-center w-8">#</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-2 font-semibold uppercase tracking-wider">Student Name</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-2 font-semibold uppercase tracking-wider">Student ID</th>
+                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-emerald-400 print:text-emerald-800">Present</th>
+                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-yellow-400 print:text-amber-800">Late</th>
+                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-red-400 print:text-red-800">Absent</th>
+                    <th className="py-2.5 px-2.5 print:py-1 print:px-1 font-semibold uppercase tracking-wider text-center text-indigo-400 print:text-indigo-800">Excused</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-center">Attended</th>
+                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 font-semibold uppercase tracking-wider text-right">Rate (%)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 print:divide-slate-200">
                   {reportData.map((st, idx) => (
                     <tr key={st.id} className="hover:bg-white/[0.02] print:hover:bg-transparent">
-                      <td className="py-2 px-3 text-center text-slate-500 font-mono">{idx + 1}</td>
-                      <td className="py-2 px-3 font-medium text-slate-200 print:text-black">{st.name}</td>
-                      <td className="py-2 px-3 text-slate-400 print:text-slate-700 font-mono">{st.studentId}</td>
-                      <td className="py-2 px-2.5 text-center font-semibold text-emerald-400 print:text-emerald-800">{st.present}</td>
-                      <td className="py-2 px-2.5 text-center font-semibold text-yellow-400 print:text-amber-800">{st.late}</td>
-                      <td className="py-2 px-2.5 text-center font-semibold text-red-400 print:text-red-800">{st.absent}</td>
-                      <td className="py-2 px-2.5 text-center font-semibold text-indigo-400 print:text-indigo-800">{st.excused}</td>
-                      <td className="py-2 px-3 text-center font-semibold text-slate-200 print:text-black">
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center text-slate-500 print:text-slate-600 font-mono">{idx + 1}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-2 font-medium text-slate-200 print:text-black">{st.name}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-2 text-slate-400 print:text-slate-700 font-mono">{st.studentId}</td>
+                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-emerald-400 print:text-emerald-800">{st.present}</td>
+                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-yellow-400 print:text-amber-800">{st.late}</td>
+                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-red-400 print:text-red-800">{st.absent}</td>
+                      <td className="py-2 px-2.5 print:py-0.5 print:px-1 text-center font-semibold text-indigo-400 print:text-indigo-800">{st.excused}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-center font-semibold text-slate-200 print:text-black">
                         {st.totalAttended} / {sessions.length}
                       </td>
-                      <td className="py-2 px-3 text-right font-bold">
+                      <td className="py-2 px-3 print:py-0.5 print:px-1.5 text-right font-bold">
                         <span className={st.rate >= 80 ? 'text-emerald-400 print:text-emerald-800' : st.rate >= 60 ? 'text-yellow-400 print:text-amber-800' : 'text-red-400 print:text-red-800'}>
                           {st.rate}%
                         </span>
@@ -306,12 +306,12 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
           )}
 
           {/* Institutional Sign-off in Print View */}
-          <div className="hidden print:grid grid-cols-2 gap-12 mt-12 pt-8 text-black text-xs">
-            <div className="border-t border-slate-400 pt-2 text-center">
+          <div className="hidden print:grid grid-cols-2 gap-8 mt-6 pt-4 text-black text-[9.5px]">
+            <div className="border-t border-slate-400 pt-1 text-center">
               <p className="font-bold">{teacherName || 'Subject Teacher'}</p>
               <p className="text-slate-500">Instructor Signature & Date</p>
             </div>
-            <div className="border-t border-slate-400 pt-2 text-center">
+            <div className="border-t border-slate-400 pt-1 text-center">
               <p className="font-bold">NDMC Academic Affairs / Department Head</p>
               <p className="text-slate-500">Verified & Approved By</p>
             </div>
