@@ -5,10 +5,12 @@ import {
   X, Download, Printer, FileSpreadsheet, Users,
   Calendar, CheckCircle, Clock, AlertTriangle, Sparkles
 } from 'lucide-react'
+import { exportAttendanceReportToExcel } from '../../lib/excelExport'
 
 export default function AttendanceReportModal({ classId, classInfo, teacherName, onClose }) {
   const [loading, setLoading] = useState(true)
   const [reportData, setReportData] = useState([])
+  const [rawLogs, setRawLogs] = useState([])
   const [sessions, setSessions] = useState([])
   const [overallStats, setOverallStats] = useState({
     totalStudents: 0,
@@ -48,6 +50,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         .eq('class_id', classId)
 
       const logs = allLogs || []
+      setRawLogs(logs)
 
       // 4. Calculate per-student metrics
       let totalPresents = 0
@@ -120,55 +123,16 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
     }
   }, [classId])
 
-  // ── Export CSV Handler ──────────────────────────────────────
-  const exportCSV = () => {
-    const headers = [
-      '#',
-      'Student Name',
-      'Student ID',
-      'Present',
-      'Late',
-      'Absent',
-      'Excused',
-      'Total Attended',
-      'Total Sessions',
-      'Attendance Rate (%)',
-    ]
-
-    const rows = reportData.map((row, idx) => [
-      idx + 1,
-      `"${row.name.replace(/"/g, '""')}"`,
-      `"${row.studentId}"`,
-      row.present,
-      row.late,
-      row.absent,
-      row.excused,
-      row.totalAttended,
-      sessions.length,
-      `${row.rate}%`,
-    ])
-
-    const csvContent = [
-      `"NOTRE DAME OF MIDSAYAP COLLEGE - QSAMS ATTENDANCE REPORT"`,
-      `"Class: ${classInfo?.name || 'Class'}"`,
-      `"Teacher: ${teacherName || 'Teacher'}"`,
-      `"Generated Date: ${new Date().toLocaleDateString('en-US')}"`,
-      `"Total Students: ${overallStats.totalStudents} | Total Sessions: ${overallStats.totalSessions} | Overall Rate: ${overallStats.averageRate}%"`,
-      '',
-      headers.join(','),
-      ...rows.map(r => r.join(',')),
-    ].join('\r\n')
-
-    // UTF-8 BOM for Excel compatibility
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `QSAMS_Attendance_Report_${classInfo?.name?.replace(/\s+/g, '_') || 'Class'}_${new Date().toISOString().slice(0, 10)}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+  // ── Export Excel Handler ────────────────────────────────────
+  const handleExportExcel = () => {
+    exportAttendanceReportToExcel({
+      classInfo,
+      teacherName,
+      reportData,
+      sessions,
+      overallStats,
+      rawLogs,
+    })
   }
 
   // ── Print / Save as PDF Handler ───────────────────────────
@@ -194,13 +158,13 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
 
           <div className="flex items-center gap-2">
             <button
-              onClick={exportCSV}
+              onClick={handleExportExcel}
               disabled={loading || reportData.length === 0}
               className="btn-secondary btn-sm flex items-center gap-1.5"
-              title="Download CSV file for Microsoft Excel"
+              title="Download formatted Excel workbook (.xlsx)"
             >
-              <Download size={14} />
-              <span>Export CSV</span>
+              <FileSpreadsheet size={14} className="text-emerald-400" />
+              <span>Export Excel</span>
             </button>
             <button
               onClick={handlePrint}
