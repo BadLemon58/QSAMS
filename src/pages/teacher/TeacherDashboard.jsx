@@ -5,15 +5,84 @@ import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import Badge from '../../components/common/Badge'
-import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, Sparkles, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2 } from 'lucide';
+import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, Sparkles, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format, isToday } from 'date-fns'
 
 import {
   checkClassScheduleConflict,
   formatTime24to12,
-  parseDays
+  parseDays,
+  parseSchedule
 } from '../../lib/scheduleValidator'
+
+// ── Schedule Restriction Error Modal (Red Outline / Error Accent) ─────────────
+function ScheduleRestrictionModal({ schedule, onClose }) {
+  const now = new Date()
+  const currentFormatted = format(now, 'EEEE, h:mm a')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-md p-6 sm:p-7 rounded-[26px] shadow-2xl border-2 border-[#ef4444] relative text-center">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition-colors"
+        >
+          <MorphIcon icon={X} size={16} />
+        </button>
+
+        {/* Error Icon Badge with Red Outline */}
+        <div className="w-14 h-14 rounded-[20px] bg-[#fef2f2] border-2 border-[#fca5a5] text-[#dc2626] flex items-center justify-center mx-auto mb-3.5 shadow-sm">
+          <MorphIcon icon={AlertCircle} size={30} />
+        </div>
+
+        {/* Tag */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fee2e2] text-[#b91c1c] text-[11px] font-bold uppercase tracking-wider mb-2.5 border border-[#fca5a5]/60">
+          <MorphIcon icon={Clock} size={13} />
+          <span>Attendance Window Closed</span>
+        </div>
+
+        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2">
+          Cannot Start Attendance Session
+        </h3>
+
+        <p className="text-[#64748b] text-xs sm:text-sm leading-relaxed mb-5">
+          Live attendance sessions can only be launched within <strong className="text-[#0f172a]">30 minutes</strong> before or after the designated class schedule.
+        </p>
+
+        {/* Schedule vs Current Time Breakdown */}
+        <div className="bg-[#fef2f2]/60 border border-[#fecaca] rounded-[18px] p-4 text-left space-y-2.5 mb-6">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[#991b1b] font-semibold flex items-center gap-1.5">
+              <MorphIcon icon={CalendarDays} size={14} /> Scheduled Time:
+            </span>
+            <span className="font-mono font-bold text-[#b91c1c] bg-[#fee2e2] px-2.5 py-0.5 rounded-lg border border-[#fca5a5]/70">
+              {schedule || 'Not Specified'}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-[#fecaca]">
+            <span className="text-[#64748b] font-semibold flex items-center gap-1.5">
+              <MorphIcon icon={Clock} size={14} /> Current Time:
+            </span>
+            <span className="font-mono font-semibold text-[#0f172a]">
+              {currentFormatted}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          onClick={onClose}
+          className="w-full py-3.5 px-4 rounded-[16px] bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold text-sm shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+        >
+          Understood
+        </button>
+      </div>
+    </div>
+  )
+}
 
 // ── Delete Class Confirmation Modal ───────────────────────────────────────
 function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
@@ -351,6 +420,38 @@ export default function TeacherDashboard() {
   const [showModal, setShowModal] = useState(false)
   const [classToDelete, setClassToDelete] = useState(null)
   const [deletingClass, setDeletingClass] = useState(false)
+  const [scheduleErrorModal, setScheduleErrorModal] = useState(null)
+
+  const handleLaunchKiosk = (cls) => {
+    if (!cls) return
+    if (!cls.schedule) {
+      navigate(`/teacher/attendance/${cls.id}`)
+      return
+    }
+
+    const parsed = parseSchedule(cls.schedule)
+    if (!parsed || !parsed.days || parsed.startMin == null || parsed.endMin == null) {
+      navigate(`/teacher/attendance/${cls.id}`)
+      return
+    }
+
+    const now = new Date()
+    const currentDayTokens = []
+    const dayMap = ['SUN', 'M', 'T', 'W', 'TH', 'F', 'S']
+    currentDayTokens.push(dayMap[now.getDay()])
+    
+    const currentMin = now.getHours() * 60 + now.getMinutes()
+    const BUFFER = 30 // 30 mins grace period
+
+    const isCorrectDay = parsed.days.some(d => currentDayTokens.includes(d))
+    const isWithinTime = currentMin >= (parsed.startMin - BUFFER) && currentMin <= (parsed.endMin + BUFFER)
+
+    if (isCorrectDay && isWithinTime) {
+      navigate(`/teacher/attendance/${cls.id}`)
+    } else {
+      setScheduleErrorModal(cls.schedule)
+    }
+  }
 
   const handleDeleteClass = async () => {
     if (!classToDelete) return
@@ -557,12 +658,12 @@ export default function TeacherDashboard() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Link
-                        to={`/teacher/attendance/${cls.id}`}
+                      <button
+                        onClick={() => handleLaunchKiosk(cls)}
                         className="btn-primary flex-1 justify-center text-xs py-2"
                       >
                         <MorphIcon icon={Tv2} size={13} /> Live Kiosk
-                      </Link>
+                      </button>
                       <Link
                         to={`/teacher/class/${cls.id}`}
                         className="btn-secondary flex-1 justify-center text-xs py-2"
@@ -681,7 +782,7 @@ export default function TeacherDashboard() {
                     <section className="flex flex-col gap-3">
                       {primaryClass ? (
                         <button
-                          onClick={() => navigate(`/teacher/attendance/${primaryClass.id}`)}
+                          onClick={() => handleLaunchKiosk(primaryClass)}
                           className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
                         >
                           <MorphIcon icon={Tv2} size={18} />
@@ -872,12 +973,12 @@ export default function TeacherDashboard() {
                                 <span>Join Code Active</span>
                               </div>
                               <div className="flex gap-2">
-                                <Link
-                                  to={`/teacher/attendance/${cls.id}`}
+                                <button
+                                  onClick={() => handleLaunchKiosk(cls)}
                                   className="btn-primary flex-1 justify-center text-xs py-2"
                                 >
                                   <MorphIcon icon={Tv2} size={13} /> Kiosk
-                                </Link>
+                                </button>
                                 <Link
                                   to={`/teacher/class/${cls.id}`}
                                   className="btn-secondary flex-1 justify-center text-xs py-2"
@@ -913,37 +1014,36 @@ export default function TeacherDashboard() {
                     </div>
 
                     {logs.length === 0 ? (
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center text-[#64748b] text-xs">
-                        No recent attendance records. Start a class session to see live records.
+                      <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-8 text-center shadow-sm">
+                        <div className="w-12 h-12 rounded-full bg-[#f8fafc] text-[#94a3b8] flex items-center justify-center mx-auto mb-3">
+                          <MorphIcon icon={Calendar} size={22} />
+                        </div>
+                        <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a] mb-1">No check-ins yet</p>
+                        <p className="text-xs text-[#64748b] leading-relaxed max-w-xs mx-auto">
+                          Launch a live attendance kiosk to start recording real-time student check-ins.
+                        </p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        {logs.map(log => {
-                          const dateObj = log.marked_at ? new Date(log.marked_at) : new Date()
-
-                          return (
-                            <div
-                              key={log.id}
-                              className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px] p-3.5 md:p-4 flex items-center justify-between shadow-sm"
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center font-bold text-xs shadow-sm">
-                                  {log.profiles?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={15} />}
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="font-semibold text-sm text-[#0f172a]">
-                                    {log.profiles?.full_name || 'Student'}
-                                  </span>
-                                  <span className="text-[11px] text-[#64748b]">
-                                    {log.classes?.name || 'Class'} · {format(dateObj, 'MMM d, h:mm a')}
-                                  </span>
-                                </div>
+                      <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-2 divide-y divide-[#f1f5f9] shadow-sm">
+                        {logs.map((log) => (
+                          <div key={log.id} className="p-3 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center font-bold text-xs">
+                                {log.profiles?.full_name?.[0] || 'S'}
                               </div>
-
-                              <Badge status={log.status} />
+                              <div>
+                                <p className="font-semibold text-xs text-[#0f172a]">{log.profiles?.full_name || 'Student'}</p>
+                                <p className="text-[10px] text-[#64748b]">{log.classes?.name || 'Class'}</p>
+                              </div>
                             </div>
-                          )
-                        })}
+                            <div className="text-right">
+                              <Badge status={log.status} />
+                              <p className="text-[9px] text-[#94a3b8] mt-0.5">
+                                {log.marked_at ? format(new Date(log.marked_at), 'h:mm a') : ''}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </section>
@@ -953,7 +1053,7 @@ export default function TeacherDashboard() {
 
           </div>
 
-          {/* ── Fixed Bottom Tab Bar (Matching Student Dashboard format) ── */}
+          {/* ── Fixed Bottom Tab Bar ── */}
           <nav
             data-component="TeacherTabBar"
             className="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl md:max-w-2xl mx-auto h-16 md:h-18 bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-6 sm:px-12 md:px-16 z-40 shadow-lg"
@@ -1005,6 +1105,13 @@ export default function TeacherDashboard() {
           onConfirm={handleDeleteClass}
           onCancel={() => setClassToDelete(null)}
           deleting={deletingClass}
+        />
+      )}
+
+      {scheduleErrorModal && (
+        <ScheduleRestrictionModal
+          schedule={scheduleErrorModal}
+          onClose={() => setScheduleErrorModal(null)}
         />
       )}
     </div>

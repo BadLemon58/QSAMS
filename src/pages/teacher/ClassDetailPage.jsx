@@ -668,6 +668,74 @@ function DeleteStudentModal({ student, onConfirm, onCancel, deleting }) {
   )
 }
 
+// ── Schedule Restriction Error Modal (Red Outline / Error Accent) ─────────────
+function ScheduleRestrictionModal({ schedule, onClose }) {
+  const now = new Date()
+  const currentFormatted = format(now, 'EEEE, h:mm a')
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-md p-6 sm:p-7 rounded-[26px] shadow-2xl border-2 border-[#ef4444] relative text-center">
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#fef2f2] text-[#ef4444] flex items-center justify-center hover:bg-[#fee2e2] transition-colors"
+        >
+          <MorphIcon icon={X} size={16} />
+        </button>
+
+        {/* Error Icon Badge with Red Outline */}
+        <div className="w-14 h-14 rounded-[20px] bg-[#fef2f2] border-2 border-[#fca5a5] text-[#dc2626] flex items-center justify-center mx-auto mb-3.5 shadow-sm">
+          <MorphIcon icon={AlertCircle} size={30} />
+        </div>
+
+        {/* Tag */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fee2e2] text-[#b91c1c] text-[11px] font-bold uppercase tracking-wider mb-2.5 border border-[#fca5a5]/60">
+          <MorphIcon icon={Clock} size={13} />
+          <span>Attendance Window Closed</span>
+        </div>
+
+        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2">
+          Cannot Start Attendance Session
+        </h3>
+
+        <p className="text-[#64748b] text-xs sm:text-sm leading-relaxed mb-5">
+          Live attendance sessions can only be launched within <strong className="text-[#0f172a]">30 minutes</strong> before or after the designated class schedule.
+        </p>
+
+        {/* Schedule vs Current Time Breakdown */}
+        <div className="bg-[#fef2f2]/60 border border-[#fecaca] rounded-[18px] p-4 text-left space-y-2.5 mb-6">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[#991b1b] font-semibold flex items-center gap-1.5">
+              <MorphIcon icon={CalendarDays} size={14} /> Scheduled Time:
+            </span>
+            <span className="font-mono font-bold text-[#b91c1c] bg-[#fee2e2] px-2.5 py-0.5 rounded-lg border border-[#fca5a5]/70">
+              {schedule || 'Not Specified'}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-between text-xs pt-2 border-t border-[#fecaca]">
+            <span className="text-[#64748b] font-semibold flex items-center gap-1.5">
+              <MorphIcon icon={Clock} size={14} /> Current Time:
+            </span>
+            <span className="font-mono font-semibold text-[#0f172a]">
+              {currentFormatted}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          onClick={onClose}
+          className="w-full py-3.5 px-4 rounded-[16px] bg-[#dc2626] hover:bg-[#b91c1c] text-white font-semibold text-sm shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+        >
+          Understood
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Class Detail Page (NDMC Forest Green Style) ───────────────────────
 export default function ClassDetailPage() {
   const { classId } = useParams()
@@ -690,6 +758,7 @@ export default function ClassDetailPage() {
   const [selectedStudentForSummary, setSelectedStudentForSummary] = useState(null)
   const [studentToDelete, setStudentToDelete] = useState(null)
   const [removing, setRemoving] = useState(false)
+  const [showScheduleError, setShowScheduleError] = useState(false)
 
   const loadData = async () => {
     try {
@@ -767,7 +836,7 @@ export default function ClassDetailPage() {
     if (isCorrectDay && isWithinTime) {
       navigate(`/teacher/class/${classId}/attendance`)
     } else {
-      alert(`Cannot start attendance session.\n\nThis class is scheduled for ${classInfo.schedule}. You can only start attendance up to 30 minutes before or after the scheduled time.`)
+      setShowScheduleError(true)
     }
   }
 
@@ -1074,6 +1143,13 @@ export default function ClassDetailPage() {
           onConfirm={handleDeleteClass}
           onCancel={() => setShowDeleteClass(false)}
           deleting={deletingClass}
+        />
+      )}
+
+      {showScheduleError && (
+        <ScheduleRestrictionModal
+          schedule={classInfo?.schedule}
+          onClose={() => setShowScheduleError(false)}
         />
       )}
     </div>
