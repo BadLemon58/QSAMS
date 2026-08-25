@@ -13,7 +13,7 @@ import {
   Download, FileSpreadsheet
 } from 'lucide-react'
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
-import { exportSingleSessionToExcel } from '../../lib/excelExport'
+import { exportSingleSessionToExcel, exportAttendanceReportToExcel } from '../../lib/excelExport'
 import { format } from 'date-fns'
 
 // ── Mode Toggle Button (NDMC Forest Green Style) ───────────────────────────
@@ -94,6 +94,114 @@ export default function AttendancePage() {
     })
 
     showToast('Downloaded Daily Log!', 'success')
+  }
+
+  // Master Class Record Excel Export (All Dates)
+  const [exportingReport, setExportingReport] = useState(false)
+  const handleExportClassRecordExcel = async () => {
+    setExportingReport(true)
+    try {
+      // 1. Fetch enrolled students
+      const { data: enrollments } = await supabase
+        .from('enrollments')
+        .select('student_id, profiles(id, full_name, student_id)')
+        .eq('class_id', classId)
+
+      const students = (enrollments || []).map(e => e.profiles).filter(Boolean)
+
+      // 2. Fetch all sessions for this class
+      const { data: sessData } = await supabase
+        .from('attendance_sessions')
+        .select('id, date, created_at')
+        .eq('class_id', classId)
+        .order('date', { ascending: true })
+
+      const allSessions = sessData || []
+
+      // 3. Fetch all attendance logs for this class
+      const { data: allLogs } = await supabase
+        .from('attendance_logs')
+        .select('*')
+        .eq('class_id', classId)
+
+      const logs = allLogs || []
+
+      // 4. Calculate per-student metrics
+      let totalPresents = 0
+      let totalLates = 0
+      let totalAbsents = 0
+
+      const studentRows = students.map(st => {
+        const studentLogs = logs.filter(l => l.student_id === st.id)
+        let present = 0
+        let late = 0
+        let absent = 0
+        let excused = 0
+
+        allSessions.forEach(sess => {
+          const log = studentLogs.find(l => l.session_id === sess.id)
+          if (!log) {
+            absent++
+          } else if (log.status === 'present') {
+            present++
+          } else if (log.status === 'late') {
+            late++
+          } else if (log.status === 'absent') {
+            absent++
+          } else if (log.status === 'excused') {
+            excused++
+          }
+        })
+
+        const totalAttended = present + late
+        const rate = allSessions.length > 0 ? Math.round((totalAttended / allSessions.length) * 100) : 0
+
+        totalPresents += present
+        totalLates += late
+        totalAbsents += absent
+
+        return {
+          id: st.id,
+          name: st.full_name,
+          studentId: st.student_id || '—',
+          present,
+          late,
+          absent,
+          excused,
+          totalAttended,
+          rate,
+        }
+      })
+
+      studentRows.sort((a, b) => a.name.localeCompare(b.name))
+
+      const totalExpected = students.length * allSessions.length
+      const avgRate = totalExpected > 0 ? Math.round(((totalPresents + totalLates) / totalExpected) * 100) : 0
+
+      const stats = {
+        totalStudents: students.length,
+        totalSessions: allSessions.length,
+        totalPresents,
+        totalLates,
+        totalAbsents,
+        averageRate: avgRate,
+      }
+
+      await exportAttendanceReportToExcel({
+        classInfo,
+        teacherName: profile?.full_name,
+        reportData: studentRows,
+        sessions: allSessions,
+        overallStats: stats,
+        rawLogs: logs,
+      })
+
+      showToast('Downloaded Class Attendance Sheet!', 'success')
+    } catch (err) {
+      showToast(`Export failed: ${err.message}`, 'error')
+    } finally {
+      setExportingReport(false)
+    }
   }
 
   // Load class info
@@ -285,18 +393,19 @@ export default function AttendancePage() {
 
             <div className="flex flex-wrap items-center gap-2.5 self-start">
               <button
-                onClick={handleExportSessionExcel}
+                onClick={handleExportClassRecordExcel}
+                disabled={exportingReport}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
-                title="Download formatted Excel workbook for this specific day"
+                title="Download formatted Excel Class Record showing all dates (1, 2, 3...)"
               >
-                <FileSpreadsheet size={14} className="text-[#15803d]" /> Daily Log
+                <FileSpreadsheet size={14} className="text-[#15803d]" /> {exportingReport ? 'Exporting...' : 'Export Class Record'}
               </button>
               <button
                 onClick={() => setShowReportModal(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
-                title="Generate Master Class Record with all sessions"
+                title="View & Print Full Report Modal"
               >
-                <FileSpreadsheet size={14} /> Class Record
+                <FileSpreadsheet size={14} /> Full Report View
               </button>
               <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-xs font-bold shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />
