@@ -1,9 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import {
-  QrCode, LayoutDashboard, ScanLine, BookOpen,
-  LogOut, Menu, X, User
-} from 'lucide-react'
+import { QrCode, LayoutDashboard, ScanLine, BookOpen, LogOut, Menu, X, User } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 import { useState } from 'react'
 
@@ -89,7 +87,7 @@ export default function Navbar() {
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  profile?.full_name?.[0]?.toUpperCase() || <User size={12} />
+                  profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={12} />
                 )}
               </div>
               <div className="text-xs text-left">
@@ -105,7 +103,7 @@ export default function Navbar() {
               onClick={handleSignOut}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-[#64748b] hover:text-[#b91c1c] hover:bg-[#fee2e2] transition-all"
             >
-              <LogOut size={15} />
+              <MorphIcon icon={LogOut} size={15} />
               Sign out
             </button>
           </div>
@@ -115,7 +113,7 @@ export default function Navbar() {
             onClick={() => setMobileOpen(!mobileOpen)}
             className="md:hidden p-2 rounded-xl text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9]"
           >
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileOpen ? <MorphIcon icon={X} size={20} /> : <MorphIcon icon={Menu} size={20} />}
           </button>
         </div>
       </div>
@@ -132,7 +130,7 @@ export default function Navbar() {
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                profile?.full_name?.[0]?.toUpperCase() || <User size={14} />
+                profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={14} />
               )}
             </div>
             <div>
@@ -160,7 +158,7 @@ export default function Navbar() {
             onClick={handleSignOut}
             className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm text-[#64748b] hover:text-[#b91c1c] hover:bg-[#fee2e2] transition-all mt-2"
           >
-            <LogOut size={16} />
+            <MorphIcon icon={LogOut} size={16} />
             Sign out
           </button>
         </div>

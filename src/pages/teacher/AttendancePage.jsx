@@ -7,11 +7,8 @@ import KioskMode from '../../components/teacher/KioskMode'
 import IDCardScanner from '../../components/teacher/IDCardScanner'
 import RosterTable from '../../components/teacher/RosterTable'
 import Spinner from '../../components/common/Spinner'
-import {
-  Tv2, ScanLine, ArrowLeft, CheckCircle,
-  AlertCircle, Users, CalendarDays, Zap,
-  Download, FileSpreadsheet
-} from 'lucide-react'
+import { Tv2, ScanLine, ArrowLeft, CheckCircle, AlertCircle, Users, CalendarDays, Zap, Download, FileSpreadsheet } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import { exportSingleSessionToExcel, exportAttendanceReportToExcel } from '../../lib/excelExport'
 import { format } from 'date-fns'
@@ -54,7 +51,7 @@ function Toast({ message, type, onDone }) {
         ? 'bg-[#dcfce7] border border-[#86efac] text-[#15803d]'
         : 'bg-[#fee2e2] border border-[#fca5a5] text-[#b91c1c]'
     }`}>
-      {type === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+      {type === 'success' ? <MorphIcon icon={CheckCircle} size={18} /> : <MorphIcon icon={AlertCircle} size={18} />}
       {message}
     </div>
   )
@@ -373,7 +370,7 @@ export default function AttendancePage() {
           onClick={() => navigate(`/teacher/class/${classId}`)}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
         >
-          <ArrowLeft size={15} /> Back to Course
+          <MorphIcon icon={ArrowLeft} size={15} /> Back to Course
         </button>
 
         {/* Institutional Forest Green Banner (Matches Assessment Photo) */}
@@ -398,14 +395,14 @@ export default function AttendancePage() {
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
                 title="Download formatted Excel Class Record showing all dates (1, 2, 3...)"
               >
-                <FileSpreadsheet size={14} className="text-[#15803d]" /> {exportingReport ? 'Exporting...' : 'Export Class Record'}
+                <MorphIcon icon={FileSpreadsheet} size={14} className="text-[#15803d]" /> {exportingReport ? 'Exporting...' : 'Export Class Record'}
               </button>
               <button
                 onClick={() => setShowReportModal(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
                 title="View & Print Full Report Modal"
               >
-                <FileSpreadsheet size={14} /> Full Report View
+                <MorphIcon icon={FileSpreadsheet} size={14} /> Full Report View
               </button>
               <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-xs font-bold shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />
@@ -443,7 +440,7 @@ export default function AttendancePage() {
 
             {/* Mode Tip */}
             <div className="flex items-start gap-2.5 bg-[#ffffff] border border-[#e2e8f0] rounded-[16px] px-4 py-3 shadow-sm">
-              <Zap size={15} className="text-[#005a36] shrink-0 mt-0.5" />
+              <MorphIcon icon={Zap} size={15} className="text-[#005a36] shrink-0 mt-0.5" />
               <p className="text-[#64748b] text-xs leading-relaxed">
                 {mode === 'kiosk'
                   ? 'Project the dynamic QR on a screen. Students scan it using their QSAMS app to mark themselves present.'
@@ -469,7 +466,7 @@ export default function AttendancePage() {
           <div className="lg:col-span-3 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-[#005a36]" />
+                <MorphIcon icon={Users} size={16} className="text-[#005a36]" />
                 <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#0f172a]">
                   Student Roster
                 </h2>

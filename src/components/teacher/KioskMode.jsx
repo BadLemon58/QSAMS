@@ -3,7 +3,8 @@ import { QRCodeSVG } from 'qrcode.react'
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { RefreshCw, Clock, Shield, Tv2, AlertCircle } from 'lucide-react'
+import { RefreshCw, Clock, Shield, Tv2, AlertCircle } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
@@ -171,7 +172,7 @@ export default function KioskMode({ classId }) {
       {/* Header */}
       <div className="text-center">
         <div className="inline-flex items-center gap-1.5 bg-[#e6f2ec] border border-[#005a36]/20 rounded-full px-3.5 py-1 mb-2 text-xs font-bold text-[#005a36] shadow-sm">
-          <Tv2 size={13} />
+          <MorphIcon icon={Tv2} size={13} />
           <span>Kiosk Projection</span>
         </div>
         <p className="text-[#64748b] text-xs">Students scan this dynamic QR code using the QSAMS app</p>
@@ -208,7 +209,7 @@ export default function KioskMode({ classId }) {
       {/* Error Message */}
       {error && (
         <div className="flex items-center gap-2 text-xs text-[#b91c1c] bg-[#fee2e2] border border-[#fca5a5] px-3.5 py-2 rounded-[14px]">
-          <AlertCircle size={14} className="shrink-0" />
+          <MorphIcon icon={AlertCircle} size={14} className="shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -217,7 +218,7 @@ export default function KioskMode({ classId }) {
       <div className="w-full max-w-[260px] space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
           <div className="flex items-center gap-1.5 text-[#64748b]">
-            <Clock size={13} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
+            <MorphIcon icon={Clock} size={13} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
             <span className="text-[11px] uppercase tracking-wider font-bold">QR Token Expires in</span>
           </div>
           <span className={`font-mono text-sm font-bold ${isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}`}>
@@ -242,11 +243,11 @@ export default function KioskMode({ classId }) {
           onClick={() => rotateSessionToken(false)}
           className="text-xs text-[#005a36] hover:underline flex items-center gap-1.5 font-semibold py-1 px-3 rounded-full hover:bg-[#e6f2ec] transition-colors"
         >
-          <RefreshCw size={12} /> Rotate Token Now
+          <MorphIcon icon={RefreshCw} size={12} /> Rotate Token Now
         </button>
 
         <div className="flex items-center gap-1 text-[11px] text-[#64748b]">
-          <Shield size={11} className="text-[#005a36]" />
+          <MorphIcon icon={Shield} size={11} className="text-[#005a36]" />
           <span>Dynamic Anti-Proxy Token active (Auto-refreshes every 15s)</span>
         </div>
       </div>

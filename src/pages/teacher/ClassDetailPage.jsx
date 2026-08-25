@@ -7,12 +7,8 @@ import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import StudentSummaryModal from '../../components/teacher/StudentSummaryModal'
-import {
-  Users, QrCode, ArrowLeft, Plus, Clock, MapPin,
-  ClipboardList, Copy, Check, X, AlertCircle, Trash2,
-  BarChart2, FileSpreadsheet, UserPlus, AlertTriangle, User, CalendarDays,
-  Pencil, Camera
-} from 'lucide-react'
+import { Users, QrCode, ArrowLeft, Plus, Clock, MapPin, ClipboardList, Copy, Check, X, AlertCircle, Trash2, BarChart2, FileSpreadsheet, UserPlus, AlertTriangle, User, CalendarDays, Pencil, Camera } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { format } from 'date-fns'
 import {
   checkClassScheduleConflict,
@@ -172,7 +168,7 @@ function EditClassModal({ classInfo, onClose, onUpdated }) {
           onClick={onClose}
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <div className="mb-4">
@@ -185,7 +181,7 @@ function EditClassModal({ classInfo, onClose, onUpdated }) {
 
         {error && (
           <div className="flex items-start gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] p-3.5 mb-4 text-xs font-semibold leading-relaxed animate-fade-in">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <MorphIcon icon={AlertCircle} size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
@@ -359,11 +355,11 @@ function JoinCodeModal({ joinCode, className, onClose }) {
           onClick={onClose}
           className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <div className="inline-flex items-center gap-1.5 bg-[#e6f2ec] border border-[#005a36]/20 rounded-full px-3.5 py-1 text-[#005a36] text-xs font-bold uppercase tracking-wider mb-3">
-          <QrCode size={13} />
+          <MorphIcon icon={QrCode} size={13} />
           <span>Student Enrollment</span>
         </div>
 
@@ -382,7 +378,7 @@ function JoinCodeModal({ joinCode, className, onClose }) {
         </div>
 
         <button onClick={handleCopy} className="btn-primary w-full justify-center">
-          {copied ? <><Check size={16} /> Copied to Clipboard!</> : <><Copy size={16} /> Copy Code</>}
+          {copied ? <><MorphIcon icon={Check} size={16} /> Copied to Clipboard!</> : <><MorphIcon icon={Copy} size={16} /> Copy Code</>}
         </button>
       </div>
     </div>
@@ -448,7 +444,7 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
           onClick={onClose}
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <div className="mb-5">
@@ -461,7 +457,7 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
 
         {error && (
           <div className="flex items-center gap-2 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 mb-4 text-xs font-semibold">
-            <AlertCircle size={15} />
+            <MorphIcon icon={AlertCircle} size={15} />
             <span>{error}</span>
           </div>
         )}
@@ -591,7 +587,7 @@ function ScanEnrollModal({ classId, existingStudentIds, onClose, onEnrolled }) {
           onClick={onClose}
           className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Scan Student QR</h2>
@@ -599,14 +595,14 @@ function ScanEnrollModal({ classId, existingStudentIds, onClose, onEnrolled }) {
 
         {error && (
           <div className="flex items-center gap-2 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 mb-4 text-xs font-semibold">
-            <AlertCircle size={15} className="shrink-0" />
+            <MorphIcon icon={AlertCircle} size={15} className="shrink-0" />
             <span className="text-left">{error}</span>
           </div>
         )}
 
         {success && (
           <div className="flex items-center gap-2 bg-[#dcfce7] text-[#15803d] border border-[#86efac] rounded-[16px] px-4 py-3 mb-4 text-xs font-semibold">
-            <Check size={15} className="shrink-0" />
+            <MorphIcon icon={Check} size={15} className="shrink-0" />
             <span>{success}</span>
           </div>
         )}
@@ -628,7 +624,7 @@ function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
       <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] text-center">
         <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#b91c1c] flex items-center justify-center mx-auto mb-3">
-          <Trash2 size={24} />
+          <MorphIcon icon={Trash2} size={24} />
         </div>
         <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Delete Course?</h3>
         <p className="text-[#64748b] text-xs mb-5 leading-relaxed">
@@ -653,7 +649,7 @@ function DeleteStudentModal({ student, onConfirm, onCancel, deleting }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
       <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] text-center">
         <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#b91c1c] flex items-center justify-center mx-auto mb-3">
-          <AlertTriangle size={24} />
+          <MorphIcon icon={AlertTriangle} size={24} />
         </div>
         <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Remove Student?</h3>
         <p className="text-[#64748b] text-xs mb-5">
@@ -807,7 +803,7 @@ export default function ClassDetailPage() {
           onClick={() => navigate('/teacher')}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
         >
-          <ArrowLeft size={15} /> Back to Dashboard
+          <MorphIcon icon={ArrowLeft} size={15} /> Back to Dashboard
         </button>
 
         {/* Institutional Forest Green Banner */}
@@ -826,11 +822,11 @@ export default function ClassDetailPage() {
               <div className="flex flex-wrap gap-2.5 text-xs mt-3">
                 {classInfo?.room && (
                   <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
-                    <MapPin size={12} /> Room: {classInfo.room}
+                    <MorphIcon icon={MapPin} size={12} /> Room: {classInfo.room}
                   </span>
                 )}
                 <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
-                  <Users size={12} /> {students.length} Enrolled Students
+                  <MorphIcon icon={Users} size={12} /> {students.length} Enrolled Students
                 </span>
                 <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm font-mono font-bold">
                   Join Code: {classInfo?.join_code || classInfo?.id?.substring(0, 6).toUpperCase()}
@@ -844,44 +840,44 @@ export default function ClassDetailPage() {
                 onClick={() => setShowEdit(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <Pencil size={14} /> Edit Class
+                <MorphIcon icon={Pencil} size={14} /> Edit Class
               </button>
               <button
                 onClick={() => setShowJoinCode(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <QrCode size={14} /> Join QR
+                <MorphIcon icon={QrCode} size={14} /> Join QR
               </button>
               <button
                 onClick={() => setShowReport(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <FileSpreadsheet size={14} /> Attendance Report
+                <MorphIcon icon={FileSpreadsheet} size={14} /> Attendance Report
               </button>
               <button
                 onClick={() => setShowEnroll(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <UserPlus size={14} /> Add Student
+                <MorphIcon icon={UserPlus} size={14} /> Add Student
               </button>
               <button
                 onClick={() => setShowScanEnroll(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <Camera size={14} /> Scan to Enroll
+                <MorphIcon icon={Camera} size={14} /> Scan to Enroll
               </button>
               <button
                 onClick={handleTakeAttendanceClick}
                 className="bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
               >
-                <ClipboardList size={14} /> Take Attendance
+                <MorphIcon icon={ClipboardList} size={14} /> Take Attendance
               </button>
               <button
                 onClick={() => setShowDeleteClass(true)}
                 className="bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5 border border-[#fca5a5]"
                 title="Delete this class"
               >
-                <Trash2 size={14} /> Delete Class
+                <MorphIcon icon={Trash2} size={14} /> Delete Class
               </button>
             </div>
           </div>
@@ -894,7 +890,7 @@ export default function ClassDetailPage() {
           <div className="lg:col-span-2 bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
               <div className="flex items-center gap-2">
-                <Users size={16} className="text-[#005a36]" />
+                <MorphIcon icon={Users} size={16} className="text-[#005a36]" />
                 <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#0f172a]">
                   Enrolled Students Roster
                 </h2>
@@ -907,10 +903,10 @@ export default function ClassDetailPage() {
                 <p className="text-xs mb-4">No students enrolled in this section yet.</p>
                 <div className="flex justify-center gap-3">
                   <button onClick={() => setShowJoinCode(true)} className="btn-secondary btn-sm">
-                    <QrCode size={14} /> Show Join QR
+                    <MorphIcon icon={QrCode} size={14} /> Show Join QR
                   </button>
                   <button onClick={() => setShowEnroll(true)} className="btn-primary btn-sm">
-                    <UserPlus size={14} /> Add Student
+                    <MorphIcon icon={UserPlus} size={14} /> Add Student
                   </button>
                 </div>
               </div>
@@ -927,7 +923,7 @@ export default function ClassDetailPage() {
                         {student.avatar_url ? (
                           <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          student.full_name?.[0]?.toUpperCase() || <User size={12} />
+                          student.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={12} />
                         )}
                       </div>
                       <div>
@@ -942,7 +938,7 @@ export default function ClassDetailPage() {
                         className="px-3 py-1.5 rounded-[12px] bg-[#f1f5f9] text-[#005a36] hover:bg-[#e6f2ec] text-xs font-semibold flex items-center gap-1.5 transition-colors"
                         title="View Attendance History"
                       >
-                        <BarChart2 size={13} />
+                        <MorphIcon icon={BarChart2} size={13} />
                         <span className="hidden sm:inline">Stats</span>
                       </button>
                       <button
@@ -950,7 +946,7 @@ export default function ClassDetailPage() {
                         className="px-2.5 py-1.5 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] text-xs font-semibold flex items-center gap-1 transition-colors border border-[#fca5a5]/60"
                         title="Remove student from class"
                       >
-                        <Trash2 size={13} />
+                        <MorphIcon icon={Trash2} size={13} />
                         <span>Remove</span>
                       </button>
                     </div>
@@ -964,7 +960,7 @@ export default function ClassDetailPage() {
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <CalendarDays size={16} className="text-[#005a36]" />
+                <MorphIcon icon={CalendarDays} size={16} className="text-[#005a36]" />
                 <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a]">
                   Recorded Sessions
                 </h3>
@@ -1003,7 +999,7 @@ export default function ClassDetailPage() {
               to={`/teacher/class/${classId}/attendance`}
               className="btn-primary w-full justify-center mt-2"
             >
-              <ClipboardList size={15} /> Launch Attendance
+              <MorphIcon icon={ClipboardList} size={15} /> Launch Attendance
             </Link>
           </div>
 

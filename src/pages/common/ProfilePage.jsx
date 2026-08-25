@@ -3,10 +3,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
-import {
-  User, Mail, Shield, KeyRound, Camera, Trash2,
-  CheckCircle, AlertCircle, Save, ArrowLeft, Hash
-} from 'lucide-react'
+import { User, Mail, Shield, KeyRound, Camera, Trash2, CheckCircle, AlertCircle, Save, ArrowLeft, Hash } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { useNavigate } from 'react-router-dom'
 
 function SuccessModal({ title, message, onClose }) {
@@ -14,7 +12,7 @@ function SuccessModal({ title, message, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
       <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-7 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative text-center">
         <div className="w-16 h-16 rounded-full bg-[#dcfce7] text-[#15803d] flex items-center justify-center mx-auto mb-4 border-4 border-[#86efac]/50">
-          <CheckCircle size={32} />
+          <MorphIcon icon={CheckCircle} size={32} />
         </div>
         <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2">{title}</h3>
         <p className="text-[#64748b] text-sm mb-6">{message}</p>
@@ -215,7 +213,7 @@ export default function ProfilePage() {
           onClick={() => navigate(isTeacher ? '/teacher' : '/student')}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
         >
-          <ArrowLeft size={15} /> Back to Dashboard
+          <MorphIcon icon={ArrowLeft} size={15} /> Back to Dashboard
         </button>
 
         {/* Institutional Forest Green Header Banner */}
@@ -236,7 +234,7 @@ export default function ProfilePage() {
           {/* ── CARD 1: Profile & Avatar ── */}
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
             <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-5 flex items-center gap-2">
-              <User size={18} className="text-[#005a36]" /> Personal Information
+              <MorphIcon icon={User} size={18} className="text-[#005a36]" /> Personal Information
             </h2>
 
             {profileMessage && (
@@ -245,7 +243,7 @@ export default function ProfilePage() {
                   ? 'bg-[#dcfce7] text-[#15803d] border border-[#86efac]'
                   : 'bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5]'
               }`}>
-                {profileMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+                {profileMessage.type === 'success' ? <MorphIcon icon={CheckCircle} size={15} /> : <MorphIcon icon={AlertCircle} size={15} />}
                 <span>{profileMessage.text}</span>
               </div>
             )}
@@ -259,7 +257,7 @@ export default function ProfilePage() {
                   ) : avatarUrl ? (
                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    profile?.full_name?.[0]?.toUpperCase() || <User size={30} />
+                    profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={30} />
                   )}
                 </div>
                 <button
@@ -269,7 +267,7 @@ export default function ProfilePage() {
                   className="absolute bottom-0 right-0 p-1.5 rounded-full bg-[#005a36] text-[#ffffff] hover:bg-[#00482b] transition-transform shadow-md"
                   title="Change Photo"
                 >
-                  <Camera size={13} />
+                  <MorphIcon icon={Camera} size={13} />
                 </button>
               </div>
 
@@ -292,7 +290,7 @@ export default function ProfilePage() {
                       disabled={uploadingAvatar}
                       className="px-3 py-1.5 rounded-[12px] bg-[#ffffff] text-[#b91c1c] border border-[#fca5a5] text-xs font-semibold hover:bg-[#fee2e2] transition-colors flex items-center gap-1"
                     >
-                      <Trash2 size={12} /> Remove
+                      <MorphIcon icon={Trash2} size={12} /> Remove
                     </button>
                   )}
                 </div>
@@ -314,7 +312,7 @@ export default function ProfilePage() {
                     Full Name
                   </label>
                   <div className="relative">
-                    <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={User} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="text"
                       className="input-field pl-10"
@@ -330,7 +328,7 @@ export default function ProfilePage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={Mail} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="email"
                       className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9]"
@@ -345,7 +343,7 @@ export default function ProfilePage() {
                     User Role
                   </label>
                   <div className="relative">
-                    <Shield size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={Shield} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="text"
                       className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] capitalize"
@@ -361,7 +359,7 @@ export default function ProfilePage() {
                       Student ID
                     </label>
                     <div className="relative">
-                      <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                      <MorphIcon icon={Hash} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                       <input
                         type="text"
                         className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] font-mono font-bold text-[#005a36]"
@@ -379,7 +377,7 @@ export default function ProfilePage() {
                   disabled={savingProfile}
                   className="btn-primary"
                 >
-                  {savingProfile ? <Spinner size="sm" /> : <Save size={15} />}
+                  {savingProfile ? <Spinner size="sm" /> : <MorphIcon icon={Save} size={15} />}
                   Save Changes
                 </button>
               </div>
@@ -389,7 +387,7 @@ export default function ProfilePage() {
           {/* ── CARD 2: Security & Password Change ── */}
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
             <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2 flex items-center gap-2">
-              <KeyRound size={18} className="text-[#005a36]" /> Security & Password
+              <MorphIcon icon={KeyRound} size={18} className="text-[#005a36]" /> Security & Password
             </h2>
             <p className="text-[#64748b] text-xs mb-5">
               Ensure your account is protected with a password of at least 6 characters
@@ -401,7 +399,7 @@ export default function ProfilePage() {
                   ? 'bg-[#dcfce7] text-[#15803d] border border-[#86efac]'
                   : 'bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5]'
               }`}>
-                {passwordMessage.type === 'success' ? <CheckCircle size={15} /> : <AlertCircle size={15} />}
+                {passwordMessage.type === 'success' ? <MorphIcon icon={CheckCircle} size={15} /> : <MorphIcon icon={AlertCircle} size={15} />}
                 <span>{passwordMessage.text}</span>
               </div>
             )}
@@ -413,7 +411,7 @@ export default function ProfilePage() {
                     Current Password
                   </label>
                   <div className="relative">
-                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={KeyRound} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="password"
                       className="input-field pl-10"
@@ -432,7 +430,7 @@ export default function ProfilePage() {
                     New Password
                   </label>
                   <div className="relative">
-                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={KeyRound} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="password"
                       className="input-field pl-10"
@@ -449,7 +447,7 @@ export default function ProfilePage() {
                     Confirm New Password
                   </label>
                   <div className="relative">
-                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <MorphIcon icon={KeyRound} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input
                       type="password"
                       className="input-field pl-10"
@@ -468,7 +466,7 @@ export default function ProfilePage() {
                   disabled={savingPassword || !newPassword}
                   className="btn-primary"
                 >
-                  {savingPassword ? <Spinner size="sm" /> : <Save size={15} />}
+                  {savingPassword ? <Spinner size="sm" /> : <MorphIcon icon={Save} size={15} />}
                   Update Password
                 </button>
               </div>

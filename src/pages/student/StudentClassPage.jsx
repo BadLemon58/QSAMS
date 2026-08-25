@@ -5,10 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import Badge from '../../components/common/Badge'
-import {
-  ArrowLeft, BookOpen, Clock, MapPin,
-  Calendar, CheckCircle, AlertTriangle, User
-} from 'lucide-react'
+import { ArrowLeft, BookOpen, Clock, MapPin, Calendar, CheckCircle, AlertTriangle, User } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { format, parseISO } from 'date-fns'
 
 export default function StudentClassPage() {
@@ -64,7 +62,7 @@ export default function StudentClassPage() {
           onClick={() => navigate('/student')}
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#005a36] hover:underline mb-4 transition-colors"
         >
-          <ArrowLeft size={15} /> Back to Dashboard
+          <MorphIcon icon={ArrowLeft} size={15} /> Back to Dashboard
         </button>
 
         {/* Institutional Forest Green Header Banner */}
@@ -81,17 +79,17 @@ export default function StudentClassPage() {
           <div className="flex flex-wrap gap-2.5 text-xs mt-3">
             {classInfo?.profiles?.full_name && (
               <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
-                <User size={12} /> Instructor: {classInfo.profiles.full_name}
+                <MorphIcon icon={User} size={12} /> Instructor: {classInfo.profiles.full_name}
               </span>
             )}
             {classInfo?.schedule && (
               <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
-                <Clock size={12} /> {classInfo.schedule}
+                <MorphIcon icon={Clock} size={12} /> {classInfo.schedule}
               </span>
             )}
             {classInfo?.room && (
               <span className="flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-white backdrop-blur-sm">
-                <MapPin size={12} /> {classInfo.room}
+                <MorphIcon icon={MapPin} size={12} /> {classInfo.room}
               </span>
             )}
           </div>
@@ -117,7 +115,7 @@ export default function StudentClassPage() {
         <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
             <div className="flex items-center gap-2">
-              <Calendar size={16} className="text-[#005a36]" />
+              <MorphIcon icon={Calendar} size={16} className="text-[#005a36]" />
               <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a]">
                 Course Attendance History
               </h2>
@@ -145,7 +143,7 @@ export default function StudentClassPage() {
                         {format(parseISO(sess.date), 'EEEE, MMMM d, yyyy')}
                       </p>
                       <p className="text-xs text-[#64748b] flex items-center gap-1.5 mt-0.5">
-                        <Clock size={11} className="text-[#005a36]" />
+                        <MorphIcon icon={Clock} size={11} className="text-[#005a36]" />
                         {log?.marked_at
                           ? `Recorded at ${format(parseISO(log.marked_at), 'h:mm a')}`
                           : 'Unrecorded / Missed'}

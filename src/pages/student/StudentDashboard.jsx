@@ -4,11 +4,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { QRCodeSVG } from 'qrcode.react'
 import { format, isToday } from 'date-fns'
-import {
-  Camera, RefreshCw, Share2, Plus, X, Flame, CheckCircle,
-  AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft,
-  Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut
-} from 'lucide-react'
+import { Camera, RefreshCw, Share2, Plus, X, Flame, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
 import Navbar from '../../components/common/Navbar'
 import Badge from '../../components/common/Badge'
@@ -79,7 +76,7 @@ function JoinClassModal({ studentId, onClose, onEnrolled }) {
           onClick={onClose}
           className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <div className="mb-4">
@@ -90,14 +87,14 @@ function JoinClassModal({ studentId, onClose, onEnrolled }) {
 
         {error && (
           <div className="flex items-center gap-2 bg-[#fee2e2] text-[#b91c1c] rounded-[16px] px-3.5 py-2.5 mb-4 text-xs font-semibold">
-            <AlertCircle size={14} className="shrink-0" />
+            <MorphIcon icon={AlertCircle} size={14} className="shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {successMsg && (
           <div className="flex items-center gap-2 bg-[#dcfce7] text-[#15803d] rounded-[16px] px-3.5 py-2.5 mb-4 text-xs font-semibold">
-            <CheckCircle size={14} className="shrink-0" />
+            <MorphIcon icon={CheckCircle} size={14} className="shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
@@ -288,13 +285,13 @@ export default function StudentDashboard() {
                 onClick={() => setShowJoinModal(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-3 px-5 rounded-[14px] shadow-sm transition-all flex items-center gap-2"
               >
-                <Plus size={16} /> Join Class
+                <MorphIcon icon={Plus} size={16} /> Join Class
               </button>
               <button
                 onClick={() => navigate('/student/scan')}
                 className="bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs py-3 px-5 rounded-[14px] shadow-sm transition-all flex items-center gap-2"
               >
-                <Camera size={16} /> Open Scanner
+                <MorphIcon icon={Camera} size={16} /> Open Scanner
               </button>
             </div>
           </div>
@@ -327,7 +324,7 @@ export default function StudentDashboard() {
             </div>
             <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm col-span-2 lg:col-span-1">
               <div className="flex items-center gap-1.5">
-                <Flame size={15} className="text-[#d97706]" />
+                <MorphIcon icon={Flame} size={15} className="text-[#d97706]" />
                 <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Streak</span>
               </div>
               <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] mt-1">
@@ -346,7 +343,7 @@ export default function StudentDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <BookOpen size={18} className="text-[#005a36]" />
+                    <MorphIcon icon={BookOpen} size={18} className="text-[#005a36]" />
                     <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
                       Enrolled Courses ({enrollments.length})
                     </h2>
@@ -355,7 +352,7 @@ export default function StudentDashboard() {
                     onClick={() => setShowJoinModal(true)}
                     className="text-xs font-semibold text-[#005a36] hover:underline flex items-center gap-1"
                   >
-                    <Plus size={14} /> Join Course
+                    <MorphIcon icon={Plus} size={14} /> Join Course
                   </button>
                 </div>
 
@@ -420,7 +417,7 @@ export default function StudentDashboard() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-[#005a36]" />
+                    <MorphIcon icon={Calendar} size={18} className="text-[#005a36]" />
                     <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
                       Recent Attendance Records
                     </h2>
@@ -503,11 +500,11 @@ export default function StudentDashboard() {
 
                 {checkedInToday ? (
                   <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dcfce7] text-[#15803d] text-xs font-bold border border-[#86efac]">
-                    <CheckCircle size={13} /> Checked in at {checkInTimeString}
+                    <MorphIcon icon={CheckCircle} size={13} /> Checked in at {checkInTimeString}
                   </span>
                 ) : (
                   <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f8fafc] text-[#64748b] text-xs border border-[#e2e8f0]">
-                    <Clock size={13} /> Ready for scan
+                    <MorphIcon icon={Clock} size={13} /> Ready for scan
                   </span>
                 )}
 
@@ -516,13 +513,13 @@ export default function StudentDashboard() {
                     onClick={() => navigate('/student/scan')}
                     className="btn-primary w-full justify-center text-xs py-3.5"
                   >
-                    <Camera size={15} /> Open Camera Scanner
+                    <MorphIcon icon={Camera} size={15} /> Open Camera Scanner
                   </button>
                   <button
                     onClick={downloadQR}
                     className="btn-secondary w-full justify-center text-xs py-3.5"
                   >
-                    {downloaded ? <><Check size={14} /> Saved!</> : <><Download size={14} /> Download ID QR</>}
+                    {downloaded ? <><MorphIcon icon={Check} size={14} /> Saved!</> : <><MorphIcon icon={Download} size={14} /> Download ID QR</>}
                   </button>
                 </div>
               </div>
@@ -530,7 +527,7 @@ export default function StudentDashboard() {
               {/* Help & Support Card */}
               <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 text-xs text-[#64748b] space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-[#005a36]">
-                  <Shield size={14} /> NDMC Attendance Rules
+                  <MorphIcon icon={Shield} size={14} /> NDMC Attendance Rules
                 </div>
                 <p>Ensure you are within the classroom geofence before scanning the rotating kiosk token.</p>
               </div>
@@ -564,7 +561,7 @@ export default function StudentDashboard() {
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    profile?.full_name?.[0]?.toUpperCase() || <User size={18} />
+                    profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
                   )}
                 </div>
                 <div className="hidden xs:block">
@@ -585,7 +582,7 @@ export default function StudentDashboard() {
                 className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[14px] text-xs sm:text-sm font-semibold text-[#b91c1c] hover:bg-[#fecaca] active:scale-95 transition-all border border-[#fca5a5] bg-[#fee2e2] shadow-sm"
                 title="Sign out of account"
               >
-                <LogOut size={16} />
+                <MorphIcon icon={LogOut} size={16} />
                 <span>Sign out</span>
               </button>
             </section>
@@ -622,12 +619,12 @@ export default function StudentDashboard() {
                         </span>
                         {checkedInToday ? (
                           <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#dcfce7] text-[#15803d] font-bold text-[13px] border border-[#86efac]">
-                            <CheckCircle size={14} />
+                            <MorphIcon icon={CheckCircle} size={14} />
                             Checked in at {checkInTimeString}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
-                            <Sparkles size={14} className="text-[#d97706]" />
+                            <MorphIcon icon={Sparkles} size={14} className="text-[#d97706]" />
                             ID: {profile?.student_id || 'Ready to scan'}
                           </span>
                         )}
@@ -640,7 +637,7 @@ export default function StudentDashboard() {
                         onClick={() => navigate('/student/scan')}
                         className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
                       >
-                        <Camera size={18} />
+                        <MorphIcon icon={Camera} size={18} />
                         Open camera to scan
                       </button>
                       <div className="flex gap-3">
@@ -648,21 +645,21 @@ export default function StudentDashboard() {
                           onClick={handleRefresh}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                          <MorphIcon icon={RefreshCw} size={16} className={refreshing ? 'animate-spin' : ''} />
                           Refresh
                         </button>
                         <button
                           onClick={() => setShowJoinModal(true)}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <Plus size={16} />
+                          <MorphIcon icon={Plus} size={16} />
                           Join Class
                         </button>
                         <button
                           onClick={() => navigate('/student/my-qr')}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <QrCode size={16} />
+                          <MorphIcon icon={QrCode} size={16} />
                           Card ID
                         </button>
                       </div>
@@ -672,7 +669,7 @@ export default function StudentDashboard() {
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
                         <div className="flex items-center gap-1.5">
-                          <Flame size={15} className="text-[#d97706]" />
+                          <MorphIcon icon={Flame} size={15} className="text-[#d97706]" />
                           <span className="text-[12px] text-[#64748b] font-medium">Streak</span>
                         </div>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#005a36]">
@@ -761,7 +758,7 @@ export default function StudentDashboard() {
                                   )}
                                 </div>
                                 <div className="w-10 h-10 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shadow-sm">
-                                  <BookOpen size={18} />
+                                  <MorphIcon icon={BookOpen} size={18} />
                                 </div>
                                 <div className="flex flex-col min-w-0">
                                   <span className="font-semibold text-[15px] md:text-[16px] text-[#0f172a] truncate">
@@ -772,7 +769,7 @@ export default function StudentDashboard() {
                                   </span>
                                 </div>
                                 <div className="shrink-0">
-                                  {isPresent ? <CheckCircle size={18} className="text-[#005a36]" /> : <span className="text-xs text-[#64748b] font-medium">Missed</span>}
+                                  {isPresent ? <MorphIcon icon={CheckCircle} size={18} className="text-[#005a36]" /> : <span className="text-xs text-[#64748b] font-medium">Missed</span>}
                                 </div>
                               </div>
                             )
@@ -791,13 +788,13 @@ export default function StudentDashboard() {
                         Your Courses ({enrollments.length})
                       </span>
                       <button onClick={() => setShowJoinModal(true)} className="text-[12px] font-semibold text-[#005a36] flex items-center gap-1 hover:underline">
-                        <Plus size={14} /> Join New Class
+                        <MorphIcon icon={Plus} size={14} /> Join New Class
                       </button>
                     </div>
 
                     {enrollments.length === 0 ? (
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center flex flex-col items-center gap-3">
-                        <BookOpen size={32} className="text-[#64748b]" />
+                        <MorphIcon icon={BookOpen} size={32} className="text-[#64748b]" />
                         <p className="text-sm font-semibold text-[#0f172a]">You haven't joined any classes yet</p>
                         <p className="text-xs text-[#64748b]">Enter your teacher's 6-character join code to enroll.</p>
                         <button onClick={() => setShowJoinModal(true)} className="py-2.5 px-5 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-xs mt-2">
@@ -879,7 +876,7 @@ export default function StudentDashboard() {
                             >
                               <div className="flex items-center gap-3">
                                 <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm ${isPresent ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#fee2e2] text-[#b91c1c]'}`}>
-                                  {isPresent ? <Check size={16} /> : <X size={16} />}
+                                  {isPresent ? <MorphIcon icon={Check} size={16} /> : <MorphIcon icon={X} size={16} />}
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="font-semibold text-sm text-[#0f172a]">
@@ -923,7 +920,7 @@ export default function StudentDashboard() {
                 activeTab === 'live' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <QrCode size={22} className={activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={QrCode} size={22} className={activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>Live Session</span>
             </button>
 
@@ -933,7 +930,7 @@ export default function StudentDashboard() {
                 activeTab === 'classes' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <BookOpen size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={BookOpen} size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>Classes</span>
             </button>
 
@@ -943,7 +940,7 @@ export default function StudentDashboard() {
                 activeTab === 'history' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <Calendar size={22} className={activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={Calendar} size={22} className={activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>History</span>
             </button>
           </nav>

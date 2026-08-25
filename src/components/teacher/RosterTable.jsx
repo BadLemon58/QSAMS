@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Search, ChevronDown, User } from 'lucide-react'
+import { Search, ChevronDown, User } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import Badge from '../common/Badge'
 
 const STATUS_OPTIONS = ['present', 'late', 'absent', 'excused']
@@ -50,7 +51,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
 
       {/* Search Input */}
       <div className="relative">
-        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+        <MorphIcon icon={Search} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
         <input
           type="text"
           className="input-field pl-10"
@@ -96,7 +97,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
                         {student.avatar_url ? (
                           <img src={student.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                          student.full_name?.[0]?.toUpperCase() || <User size={12} />
+                          student.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={12} />
                         )}
                       </div>
                       <span className="text-sm font-semibold text-[#0f172a]">{student.full_name}</span>
@@ -129,7 +130,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
                             </option>
                           ))}
                         </select>
-                        <ChevronDown size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
+                        <MorphIcon icon={ChevronDown} size={10} className="absolute right-2 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none" />
                       </div>
                     )}
                   </td>

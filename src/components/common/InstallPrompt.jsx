@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Download, X } from 'lucide-react'
+import { Download, X } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 export default function InstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null)
@@ -55,13 +56,13 @@ export default function InstallPrompt() {
             className="p-2 text-[#64748b] hover:text-[#0f172a] transition-colors rounded-lg"
             aria-label="Dismiss"
           >
-            <X size={18} />
+            <MorphIcon icon={X} size={18} />
           </button>
           <button
             onClick={handleInstallClick}
             className="flex items-center gap-2 px-4 py-2 bg-[#005a36] hover:bg-[#00482b] text-white text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95"
           >
-            <Download size={14} />
+            <MorphIcon icon={Download} size={14} />
             Install
           </button>
         </div>

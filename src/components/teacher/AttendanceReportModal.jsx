@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Spinner from '../common/Spinner'
-import {
-  X, Printer, FileSpreadsheet, Users,
-  Calendar, CheckCircle, Clock, AlertTriangle
-} from 'lucide-react'
+import { X, Printer, FileSpreadsheet, Users, Calendar, CheckCircle, Clock, AlertTriangle } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { exportAttendanceReportToExcel } from '../../lib/excelExport'
 
 export default function AttendanceReportModal({ classId, classInfo, teacherName, onClose }) {
@@ -147,7 +145,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#e2e8f0] print:hidden">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center">
-              <FileSpreadsheet size={18} />
+              <MorphIcon icon={FileSpreadsheet} size={18} />
             </div>
             <div>
               <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] leading-none">
@@ -164,7 +162,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
               className="btn-secondary btn-sm flex items-center gap-1.5"
               title="Download formatted Excel workbook (.xlsx)"
             >
-              <FileSpreadsheet size={14} className="text-[#15803d]" />
+              <MorphIcon icon={FileSpreadsheet} size={14} className="text-[#15803d]" />
               <span>Export Excel</span>
             </button>
             <button
@@ -173,14 +171,14 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
               className="btn-primary btn-sm flex items-center gap-1.5"
               title="Print or Save as PDF"
             >
-              <Printer size={14} />
+              <MorphIcon icon={Printer} size={14} />
               <span>Print / PDF</span>
             </button>
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors ml-1"
             >
-              <X size={16} />
+              <MorphIcon icon={X} size={16} />
             </button>
           </div>
         </div>

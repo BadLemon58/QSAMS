@@ -78,6 +78,9 @@ export default function AppRouter() {
       <Route path="/teacher/class/:classId/attendance" element={
         <ProtectedRoute allowedRole="teacher"><AttendancePage /></ProtectedRoute>
       } />
+      <Route path="/teacher/attendance/:classId" element={
+        <ProtectedRoute allowedRole="teacher"><AttendancePage /></ProtectedRoute>
+      } />
 
       {/* ── Student Routes ── */}
       <Route path="/student" element={

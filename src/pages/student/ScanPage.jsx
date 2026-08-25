@@ -5,10 +5,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Spinner from '../../components/common/Spinner'
 import Navbar from '../../components/common/Navbar'
-import {
-  Camera, CameraOff, AlertTriangle, CheckCircle,
-  ArrowLeft, RotateCcw, MapPin, Shield
-} from 'lucide-react'
+import { Camera, CameraOff, AlertTriangle, CheckCircle, ArrowLeft, RotateCcw, MapPin, Shield } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 export default function ScanPage() {
   const { profile } = useAuth()
@@ -273,7 +271,7 @@ export default function ScanPage() {
             onClick={() => navigate('/student')}
             className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-[#005a36] hover:underline transition-colors"
           >
-            <ArrowLeft size={15} /> Dashboard
+            <MorphIcon icon={ArrowLeft} size={15} /> Dashboard
           </button>
 
           <div className="text-center">
@@ -316,7 +314,7 @@ export default function ScanPage() {
           {/* Results / Feedback */}
           {status === 'success' && scanResult && (
             <div className="w-full bg-[#dcfce7] border border-[#86efac] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 animate-fade-in text-[#15803d]">
-              <CheckCircle size={36} />
+              <MorphIcon icon={CheckCircle} size={36} />
               <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold">
                 {scanResult.actionType === 'join_class' ? 'Class Joined!' : 'Attendance Recorded!'}
               </h3>
@@ -338,21 +336,21 @@ export default function ScanPage() {
 
           {status === 'error' && (
             <div className="w-full bg-[#fee2e2] border border-[#fca5a5] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 text-[#b91c1c] animate-fade-in">
-              <AlertTriangle size={32} />
+              <MorphIcon icon={AlertTriangle} size={32} />
               <h3 className="font-bold text-sm">Scan Failed</h3>
               <p className="text-xs">{message}</p>
               <button
                 onClick={startScanner}
                 className="btn-secondary w-full justify-center mt-2 text-xs py-3 flex items-center gap-1.5"
               >
-                <RotateCcw size={14} /> Try Again
+                <MorphIcon icon={RotateCcw} size={14} /> Try Again
               </button>
             </div>
           )}
 
           {/* GPS Indicator */}
           <div className="flex items-center gap-1.5 text-[11px] text-[#64748b]">
-            <Shield size={12} className="text-[#005a36]" />
+            <MorphIcon icon={Shield} size={12} className="text-[#005a36]" />
             <span>Fast Geo-verification enabled</span>
           </div>
         </div>

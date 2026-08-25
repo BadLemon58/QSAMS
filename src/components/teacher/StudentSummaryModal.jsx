@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Badge from '../common/Badge'
 import Spinner from '../common/Spinner'
-import { X, Calendar, Clock, AlertTriangle, User } from 'lucide-react'
+import { X, Calendar, Clock, AlertTriangle, User } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { format, parseISO } from 'date-fns'
 
 export default function StudentSummaryModal({ student, classId, className, onClose }) {
@@ -80,7 +81,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
           onClick={onClose}
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         {/* Student Profile Header */}
@@ -89,7 +90,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
             {student?.avatar_url ? (
               <img src={student.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
-              student?.full_name?.[0]?.toUpperCase() || <User size={20} />
+              student?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={20} />
             )}
           </div>
           <div>
@@ -126,7 +127,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
 
         {/* Attendance History List */}
         <h3 className="text-xs font-bold text-[#005a36] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <Calendar size={13} /> Session History ({logs.length})
+          <MorphIcon icon={Calendar} size={13} /> Session History ({logs.length})
         </h3>
 
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[160px]">
@@ -137,7 +138,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
             </div>
           ) : logs.length === 0 ? (
             <div className="text-center py-10 bg-[#f8fafc] rounded-[16px]">
-              <AlertTriangle size={24} className="text-[#64748b] mx-auto mb-2" />
+              <MorphIcon icon={AlertTriangle} size={24} className="text-[#64748b] mx-auto mb-2" />
               <p className="text-xs text-[#64748b]">No attendance sessions recorded yet</p>
             </div>
           ) : (
@@ -151,7 +152,7 @@ export default function StudentSummaryModal({ student, classId, className, onClo
                     {format(parseISO(log.date), 'EEEE, MMM d, yyyy')}
                   </p>
                   <p className="text-[11px] text-[#64748b] flex items-center gap-1.5 mt-0.5">
-                    <Clock size={11} className="text-[#005a36]" />
+                    <MorphIcon icon={Clock} size={11} className="text-[#005a36]" />
                     {log.markedAt
                       ? format(parseISO(log.markedAt), 'h:mm a')
                       : 'Unmarked'}

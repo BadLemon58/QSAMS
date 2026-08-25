@@ -5,12 +5,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import Badge from '../../components/common/Badge'
-import {
-  BookOpen, Plus, Users, Calendar, Clock,
-  ChevronRight, MapPin, X, AlertCircle, Tv2,
-  ScanLine, LogOut, User, Sparkles, RefreshCw,
-  QrCode, CheckCircle, FileText, ArrowRight, Trash2
-} from 'lucide-react'
+import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, Sparkles, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2 } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import { format, isToday } from 'date-fns'
 
 import {
@@ -25,7 +21,7 @@ function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
       <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] text-center">
         <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#b91c1c] flex items-center justify-center mx-auto mb-3">
-          <Trash2 size={24} />
+          <MorphIcon icon={Trash2} size={24} />
         </div>
         <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Delete Class Section?</h3>
         <p className="text-[#64748b] text-xs mb-5 leading-relaxed">
@@ -167,7 +163,7 @@ function CreateClassModal({ onClose, onCreated }) {
           onClick={onClose}
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
         >
-          <X size={16} />
+          <MorphIcon icon={X} size={16} />
         </button>
 
         <div className="mb-4">
@@ -180,7 +176,7 @@ function CreateClassModal({ onClose, onCreated }) {
 
         {error && (
           <div className="flex items-start gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] p-3.5 mb-4 text-xs font-semibold leading-relaxed animate-fade-in">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <MorphIcon icon={AlertCircle} size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
@@ -456,7 +452,7 @@ export default function TeacherDashboard() {
                 onClick={() => setShowModal(true)}
                 className="bg-[#ffffff] text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-3 px-5 rounded-[14px] shadow-sm transition-all active:scale-[0.98] flex items-center gap-2"
               >
-                <Plus size={16} />
+                <MorphIcon icon={Plus} size={16} />
                 Create New Class
               </button>
             </div>
@@ -496,7 +492,7 @@ export default function TeacherDashboard() {
           {/* Classes Section Header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <BookOpen size={18} className="text-[#005a36]" />
+              <MorphIcon icon={BookOpen} size={18} className="text-[#005a36]" />
               <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
                 Active Class Sections
               </h2>
@@ -514,7 +510,7 @@ export default function TeacherDashboard() {
           ) : classes.length === 0 ? (
             <div className="bg-[#ffffff] rounded-[24px] border border-[#e2e8f0] p-12 text-center max-w-md mx-auto shadow-sm">
               <div className="w-14 h-14 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center mx-auto mb-3">
-                <BookOpen size={24} />
+                <MorphIcon icon={BookOpen} size={24} />
               </div>
               <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#0f172a] mb-1">
                 No classes created yet
@@ -523,7 +519,7 @@ export default function TeacherDashboard() {
                 Click the button below to add your first course section and generate student join codes.
               </p>
               <button onClick={() => setShowModal(true)} className="btn-primary">
-                <Plus size={16} />
+                <MorphIcon icon={Plus} size={16} />
                 Create First Class
               </button>
             </div>
@@ -537,7 +533,7 @@ export default function TeacherDashboard() {
                   <div>
                     <div className="flex items-start justify-between mb-3">
                       <div className="w-10 h-10 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shadow-sm">
-                        <BookOpen size={18} />
+                        <MorphIcon icon={BookOpen} size={18} />
                       </div>
                       <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#f8fafc] text-[#005a36] border border-[#e2e8f0]">
                         {cls.join_code || cls.id.substring(0, 6).toUpperCase()}
@@ -565,7 +561,7 @@ export default function TeacherDashboard() {
                         to={`/teacher/attendance/${cls.id}`}
                         className="btn-primary flex-1 justify-center text-xs py-2"
                       >
-                        <Tv2 size={13} /> Live Kiosk
+                        <MorphIcon icon={Tv2} size={13} /> Live Kiosk
                       </Link>
                       <Link
                         to={`/teacher/class/${cls.id}`}
@@ -578,7 +574,7 @@ export default function TeacherDashboard() {
                         className="p-2 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60"
                         title="Delete Class"
                       >
-                        <Trash2 size={13} />
+                        <MorphIcon icon={Trash2} size={13} />
                       </button>
                     </div>
                   </div>
@@ -612,7 +608,7 @@ export default function TeacherDashboard() {
                   {profile?.avatar_url ? (
                     <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    profile?.full_name?.[0]?.toUpperCase() || <User size={18} />
+                    profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
                   )}
                 </div>
                 <div>
@@ -633,7 +629,7 @@ export default function TeacherDashboard() {
                 className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[14px] text-xs sm:text-sm font-semibold text-[#b91c1c] hover:bg-[#fecaca] active:scale-95 transition-all border border-[#fca5a5] bg-[#fee2e2] shadow-sm"
                 title="Sign out of account"
               >
-                <LogOut size={16} />
+                <MorphIcon icon={LogOut} size={16} />
                 <span>Sign out</span>
               </button>
             </section>
@@ -655,7 +651,7 @@ export default function TeacherDashboard() {
                           className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
                           style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
                         />
-                        <Tv2 size={36} className="text-white" />
+                        <MorphIcon icon={Tv2} size={36} className="text-white" />
                       </div>
 
                       <div className="flex flex-col items-center gap-1 text-center mt-1">
@@ -672,7 +668,7 @@ export default function TeacherDashboard() {
                       {primaryClass && (
                         <div className="flex items-center gap-2">
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dcfce7] text-[#15803d] font-bold text-xs border border-[#86efac]">
-                            <Users size={13} /> {primaryClass.enrollments?.length || 0} Students Enrolled
+                            <MorphIcon icon={Users} size={13} /> {primaryClass.enrollments?.length || 0} Students Enrolled
                           </span>
                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-mono font-bold text-xs border border-[#e2e8f0] shadow-sm">
                             Code: {primaryClass.join_code || primaryClass.id.substring(0,6).toUpperCase()}
@@ -688,7 +684,7 @@ export default function TeacherDashboard() {
                           onClick={() => navigate(`/teacher/attendance/${primaryClass.id}`)}
                           className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <Tv2 size={18} />
+                          <MorphIcon icon={Tv2} size={18} />
                           Launch Live Attendance Kiosk
                         </button>
                       ) : (
@@ -696,7 +692,7 @@ export default function TeacherDashboard() {
                           onClick={() => setShowModal(true)}
                           className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <Plus size={18} />
+                          <MorphIcon icon={Plus} size={18} />
                           Create First Course
                         </button>
                       )}
@@ -706,21 +702,21 @@ export default function TeacherDashboard() {
                           onClick={() => setShowModal(true)}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <Plus size={16} />
+                          <MorphIcon icon={Plus} size={16} />
                           New Class
                         </button>
                         <button
                           onClick={handleRefresh}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                          <MorphIcon icon={RefreshCw} size={16} className={refreshing ? 'animate-spin' : ''} />
                           Refresh
                         </button>
                         <button
                           onClick={() => setActiveTab('classes')}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <BookOpen size={16} />
+                          <MorphIcon icon={BookOpen} size={16} />
                           All ({classes.length})
                         </button>
                       </div>
@@ -796,7 +792,7 @@ export default function TeacherDashboard() {
                                 to={`/teacher/attendance/${cls.id}`}
                                 className="btn-primary flex-1 justify-center text-xs py-2.5"
                               >
-                                <Tv2 size={14} /> Start Kiosk
+                                <MorphIcon icon={Tv2} size={14} /> Start Kiosk
                               </Link>
                               <Link
                                 to={`/teacher/class/${cls.id}`}
@@ -809,7 +805,7 @@ export default function TeacherDashboard() {
                                 className="p-2.5 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60 flex items-center justify-center"
                                 title="Delete Class"
                               >
-                                <Trash2 size={14} />
+                                <MorphIcon icon={Trash2} size={14} />
                               </button>
                             </div>
                           </div>
@@ -830,13 +826,13 @@ export default function TeacherDashboard() {
                         onClick={() => setShowModal(true)}
                         className="text-[12px] font-semibold text-[#005a36] flex items-center gap-1 hover:underline"
                       >
-                        <Plus size={14} /> Add Class
+                        <MorphIcon icon={Plus} size={14} /> Add Class
                       </button>
                     </div>
 
                     {classes.length === 0 ? (
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-8 text-center flex flex-col items-center gap-3">
-                        <BookOpen size={32} className="text-[#64748b]" />
+                        <MorphIcon icon={BookOpen} size={32} className="text-[#64748b]" />
                         <p className="text-sm font-semibold text-[#0f172a]">No classes created yet</p>
                         <p className="text-xs text-[#64748b]">Set up your first course to begin tracking roll calls.</p>
                         <button
@@ -880,7 +876,7 @@ export default function TeacherDashboard() {
                                   to={`/teacher/attendance/${cls.id}`}
                                   className="btn-primary flex-1 justify-center text-xs py-2"
                                 >
-                                  <Tv2 size={13} /> Kiosk
+                                  <MorphIcon icon={Tv2} size={13} /> Kiosk
                                 </Link>
                                 <Link
                                   to={`/teacher/class/${cls.id}`}
@@ -893,7 +889,7 @@ export default function TeacherDashboard() {
                                   className="p-2 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60 flex items-center justify-center"
                                   title="Delete Class"
                                 >
-                                  <Trash2 size={13} />
+                                  <MorphIcon icon={Trash2} size={13} />
                                 </button>
                               </div>
                             </div>
@@ -932,7 +928,7 @@ export default function TeacherDashboard() {
                             >
                               <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center font-bold text-xs shadow-sm">
-                                  {log.profiles?.full_name?.[0]?.toUpperCase() || <User size={15} />}
+                                  {log.profiles?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={15} />}
                                 </div>
                                 <div className="flex flex-col">
                                   <span className="font-semibold text-sm text-[#0f172a]">
@@ -968,7 +964,7 @@ export default function TeacherDashboard() {
                 activeTab === 'overview' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <Tv2 size={22} className={activeTab === 'overview' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={Tv2} size={22} className={activeTab === 'overview' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>Overview</span>
             </button>
 
@@ -978,7 +974,7 @@ export default function TeacherDashboard() {
                 activeTab === 'classes' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <BookOpen size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={BookOpen} size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>Courses</span>
             </button>
 
@@ -988,7 +984,7 @@ export default function TeacherDashboard() {
                 activeTab === 'activity' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
               }`}
             >
-              <Calendar size={22} className={activeTab === 'activity' ? 'text-[#005a36]' : 'text-[#64748b]'} />
+              <MorphIcon icon={Calendar} size={22} className={activeTab === 'activity' ? 'text-[#005a36]' : 'text-[#64748b]'} />
               <span>Activity</span>
             </button>
           </nav>

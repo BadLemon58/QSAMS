@@ -3,10 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
-import {
-  Download, ArrowLeft, Check, Shield, Share2,
-  Sparkles, RefreshCw, User
-} from 'lucide-react'
+import { Download, ArrowLeft, Check, Shield, Share2, Sparkles, RefreshCw, User } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 export default function MyQRPage() {
   const { profile } = useAuth()
@@ -64,7 +62,7 @@ export default function MyQRPage() {
             onClick={() => navigate('/student')}
             className="self-start inline-flex items-center gap-1.5 text-xs font-semibold text-[#005a36] hover:underline transition-colors"
           >
-            <ArrowLeft size={15} /> Dashboard
+            <MorphIcon icon={ArrowLeft} size={15} /> Dashboard
           </button>
 
           {/* Digital ID Card */}
@@ -80,7 +78,7 @@ export default function MyQRPage() {
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                profile?.full_name?.[0]?.toUpperCase() || <User size={24} />
+                profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={24} />
               )}
             </div>
 
@@ -118,9 +116,9 @@ export default function MyQRPage() {
                 className="btn-primary flex-1 justify-center text-xs py-3.5"
               >
                 {downloaded ? (
-                  <><Check size={15} /> Saved!</>
+                  <><MorphIcon icon={Check} size={15} /> Saved!</>
                 ) : (
-                  <><Download size={15} /> Save to Gallery</>
+                  <><MorphIcon icon={Download} size={15} /> Save to Gallery</>
                 )}
               </button>
             </div>
@@ -128,7 +126,7 @@ export default function MyQRPage() {
 
           {/* Security Indicator */}
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#64748b]">
-            <Shield size={12} className="text-[#005a36]" />
+            <MorphIcon icon={Shield} size={12} className="text-[#005a36]" />
             <span>Official Notre Dame of Midsayap College QR Credential</span>
           </div>
         </div>

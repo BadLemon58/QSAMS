@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
-import { Settings, Trash2, X, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Settings, Trash2, X, RefreshCw, AlertTriangle } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 
 export default function DebugPanel() {
   const { profile } = useAuth()
@@ -70,7 +71,7 @@ export default function DebugPanel() {
         className="fixed bottom-6 right-6 z-40 bg-pink-600 hover:bg-pink-700 text-white p-3 rounded-full shadow-lg shadow-pink-500/30 transition-transform hover:scale-105"
         title="Open Debug Panel"
       >
-        <Settings size={24} />
+        <MorphIcon icon={Settings} size={24} />
       </button>
 
       {/* Modal */}
@@ -81,12 +82,12 @@ export default function DebugPanel() {
               onClick={() => setIsOpen(false)}
               className="absolute right-4 top-4 text-slate-500 hover:text-white transition-colors"
             >
-              <X size={20} />
+              <MorphIcon icon={X} size={20} />
             </button>
             
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-pink-500/20 text-pink-500 rounded-lg">
-                <AlertTriangle size={20} />
+                <MorphIcon icon={AlertTriangle} size={20} />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">Debug Panel</h2>
@@ -109,7 +110,7 @@ export default function DebugPanel() {
                     className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors group disabled:opacity-50"
                   >
                     <div className="flex items-center gap-3 text-white">
-                      <RefreshCw size={18} className="text-slate-400 group-hover:text-blue-400" />
+                      <MorphIcon icon={RefreshCw} size={18} className="text-slate-400 group-hover:text-blue-400" />
                       <div className="text-left">
                         <p className="font-semibold text-sm">Reset Streak & Logs</p>
                         <p className="text-xs text-slate-400">Deletes all your attendance history</p>
@@ -123,7 +124,7 @@ export default function DebugPanel() {
                     className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors group disabled:opacity-50"
                   >
                     <div className="flex items-center gap-3 text-white">
-                      <Trash2 size={18} className="text-slate-400 group-hover:text-red-400" />
+                      <MorphIcon icon={Trash2} size={18} className="text-slate-400 group-hover:text-red-400" />
                       <div className="text-left">
                         <p className="font-semibold text-sm">Clear Enrollments</p>
                         <p className="text-xs text-slate-400">Unenrolls you from all classes</p>
@@ -140,7 +141,7 @@ export default function DebugPanel() {
                   className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors group disabled:opacity-50"
                 >
                   <div className="flex items-center gap-3 text-white">
-                    <Trash2 size={18} className="text-slate-400 group-hover:text-red-400" />
+                    <MorphIcon icon={Trash2} size={18} className="text-slate-400 group-hover:text-red-400" />
                     <div className="text-left">
                       <p className="font-semibold text-sm">Delete All My Classes</p>
                       <p className="text-xs text-slate-400">Removes all your classes & logs</p>

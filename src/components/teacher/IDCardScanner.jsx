@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
-import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react'
+import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import Spinner from '../common/Spinner'
 
 export default function IDCardScanner({ onScan, onError }) {
@@ -91,7 +92,7 @@ export default function IDCardScanner({ onScan, onError }) {
         {status === 'idle' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f8fafc]">
             <div className="w-14 h-14 rounded-full bg-[#ffffff] flex items-center justify-center text-[#64748b] shadow-sm border border-[#e2e8f0]">
-              <Camera size={26} />
+              <MorphIcon icon={Camera} size={26} />
             </div>
             <p className="text-[#64748b] text-xs font-semibold">Camera is off</p>
           </div>
@@ -112,14 +113,14 @@ export default function IDCardScanner({ onScan, onError }) {
 
         {status === 'success' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#005a36]/90 text-white backdrop-blur-sm animate-fade-in">
-            <CheckCircle size={44} className="text-white" />
+            <MorphIcon icon={CheckCircle} size={44} className="text-white" />
             <p className="font-['Source_Serif_4',Georgia,serif] text-base font-bold">ID Card Scanned!</p>
           </div>
         )}
 
         {status === 'error' && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-5 text-center rounded-[20px] bg-[#fee2e2] text-[#b91c1c]">
-            <AlertTriangle size={32} />
+            <MorphIcon icon={AlertTriangle} size={32} />
             <p className="text-xs font-semibold">{errorMsg}</p>
           </div>
         )}
@@ -132,14 +133,14 @@ export default function IDCardScanner({ onScan, onError }) {
             onClick={startScanner}
             className="btn-primary w-full justify-center text-xs py-3.5"
           >
-            <Camera size={16} /> Start Camera Scanner
+            <MorphIcon icon={Camera} size={16} /> Start Camera Scanner
           </button>
         ) : (
           <button
             onClick={stopScanner}
             className="btn-secondary w-full justify-center text-xs py-3.5"
           >
-            <CameraOff size={16} /> Stop Camera
+            <MorphIcon icon={CameraOff} size={16} /> Stop Camera
           </button>
         )}
       </div>

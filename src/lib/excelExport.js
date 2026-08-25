@@ -141,55 +141,86 @@ export async function exportAttendanceReportToExcel({
   titleBanner.alignment = { horizontal: 'center', vertical: 'middle' }
   ws1.getRow(1).height = 34
 
-  // ── 2. Filter / Metadata Pills (Row 3) ────────────────────────
-  // Pill 1: Month
-  ws1.mergeCells('B3:C3')
-  const p1Label = ws1.getCell('B3')
+  // ── 2. Filter / Metadata Pills (Row 3, Left-Aligned within Header) ──
+  // Pill 1: Month (Col A = Label, Col B = Value)
+  const p1Label = ws1.getCell('A3')
   p1Label.value = 'Month'
   p1Label.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillLabelText } }
   p1Label.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillLabelBg } }
   p1Label.alignment = { horizontal: 'center', vertical: 'middle' }
+  p1Label.border = thinBorder
 
-  ws1.mergeCells('D3:E3')
-  const p1Val = ws1.getCell('D3')
+  const p1Val = ws1.getCell('B3')
   p1Val.value = monthName
   p1Val.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueText } }
   p1Val.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillValueBg } }
   p1Val.alignment = { horizontal: 'center', vertical: 'middle' }
+  p1Val.border = thinBorder
 
-  // Pill 2: Year
-  ws1.mergeCells('G3:H3')
-  const p2Label = ws1.getCell('G3')
-  p2Label.value = 'Year'
-  p2Label.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillLabelText } }
-  p2Label.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillLabelBg } }
-  p2Label.alignment = { horizontal: 'center', vertical: 'middle' }
+  // Pill 2: Year (Col C = Label, Col D = Value)
+  if (totalCols >= 4) {
+    const p2Label = ws1.getCell('C3')
+    p2Label.value = 'Year'
+    p2Label.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillLabelText } }
+    p2Label.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillLabelBg } }
+    p2Label.alignment = { horizontal: 'center', vertical: 'middle' }
+    p2Label.border = thinBorder
 
-  ws1.mergeCells('I3:J3')
-  const p2Val = ws1.getCell('I3')
-  p2Val.value = yearNum
-  p2Val.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueText } }
-  p2Val.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillValueBg } }
-  p2Val.alignment = { horizontal: 'center', vertical: 'middle' }
+    const p2Val = ws1.getCell('D3')
+    p2Val.value = yearNum
+    p2Val.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueText } }
+    p2Val.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillValueBg } }
+    p2Val.alignment = { horizontal: 'center', vertical: 'middle' }
+    p2Val.border = thinBorder
+  }
 
-  // Pill 3: Class / Section
-  if (totalCols >= 14) {
-    ws1.mergeCells('L3:M3')
-    const p3Label = ws1.getCell('L3')
+  // Pill 3: Class / Section (Col E = Label, Col F = Value or merged F:G)
+  if (totalCols >= 6) {
+    const p3Label = ws1.getCell('E3')
     p3Label.value = 'Class'
     p3Label.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillLabelText } }
     p3Label.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillLabelBg } }
     p3Label.alignment = { horizontal: 'center', vertical: 'middle' }
+    p3Label.border = thinBorder
 
-    ws1.mergeCells('N3:P3')
-    const p3Val = ws1.getCell('N3')
+    if (totalCols >= 8) {
+      ws1.mergeCells('F3:G3')
+    }
+    const p3Val = ws1.getCell('F3')
     p3Val.value = classInfo?.name || 'Class Section'
     p3Val.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueText } }
     p3Val.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillValueBg } }
     p3Val.alignment = { horizontal: 'center', vertical: 'middle' }
+    p3Val.border = thinBorder
+    if (totalCols >= 8) {
+      ws1.getCell('G3').border = thinBorder
+    }
   }
 
-  ws1.getRow(3).height = 20
+  // Pill 4: Teacher / Instructor (Col H:I if room allows)
+  if (totalCols >= 10) {
+    const p4Label = ws1.getCell('H3')
+    p4Label.value = 'Teacher'
+    p4Label.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillLabelText } }
+    p4Label.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillLabelBg } }
+    p4Label.alignment = { horizontal: 'center', vertical: 'middle' }
+    p4Label.border = thinBorder
+
+    if (totalCols >= 12) {
+      ws1.mergeCells('I3:J3')
+    }
+    const p4Val = ws1.getCell('I3')
+    p4Val.value = teacherName || 'Faculty'
+    p4Val.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueText } }
+    p4Val.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.pillValueBg } }
+    p4Val.alignment = { horizontal: 'center', vertical: 'middle' }
+    p4Val.border = thinBorder
+    if (totalCols >= 12) {
+      ws1.getCell('J3').border = thinBorder
+    }
+  }
+
+  ws1.getRow(3).height = 22
 
   // ── 3. Table Header (Row 5) ──────────────────────────────────
   const dateHeaders = sortedSessions.map(s => {
@@ -337,6 +368,12 @@ export async function exportAttendanceReportToExcel({
   totalPresCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: COLORS.presentText } }
   totalPresCell.alignment = { horizontal: 'right', vertical: 'middle' }
 
+  for (let c = 1; c <= totalCols; c++) {
+    const cell = totalPresRow.getCell(c)
+    cell.border = thinBorder
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.presentBg } }
+  }
+
   // Compute total present per date column
   sortedSessions.forEach((sess, sIdx) => {
     const colNum = 3 + sIdx
@@ -344,18 +381,14 @@ export async function exportAttendanceReportToExcel({
     const c = totalPresRow.getCell(colNum)
     c.value = countPresent
     c.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.presentText } }
-    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.presentBg } }
     c.alignment = { horizontal: 'center', vertical: 'middle' }
-    c.border = thinBorder
   })
 
   const totalPresCount = reportData.reduce((a, b) => a + b.present, 0)
   const totalPresSummaryCell = totalPresRow.getCell(presentColIndex)
   totalPresSummaryCell.value = totalPresCount
   totalPresSummaryCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.presentText } }
-  totalPresSummaryCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.presentBg } }
   totalPresSummaryCell.alignment = { horizontal: 'center', vertical: 'middle' }
-  totalPresSummaryCell.border = thinBorder
 
   // Row B: Total Absent per Date
   const totalAbsRow = ws1.getRow(startSummaryRow + 1)
@@ -366,6 +399,12 @@ export async function exportAttendanceReportToExcel({
   totalAbsCell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: COLORS.absentText } }
   totalAbsCell.alignment = { horizontal: 'right', vertical: 'middle' }
 
+  for (let c = 1; c <= totalCols; c++) {
+    const cell = totalAbsRow.getCell(c)
+    cell.border = thinBorder
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.absentBg } }
+  }
+
   sortedSessions.forEach((sess, sIdx) => {
     const colNum = 3 + sIdx
     const countPresent = rawLogs.filter(l => l.session_id === sess.id && (l.status === 'present' || l.status === 'late')).length
@@ -373,23 +412,19 @@ export async function exportAttendanceReportToExcel({
     const c = totalAbsRow.getCell(colNum)
     c.value = countAbsent
     c.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.absentText } }
-    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.absentBg } }
     c.alignment = { horizontal: 'center', vertical: 'middle' }
-    c.border = thinBorder
   })
 
   const totalAbsCount = reportData.reduce((a, b) => a + b.absent, 0)
   const totalAbsSummaryCell = totalAbsRow.getCell(absentColIndex)
   totalAbsSummaryCell.value = totalAbsCount
   totalAbsSummaryCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.absentText } }
-  totalAbsSummaryCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.absentBg } }
   totalAbsSummaryCell.alignment = { horizontal: 'center', vertical: 'middle' }
-  totalAbsSummaryCell.border = thinBorder
 
   // Row C: Class Average Attendance Rate
   const avgRow = ws1.getRow(startSummaryRow + 2)
   avgRow.height = 24
-  ws1.mergeCells(startSummaryRow + 2, 1, startSummaryRow + 2, 2)
+  ws1.mergeCells(startSummaryRow + 2, 1, startSummaryRow + 2, totalCols - 1)
   const avgCell = ws1.getCell(startSummaryRow + 2, 1)
   avgCell.value = 'CLASS AVERAGE ATTENDANCE'
   avgCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.summaryText } }

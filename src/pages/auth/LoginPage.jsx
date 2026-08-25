@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide';
+import { MorphIcon } from 'morphicons/react';
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function LoginPage() {
@@ -56,7 +57,7 @@ export default function LoginPage() {
 
           {error && (
             <div className="flex items-center gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold">
-              <AlertCircle size={16} className="shrink-0" />
+              <MorphIcon icon={AlertCircle} size={16} className="shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -67,7 +68,7 @@ export default function LoginPage() {
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                <MorphIcon icon={Mail} size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                 <input
                   type="email"
                   className="input-field pl-10"
@@ -84,7 +85,7 @@ export default function LoginPage() {
                 Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                <MorphIcon icon={Lock} size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                 <input
                   type={showPass ? 'text' : 'password'}
                   className="input-field pl-10 pr-10"
@@ -98,7 +99,7 @@ export default function LoginPage() {
                   onClick={() => setShowPass(!showPass)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#0f172a]"
                 >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPass ? <MorphIcon icon={EyeOff} size={16} /> : <MorphIcon icon={Eye} size={16} />}
                 </button>
               </div>
             </div>
