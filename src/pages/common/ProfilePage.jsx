@@ -9,8 +9,25 @@ import {
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
+function SuccessModal({ title, message, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-7 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative text-center">
+        <div className="w-16 h-16 rounded-full bg-[#dcfce7] text-[#15803d] flex items-center justify-center mx-auto mb-4 border-4 border-[#86efac]/50">
+          <CheckCircle size={32} />
+        </div>
+        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2">{title}</h3>
+        <p className="text-[#64748b] text-sm mb-6">{message}</p>
+        <button onClick={onClose} className="btn-primary w-full justify-center py-3">
+          Done
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function ProfilePage() {
-  const { user, profile, updateProfile, updatePassword } = useAuth()
+  const { user, profile, updateProfile, updatePassword, signIn } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -21,6 +38,7 @@ export default function ProfilePage() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   // Password fields state
+  const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPassword, setSavingPassword] = useState(false)
@@ -28,6 +46,7 @@ export default function ProfilePage() {
   // Alert state
   const [profileMessage, setProfileMessage] = useState(null)
   const [passwordMessage, setPasswordMessage] = useState(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(null) // 'profile' | 'password' | 'avatar' | null
 
   const isTeacher = profile?.role === 'teacher'
 
@@ -60,7 +79,7 @@ export default function ProfilePage() {
         if (urlData?.publicUrl) {
           setAvatarUrl(urlData.publicUrl)
           await updateProfile({ avatar_url: urlData.publicUrl })
-          setProfileMessage({ type: 'success', text: 'Profile picture updated successfully!' })
+          setShowSuccessModal('avatar')
           setUploadingAvatar(false)
           return
         }
@@ -72,7 +91,7 @@ export default function ProfilePage() {
         const base64Data = reader.result
         setAvatarUrl(base64Data)
         await updateProfile({ avatar_url: base64Data })
-        setProfileMessage({ type: 'success', text: 'Profile picture updated successfully!' })
+        setShowSuccessModal('avatar')
         setUploadingAvatar(false)
       }
       reader.readAsDataURL(file)
@@ -90,7 +109,7 @@ export default function ProfilePage() {
       setProfileMessage({ type: 'error', text: error.message })
     } else {
       setAvatarUrl('')
-      setProfileMessage({ type: 'success', text: 'Profile picture removed.' })
+      setShowSuccessModal('avatar')
     }
     setUploadingAvatar(false)
   }
@@ -110,7 +129,7 @@ export default function ProfilePage() {
     if (error) {
       setProfileMessage({ type: 'error', text: `Update failed: ${error.message}` })
     } else {
-      setProfileMessage({ type: 'success', text: 'Profile updated successfully!' })
+      setShowSuccessModal('profile')
     }
     setSavingProfile(false)
   }
@@ -119,6 +138,11 @@ export default function ProfilePage() {
   const handleChangePassword = async (e) => {
     e.preventDefault()
     setPasswordMessage(null)
+
+    if (!oldPassword) {
+      setPasswordMessage({ type: 'error', text: 'Please enter your current password.' })
+      return
+    }
 
     if (newPassword.length < 6) {
       setPasswordMessage({ type: 'error', text: 'New password must be at least 6 characters.' })
@@ -130,13 +154,27 @@ export default function ProfilePage() {
       return
     }
 
+    const confirmChange = window.confirm("Are you sure you want to change your password?")
+    if (!confirmChange) return
+
     setSavingPassword(true)
+    
+    // Verify current password first
+    const { error: verifyError } = await signIn({ email: user.email, password: oldPassword })
+    
+    if (verifyError) {
+      setPasswordMessage({ type: 'error', text: 'Current password is incorrect.' })
+      setSavingPassword(false)
+      return
+    }
+
     const { error } = await updatePassword(newPassword)
 
     if (error) {
       setPasswordMessage({ type: 'error', text: `Password update failed: ${error.message}` })
     } else {
-      setPasswordMessage({ type: 'success', text: 'Password changed successfully!' })
+      setShowSuccessModal('password')
+      setOldPassword('')
       setNewPassword('')
       setConfirmPassword('')
     }
@@ -146,6 +184,30 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
       <Navbar />
+
+      {showSuccessModal === 'profile' && (
+        <SuccessModal
+          title="Profile Updated"
+          message="Your personal information has been successfully saved."
+          onClose={() => setShowSuccessModal(null)}
+        />
+      )}
+      
+      {showSuccessModal === 'password' && (
+        <SuccessModal
+          title="Password Changed"
+          message="Your account password has been updated securely."
+          onClose={() => setShowSuccessModal(null)}
+        />
+      )}
+
+      {showSuccessModal === 'avatar' && (
+        <SuccessModal
+          title="Avatar Updated"
+          message="Your profile picture has been updated successfully."
+          onClose={() => setShowSuccessModal(null)}
+        />
+      )}
 
       {/* Header Container */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -345,6 +407,25 @@ export default function ProfilePage() {
             )}
 
             <form onSubmit={handleChangePassword} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 mb-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                    Current Password
+                  </label>
+                  <div className="relative">
+                    <KeyRound size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                    <input
+                      type="password"
+                      className="input-field pl-10"
+                      placeholder="Verify your current password"
+                      value={oldPassword}
+                      onChange={e => setOldPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">

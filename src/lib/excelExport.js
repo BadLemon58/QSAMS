@@ -442,7 +442,7 @@ export async function exportAttendanceReportToExcel({
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `QSAMS_${(classInfo?.name || 'Class').replace(/[^a-zA-Z0-9_-]/g, '_')}_Attendance_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
+  a.download = `QSAMS_Class_Record_${(classInfo?.name || 'Class').replace(/[^a-zA-Z0-9_-]/g, '_')}.xlsx`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -630,7 +630,7 @@ export async function exportSingleSessionToExcel({
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `QSAMS_${(classInfo?.name || 'Class').replace(/[^a-zA-Z0-9_-]/g, '_')}_Session_${session?.date || new Date().toISOString().slice(0, 10)}.xlsx`
+  a.download = `QSAMS_Daily_Log_${(classInfo?.name || 'Class').replace(/[^a-zA-Z0-9_-]/g, '_')}_${session?.date || new Date().toISOString().slice(0, 10)}.xlsx`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)

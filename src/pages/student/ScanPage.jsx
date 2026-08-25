@@ -126,9 +126,62 @@ export default function ScanPage() {
       return
     }
 
+    if (parsed.type === 'join_class') {
+      const joinCode = parsed.joinCode
+      if (!joinCode) {
+        setStatus('error')
+        setMessage('Invalid join QR code.')
+        return
+      }
+
+      // 1. Find the class
+      const { data: foundClasses, error: searchErr } = await supabase
+        .from('classes')
+        .select('*')
+
+      if (searchErr) {
+        setStatus('error')
+        setMessage(`Error finding class: ${searchErr.message}`)
+        return
+      }
+
+      const matchedClass = (foundClasses || []).find(c =>
+        c.join_code?.toUpperCase() === joinCode.toUpperCase() ||
+        c.id.substring(0, 6).toUpperCase() === joinCode.toUpperCase()
+      )
+
+      if (!matchedClass) {
+        setStatus('error')
+        setMessage('Class not found. Please ask your teacher for a new code.')
+        return
+      }
+
+      // 2. Enroll student
+      const { error: enrollErr } = await supabase
+        .from('enrollments')
+        .insert({ class_id: matchedClass.id, student_id: profile.id })
+
+      if (enrollErr) {
+        setStatus('error')
+        if (enrollErr.code === '23505') {
+          setMessage(`You are already enrolled in "${matchedClass.name}".`)
+        } else {
+          setMessage(`Enrollment failed: ${enrollErr.message}`)
+        }
+        return
+      }
+
+      setScanResult({
+        actionType: 'join_class',
+        className: matchedClass.name,
+      })
+      setStatus('success')
+      return
+    }
+
     if (parsed.type !== 'attendance' || !parsed.sessionId || !parsed.token) {
       setStatus('error')
-      setMessage('Unrecognized QR code. Please scan the QR projected on the teacher screen.')
+      setMessage('Unrecognized QR code. Please scan a valid QSAMS QR code.')
       return
     }
 
@@ -194,6 +247,7 @@ export default function ScanPage() {
     }
 
     setScanResult({
+      actionType: 'attendance',
       className: session.classes?.name || 'Class Session',
       room: session.classes?.room,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -263,9 +317,15 @@ export default function ScanPage() {
           {status === 'success' && scanResult && (
             <div className="w-full bg-[#dcfce7] border border-[#86efac] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 animate-fade-in text-[#15803d]">
               <CheckCircle size={36} />
-              <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold">Attendance Recorded!</h3>
+              <h3 className="font-['Source_Serif_4',Georgia,serif] text-lg font-bold">
+                {scanResult.actionType === 'join_class' ? 'Class Joined!' : 'Attendance Recorded!'}
+              </h3>
               <p className="text-xs">
-                Marked present for <strong className="text-[#0f172a]">{scanResult.className}</strong> at {scanResult.time}
+                {scanResult.actionType === 'join_class' ? (
+                  <>Successfully enrolled in <strong className="text-[#0f172a]">{scanResult.className}</strong></>
+                ) : (
+                  <>Marked present for <strong className="text-[#0f172a]">{scanResult.className}</strong> at {scanResult.time}</>
+                )}
               </p>
               <button
                 onClick={() => navigate('/student')}

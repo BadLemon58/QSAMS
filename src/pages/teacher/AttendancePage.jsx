@@ -93,7 +93,7 @@ export default function AttendancePage() {
       teacherName: profile?.full_name,
     })
 
-    showToast('Downloaded session Excel report!', 'success')
+    showToast('Downloaded Daily Log!', 'success')
   }
 
   // Load class info
@@ -287,16 +287,16 @@ export default function AttendancePage() {
               <button
                 onClick={handleExportSessionExcel}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
-                title="Download formatted Excel workbook for this session"
+                title="Download formatted Excel workbook for this specific day"
               >
-                <FileSpreadsheet size={14} className="text-[#15803d]" /> Export Excel
+                <FileSpreadsheet size={14} className="text-[#15803d]" /> Daily Log
               </button>
               <button
                 onClick={() => setShowReportModal(true)}
                 className="bg-white text-[#005a36] hover:bg-[#f1f5f9] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5"
-                title="Generate Full Attendance Report"
+                title="Generate Master Class Record with all sessions"
               >
-                <FileSpreadsheet size={14} /> Full Report
+                <FileSpreadsheet size={14} /> Class Record
               </button>
               <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-xs font-bold shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />

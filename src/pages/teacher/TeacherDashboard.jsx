@@ -9,36 +9,160 @@ import {
   BookOpen, Plus, Users, Calendar, Clock,
   ChevronRight, MapPin, X, AlertCircle, Tv2,
   ScanLine, LogOut, User, Sparkles, RefreshCw,
-  QrCode, CheckCircle, FileText, ArrowRight
+  QrCode, CheckCircle, FileText, ArrowRight, Trash2
 } from 'lucide-react'
 import { format, isToday } from 'date-fns'
 
-// ── Create Class Modal (NDMC Forest Green Style) ───────────────────────────
+import {
+  checkClassScheduleConflict,
+  formatTime24to12,
+  parseDays
+} from '../../lib/scheduleValidator'
+
+// ── Delete Class Confirmation Modal ───────────────────────────────────────
+function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] text-center">
+        <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#b91c1c] flex items-center justify-center mx-auto mb-3">
+          <Trash2 size={24} />
+        </div>
+        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Delete Class Section?</h3>
+        <p className="text-[#64748b] text-xs mb-5 leading-relaxed">
+          Are you sure you want to permanently delete <strong className="text-[#0f172a]">{className}</strong>? All student enrollments, sessions, and attendance history will be deleted.
+        </p>
+        <div className="flex gap-2.5">
+          <button onClick={onCancel} disabled={deleting} className="btn-secondary flex-1 justify-center py-3">
+            Cancel
+          </button>
+          <button onClick={onConfirm} disabled={deleting} className="btn-danger flex-1 justify-center py-3">
+            {deleting ? <Spinner size="sm" /> : 'Delete Class'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Create Class Modal with Schedule Conflict Restraints (NDMC Forest Green Style) ──
 function CreateClassModal({ onClose, onCreated }) {
   const { profile } = useAuth()
-  const [form, setForm] = useState({ name: '', description: '', schedule: '', room: '' })
+  const [form, setForm] = useState({ name: '', description: '', room: '' })
+  const [dayPattern, setDayPattern] = useState('MW') // 'MW' | 'TTH' | 'FS' | 'CUSTOM'
+  const [customDays, setCustomDays] = useState(['M', 'W'])
+  const [startTime, setStartTime] = useState('09:00')
+  const [endTime, setEndTime] = useState('10:30')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const ALL_DAYS = [
+    { key: 'M', label: 'Mon' },
+    { key: 'T', label: 'Tue' },
+    { key: 'W', label: 'Wed' },
+    { key: 'TH', label: 'Thu' },
+    { key: 'F', label: 'Fri' },
+    { key: 'S', label: 'Sat' },
+    { key: 'SUN', label: 'Sun' },
+  ]
+
+  const getEffectiveDays = () => {
+    if (dayPattern === 'MW') return ['M', 'W']
+    if (dayPattern === 'TTH') return ['T', 'TH']
+    if (dayPattern === 'FS') return ['F', 'S']
+    return customDays
+  }
+
+  const getDayLabel = () => {
+    if (dayPattern === 'MW') return 'MW'
+    if (dayPattern === 'TTH') return 'TTH'
+    if (dayPattern === 'FS') return 'FS'
+    return customDays.join('/')
+  }
+
+  const formattedSchedulePreview = `${getDayLabel()} ${formatTime24to12(startTime)} - ${formatTime24to12(endTime)}`
+
+  const handleCustomDayToggle = (dayKey) => {
+    setCustomDays(prev =>
+      prev.includes(dayKey)
+        ? (prev.length > 1 ? prev.filter(d => d !== dayKey) : prev)
+        : [...prev, dayKey]
+    )
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
+    const effectiveDays = getEffectiveDays()
+
+    if (effectiveDays.length === 0) {
+      setError('Please select at least one class day.')
+      setLoading(false)
+      return
+    }
+
+    if (!startTime || !endTime) {
+      setError('Please provide valid start and end times.')
+      setLoading(false)
+      return
+    }
+
+    // 1. Fetch all classes in database for conflict validation
+    const { data: allExistingClasses, error: fetchErr } = await supabase
+      .from('classes')
+      .select('id, name, schedule, room, teacher_id')
+
+    if (fetchErr) {
+      setError(`Database verification error: ${fetchErr.message}`)
+      setLoading(false)
+      return
+    }
+
+    // 2. Validate Instructor & Room Schedule Conflicts
+    const conflictResult = checkClassScheduleConflict({
+      teacherId: profile.id,
+      room: form.room,
+      days: effectiveDays,
+      startTime24: startTime,
+      endTime24: endTime,
+      existingClasses: allExistingClasses || []
+    })
+
+    if (conflictResult.hasConflict) {
+      setError(conflictResult.message)
+      setLoading(false)
+      return
+    }
+
+    // 3. Create the class
+    const scheduleFormatted = `${getDayLabel()} ${formatTime24to12(startTime)} - ${formatTime24to12(endTime)}`
+
     const { data, error: err } = await supabase
       .from('classes')
-      .insert({ ...form, teacher_id: profile.id })
+      .insert({
+        name: form.name,
+        description: form.description,
+        room: form.room,
+        schedule: scheduleFormatted,
+        teacher_id: profile.id
+      })
       .select('*, enrollments(id), attendance_sessions(*)')
       .single()
 
-    if (err) { setError(err.message); setLoading(false); return }
+    if (err) {
+      setError(err.message)
+      setLoading(false)
+      return
+    }
+
     onCreated(data)
     onClose()
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
-      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-md p-7 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-md max-h-[90vh] overflow-y-auto p-6 sm:p-7 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative">
         <button
           onClick={onClose}
           className="absolute right-5 top-5 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
@@ -46,17 +170,17 @@ function CreateClassModal({ onClose, onCreated }) {
           <X size={16} />
         </button>
 
-        <div className="mb-5">
+        <div className="mb-4">
           <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Faculty Portal</span>
           <h2 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mt-0.5">
             Create New Class
           </h2>
-          <p className="text-[#64748b] text-xs mt-1">Set up a course section to start tracking attendance</p>
+          <p className="text-[#64748b] text-xs mt-1">Set up course section with conflict-free day & time validation</p>
         </div>
 
         {error && (
-          <div className="flex items-center gap-2 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] px-4 py-3 mb-4 text-xs font-semibold">
-            <AlertCircle size={15} />
+          <div className="flex items-start gap-2.5 bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5] rounded-[16px] p-3.5 mb-4 text-xs font-semibold leading-relaxed animate-fade-in">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
@@ -79,7 +203,121 @@ function CreateClassModal({ onClose, onCreated }) {
 
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-              Description
+              Classroom / Room *
+            </label>
+            <input
+              type="text"
+              className="input-field"
+              placeholder="e.g. Room 204 or CompLab 2"
+              value={form.room}
+              onChange={e => setForm({ ...form, room: e.target.value })}
+              required
+            />
+          </div>
+
+          {/* Schedule Days Selection */}
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#005a36]">
+                Day Pattern *
+              </label>
+              <span className="text-[11px] text-[#64748b] font-medium">
+                {dayPattern === 'CUSTOM' ? 'Select specific days' : 'Standard academic patterns'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { id: 'MW', label: 'MW', sub: 'Mon/Wed' },
+                { id: 'TTH', label: 'TTH', sub: 'Tue/Thu' },
+                { id: 'FS', label: 'FS', sub: 'Fri/Sat' },
+                { id: 'CUSTOM', label: 'Custom', sub: 'Pick days' },
+              ].map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setDayPattern(p.id)}
+                  className={`py-2 px-1 rounded-[12px] border text-center transition-all ${
+                    dayPattern === p.id
+                      ? 'bg-[#005a36] text-white border-[#005a36] shadow-sm font-bold'
+                      : 'bg-white text-[#64748b] border-[#e2e8f0] hover:text-[#0f172a]'
+                  }`}
+                >
+                  <p className="text-xs font-bold">{p.label}</p>
+                  <p className={`text-[9px] ${dayPattern === p.id ? 'opacity-90' : 'text-[#64748b]'}`}>{p.sub}</p>
+                </button>
+              ))}
+            </div>
+
+            {/* Custom Day Checkboxes if CUSTOM selected */}
+            {dayPattern === 'CUSTOM' && (
+              <div className="pt-2 border-t border-[#e2e8f0]">
+                <p className="text-[11px] text-[#64748b] mb-1.5 font-semibold">Select Meeting Days:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {ALL_DAYS.map(d => {
+                    const isSelected = customDays.includes(d.key)
+                    return (
+                      <button
+                        key={d.key}
+                        type="button"
+                        onClick={() => handleCustomDayToggle(d.key)}
+                        className={`py-1.5 px-3 rounded-full text-xs font-bold transition-all border ${
+                          isSelected
+                            ? 'bg-[#e6f2ec] text-[#005a36] border-[#005a36]'
+                            : 'bg-white text-[#64748b] border-[#e2e8f0] hover:text-[#0f172a]'
+                        }`}
+                      >
+                        {d.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Time Selection with strict time inputs */}
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-3.5 space-y-2.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#005a36]">
+              Class Time Range *
+            </label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="block text-[11px] text-[#64748b] font-semibold mb-1">Start Time</span>
+                <input
+                  type="time"
+                  className="input-field py-2 font-mono font-bold"
+                  value={startTime}
+                  onChange={e => setStartTime(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div>
+                <span className="block text-[11px] text-[#64748b] font-semibold mb-1">End Time</span>
+                <input
+                  type="time"
+                  className="input-field py-2 font-mono font-bold"
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Live Schedule String Preview */}
+            <div className="flex items-center justify-between pt-1 border-t border-[#e2e8f0] text-xs">
+              <span className="text-[#64748b] font-medium">Generated Schedule:</span>
+              <span className="font-mono font-bold text-[#005a36] bg-[#e6f2ec] px-2 py-0.5 rounded-md">
+                {formattedSchedulePreview}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+              Description (Optional)
             </label>
             <textarea
               className="input-field resize-none"
@@ -90,39 +328,12 @@ function CreateClassModal({ onClose, onCreated }) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                Schedule
-              </label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="MWF 9:00–10:30 AM"
-                value={form.schedule}
-                onChange={e => setForm({ ...form, schedule: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                Room
-              </label>
-              <input
-                type="text"
-                className="input-field"
-                placeholder="Room 204"
-                value={form.room}
-                onChange={e => setForm({ ...form, room: e.target.value })}
-              />
-            </div>
-          </div>
-
           <div className="flex gap-2.5 pt-2">
             <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center py-3">
               Cancel
             </button>
             <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center py-3">
-              {loading ? <Spinner size="sm" /> : 'Create Class'}
+              {loading ? <Spinner size="sm" /> : 'Create & Verify'}
             </button>
           </div>
         </form>
@@ -142,6 +353,27 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [classToDelete, setClassToDelete] = useState(null)
+  const [deletingClass, setDeletingClass] = useState(false)
+
+  const handleDeleteClass = async () => {
+    if (!classToDelete) return
+    setDeletingClass(true)
+    try {
+      await supabase.from('attendance_logs').delete().eq('class_id', classToDelete.id)
+      await supabase.from('attendance_sessions').delete().eq('class_id', classToDelete.id)
+      await supabase.from('enrollments').delete().eq('class_id', classToDelete.id)
+      const { error } = await supabase.from('classes').delete().eq('id', classToDelete.id)
+      if (!error) {
+        setClasses(prev => prev.filter(c => c.id !== classToDelete.id))
+        setClassToDelete(null)
+      }
+    } catch (err) {
+      console.error('Error deleting class:', err)
+    } finally {
+      setDeletingClass(false)
+    }
+  }
 
   const fetchTeacherData = async () => {
     if (!profile?.id) return
@@ -341,6 +573,13 @@ export default function TeacherDashboard() {
                       >
                         Details
                       </Link>
+                      <button
+                        onClick={() => setClassToDelete(cls)}
+                        className="p-2 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60"
+                        title="Delete Class"
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -565,6 +804,13 @@ export default function TeacherDashboard() {
                               >
                                 Manage Roster
                               </Link>
+                              <button
+                                onClick={() => setClassToDelete(cls)}
+                                className="p-2.5 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60 flex items-center justify-center"
+                                title="Delete Class"
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -642,6 +888,13 @@ export default function TeacherDashboard() {
                                 >
                                   Roster
                                 </Link>
+                                <button
+                                  onClick={() => setClassToDelete(cls)}
+                                  className="p-2 rounded-[12px] bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-colors border border-[#fca5a5]/60 flex items-center justify-center"
+                                  title="Delete Class"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -747,6 +1000,15 @@ export default function TeacherDashboard() {
         <CreateClassModal
           onClose={() => setShowModal(false)}
           onCreated={(cls) => setClasses(prev => [cls, ...prev])}
+        />
+      )}
+
+      {classToDelete && (
+        <DeleteClassModal
+          className={classToDelete.name}
+          onConfirm={handleDeleteClass}
+          onCancel={() => setClassToDelete(null)}
+          deleting={deletingClass}
         />
       )}
     </div>
