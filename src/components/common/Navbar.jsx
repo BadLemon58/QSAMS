@@ -66,7 +66,7 @@ export default function Navbar() {
                     : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9]'
                 }`}
               >
-                <Icon size={16} />
+                <MorphIcon icon={Icon} size={16} />
                 {label}
               </Link>
             ))}
@@ -150,7 +150,7 @@ export default function Navbar() {
                   : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f1f5f9]'
               }`}
             >
-              <Icon size={16} />
+              <MorphIcon icon={Icon} size={16} />
               {label}
             </Link>
           ))}

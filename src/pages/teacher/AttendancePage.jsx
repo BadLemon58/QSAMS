@@ -28,7 +28,7 @@ function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
         active ? 'bg-[#e6f2ec] text-[#005a36]' : 'bg-[#ffffff] text-[#64748b]'
       }`}>
-        <Icon size={20} />
+        <MorphIcon icon={Icon} size={20} />
       </div>
       <div className="text-center">
         <p className={`font-semibold text-sm ${active ? 'text-[#005a36]' : 'text-[#64748b]'}`}>{label}</p>
