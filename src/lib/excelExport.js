@@ -1,44 +1,45 @@
 import ExcelJS from 'exceljs'
 
-// ── Color Palettes for Excel Styling (Matching Class Record Sheet) ─────────
+// ── Color Palettes for Excel Styling (NDMC Forest Green & White Theme) ───────
 const COLORS = {
-  bannerBg: '376092',        // Royal Blue Banner (matches screenshot)
+  bannerBg: '005A36',        // NDMC Forest Green Banner
   bannerText: 'FFFFFF',      // White
   
-  pillLabelBg: 'D9D9D9',     // Gray pill label
-  pillLabelText: '000000',   // Black text
-  pillValueBg: '1F497D',     // Dark Navy pill value
+  pillLabelBg: 'E6F2EC',     // Soft Mint Sage pill label
+  pillLabelText: '005A36',   // Forest Green text
+  pillValueBg: '005A36',     // Forest Green pill value
   pillValueText: 'FFFFFF',   // White text
   
-  tableHeaderBg: '1F497D',   // Dark Navy Header (matches screenshot)
+  tableHeaderBg: '005A36',   // Forest Green Header
   tableHeaderText: 'FFFFFF', // White text
   
-  dateHeaderBg: '8EA9DB',    // Soft Steel Blue date header
-  dateHeaderText: '1F497D',  // Dark Navy
+  dateHeaderBg: 'E6F2EC',    // Soft Mint Sage date header
+  dateHeaderText: '005A36',  // Forest Green
   
-  presentHeaderBg: '2E7D32', // Forest / Emerald Green
+  presentHeaderBg: '15803D', // Emerald Green
   lateHeaderBg: 'D97706',    // Amber
-  absentHeaderBg: 'C00000',  // Crimson Red
-  rateHeaderBg: '1F497D',    // Navy
+  absentHeaderBg: 'B91C1C',  // Crimson Red
+  rateHeaderBg: '005A36',    // Forest Green
   
   // Status Colors (Background / Text)
-  presentBg: 'E2F0D9',       // Soft Green
-  presentText: '276A3C',     // Dark Green
+  presentBg: 'DCFCE7',       // Soft Emerald Green
+  presentText: '15803D',     // Dark Emerald Green
   
-  lateBg: 'FFF2CC',          // Soft Yellow
-  lateText: 'B25900',        // Dark Amber
+  lateBg: 'FEF9C3',          // Soft Yellow
+  lateText: 'A16207',        // Dark Amber
   
-  absentBg: 'FCE4D6',        // Soft Red
-  absentText: 'C00000',      // Dark Red
+  absentBg: 'FEE2E2',        // Soft Red
+  absentText: 'B91C1C',      // Dark Red
   
-  excusedBg: 'DDEBF7',       // Soft Blue
-  excusedText: '1F497D',     // Dark Blue
+  excusedBg: 'E6F2EC',       // Soft Mint
+  excusedText: '005A36',     // Forest Green
   
   // Grid / Row
-  zebraBg: 'F9FAFB',
-  borderColor: 'D9D9D9',
-  borderDark: '1F497D',
-  summaryBg: 'EEF2F6',
+  zebraBg: 'F8FAF9',         // Subtle Mint / Off-White
+  borderColor: 'D1E7DD',     // Clean Sage Border
+  borderDark: '005A36',      // Forest Green
+  summaryBg: 'E6F2EC',       // Soft Sage Mint Summary
+  summaryText: '005A36',     // Forest Green
 }
 
 const thinBorder = {
@@ -58,7 +59,7 @@ const headerBorder = {
 const doubleBottomBorder = {
   top: { style: 'thin', color: { argb: '94A3B8' } },
   left: { style: 'thin', color: { argb: COLORS.borderColor } },
-  bottom: { style: 'double', color: { argb: '1F497D' } },
+  bottom: { style: 'double', color: { argb: COLORS.borderDark } },
   right: { style: 'thin', color: { argb: COLORS.borderColor } },
 }
 
@@ -98,7 +99,7 @@ function autoFitColumns(ws, { startRow = 6, minWidths = {}, padding = 3 } = {}) 
 
 /**
  * Cleanly exports the class attendance record to a styled Excel (.xlsx) workbook
- * exactly matching the multi-date class record sheet layout.
+ * using the NDMC Forest Green and White institutional theme.
  */
 export async function exportAttendanceReportToExcel({
   classInfo,
@@ -125,7 +126,7 @@ export async function exportAttendanceReportToExcel({
   const totalCols = 2 + dateColCount + 4
 
   // ══════════════════════════════════════════════════════════════
-  // SHEET 1: ATTENDANCE SHEET (Class Record Grid with Checkmarks)
+  // SHEET 1: ATTENDANCE SHEET (Class Record Grid in Forest Green & White)
   // ══════════════════════════════════════════════════════════════
   const ws1 = wb.addWorksheet('Attendance Sheet', {
     views: [{ showGridLines: true }],
@@ -138,7 +139,7 @@ export async function exportAttendanceReportToExcel({
   titleBanner.font = { name: 'Calibri', size: 16, bold: true, color: { argb: COLORS.bannerText } }
   titleBanner.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.bannerBg } }
   titleBanner.alignment = { horizontal: 'center', vertical: 'middle' }
-  ws1.getRow(1).height = 32
+  ws1.getRow(1).height = 34
 
   // ── 2. Filter / Metadata Pills (Row 3) ────────────────────────
   // Pill 1: Month
@@ -224,22 +225,22 @@ export async function exportAttendanceReportToExcel({
     cell.border = headerBorder
 
     if (colNum <= 2) {
-      // Student ID / Name
+      // Student ID / Name (Forest Green)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.tableHeaderBg } }
     } else if (colNum === presentColIndex) {
-      // Present Count
+      // Present Count (Emerald Green)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.presentHeaderBg } }
     } else if (colNum === lateColIndex) {
-      // Late Count
+      // Late Count (Amber)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.lateHeaderBg } }
     } else if (colNum === absentColIndex) {
-      // Absent Count
+      // Absent Count (Crimson Red)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.absentHeaderBg } }
     } else if (colNum === rateColIndex) {
-      // Rate
+      // Rate (Forest Green)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.rateHeaderBg } }
     } else {
-      // Date columns (e.g. 1-Jan, 2-Jan)
+      // Date columns (Soft Mint Sage background with Forest Green text)
       cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.dateHeaderBg } }
       cell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: COLORS.dateHeaderText } }
     }
@@ -391,7 +392,7 @@ export async function exportAttendanceReportToExcel({
   ws1.mergeCells(startSummaryRow + 2, 1, startSummaryRow + 2, 2)
   const avgCell = ws1.getCell(startSummaryRow + 2, 1)
   avgCell.value = 'CLASS AVERAGE ATTENDANCE'
-  avgCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.pillValueBg } }
+  avgCell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: COLORS.summaryText } }
   avgCell.alignment = { horizontal: 'right', vertical: 'middle' }
 
   for (let c = 1; c <= totalCols; c++) {
@@ -402,7 +403,7 @@ export async function exportAttendanceReportToExcel({
 
   const rateAvgCell = avgRow.getCell(rateColIndex)
   rateAvgCell.value = `${overallStats.averageRate ?? 0}%`
-  rateAvgCell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: COLORS.pillValueBg } }
+  rateAvgCell.font = { name: 'Calibri', size: 10.5, bold: true, color: { argb: COLORS.summaryText } }
   rateAvgCell.alignment = { horizontal: 'center', vertical: 'middle' }
 
   // Set clean column widths
@@ -425,7 +426,7 @@ export async function exportAttendanceReportToExcel({
   })
 
   // ══════════════════════════════════════════════════════════════
-  // SHEET 2: INSTITUTIONAL SUMMARY & SIGN-OFF
+  // SHEET 2: INSTITUTIONAL SUMMARY & SIGN-OFF (NDMC Forest Green Theme)
   // ══════════════════════════════════════════════════════════════
   const ws2 = wb.addWorksheet('Summary & Sign-off', {
     views: [{ showGridLines: true }],
@@ -442,8 +443,8 @@ export async function exportAttendanceReportToExcel({
   ws2.mergeCells('A2:G2')
   const sSub = ws2.getCell('A2')
   sSub.value = `Official Attendance Summary: ${classInfo?.name || 'Class'} (${classInfo?.schedule || 'N/A'})`
-  sSub.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'E0E7FF' } }
-  sSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.tableHeaderBg } }
+  sSub.font = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFF' } }
+  sSub.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00482B' } }
   sSub.alignment = { horizontal: 'center', vertical: 'middle' }
   ws2.getRow(2).height = 22
 
@@ -459,9 +460,9 @@ export async function exportAttendanceReportToExcel({
     row.values = r
     row.height = 18
     row.font = { name: 'Calibri', size: 9.5 }
-    ws2.getCell(`A${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '475569' } }
+    ws2.getCell(`A${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '005A36' } }
     ws2.getCell(`B${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true }
-    ws2.getCell(`D${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '475569' } }
+    ws2.getCell(`D${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '005A36' } }
     ws2.getCell(`E${rowNum}`).font = { name: 'Calibri', size: 9.5, bold: true }
   })
 
@@ -564,8 +565,8 @@ export async function exportSingleSessionToExcel({
   ws.mergeCells('A2:F2')
   const title2 = ws.getCell('A2')
   title2.value = 'DAILY ATTENDANCE SESSION LOG'
-  title2.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'E0E7FF' } }
-  title2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.tableHeaderBg } }
+  title2.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFF' } }
+  title2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00482B' } }
   title2.alignment = { horizontal: 'center', vertical: 'middle' }
   ws.getRow(2).height = 20
 
@@ -594,13 +595,13 @@ export async function exportSingleSessionToExcel({
     row.height = 19
 
     const key1 = ws.getCell(`A${rowNum}`)
-    key1.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '475569' } }
+    key1.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '005A36' } }
     
     const val1 = ws.getCell(`B${rowNum}`)
     val1.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '0F172A' } }
 
     const key2 = ws.getCell(`D${rowNum}`)
-    key2.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '475569' } }
+    key2.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '005A36' } }
 
     const val2 = ws.getCell(`E${rowNum}`)
     val2.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '0F172A' } }
@@ -690,7 +691,7 @@ export async function exportSingleSessionToExcel({
 
   for (let c = 1; c <= 6; c++) {
     const cell = totalRow.getCell(c)
-    cell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '0F172A' } }
+    cell.font = { name: 'Calibri', size: 9.5, bold: true, color: { argb: '005A36' } }
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLORS.summaryBg } }
     cell.border = doubleBottomBorder
     cell.alignment = { vertical: 'middle', horizontal: c === 1 ? 'left' : 'center' }

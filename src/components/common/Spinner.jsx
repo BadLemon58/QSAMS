@@ -8,7 +8,7 @@ export default function Spinner({ size = 'md', className = '' }) {
 
   return (
     <div
-      className={`${sizeMap[size]} rounded-full border-indigo-500/30 border-t-indigo-400 animate-spin ${className}`}
+      className={`${sizeMap[size]} rounded-full border-[#005a36]/20 border-t-[#005a36] animate-spin ${className}`}
       role="status"
       aria-label="Loading"
     />
