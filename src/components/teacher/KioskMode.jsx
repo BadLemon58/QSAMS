@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react'
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import { RefreshCw, Clock, Shield, Tv2, AlertCircle } from 'lucide';
+import { RefreshCw, Clock, Shield, Tv2, AlertCircle, Maximize2, X } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
@@ -14,6 +14,7 @@ export default function KioskMode({ classId }) {
   const [timeLeft, setTimeLeft] = useState(15)
   const [initialLoading, setInitialLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const cachedLocationRef = useRef(null)
   const rotatingRef = useRef(false)
 
@@ -186,7 +187,7 @@ export default function KioskMode({ classId }) {
             <span className="text-xs text-[#64748b]">Initializing kiosk...</span>
           </div>
         ) : session ? (
-          <div className="relative p-5 bg-[#ffffff] rounded-[24px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
+          <div className="relative group p-5 bg-[#ffffff] rounded-[24px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
             <div
               className="absolute inset-[-6px] rounded-[28px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
               style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
@@ -198,6 +199,13 @@ export default function KioskMode({ classId }) {
               includeMargin={false}
               fgColor="#005a36"
             />
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur shadow-sm border border-gray-100 rounded-full text-gray-500 hover:text-[#005a36] hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-all duration-200"
+              title="Full Screen"
+            >
+              <MorphIcon icon={Maximize2} size={16} />
+            </button>
           </div>
         ) : null}
 
@@ -251,6 +259,53 @@ export default function KioskMode({ classId }) {
           <span>Dynamic Anti-Proxy Token active (Auto-refreshes every 15s)</span>
         </div>
       </div>
+
+      {/* Full Screen Overlay */}
+      {isFullscreen && session && (
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8">
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-6 right-6 p-3 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 transition-colors"
+          >
+            <MorphIcon icon={X} size={24} />
+          </button>
+          
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-bold text-[#005a36] mb-3">Scan to join class</h2>
+            <p className="text-gray-500 text-xl">Use the QSAMS app to scan this QR code</p>
+          </div>
+          
+          <div className="relative p-10 bg-white rounded-[40px] shadow-2xl border border-gray-100 mb-16">
+            <div
+              className="absolute inset-[-8px] rounded-[48px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
+              style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+            />
+            <QRCodeSVG
+              value={qrValue}
+              size={400}
+              level="H"
+              includeMargin={false}
+              fgColor="#005a36"
+            />
+          </div>
+          
+          <div className="w-full max-w-lg space-y-4 text-center">
+            <div className="text-3xl font-bold">
+              <span className={isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}>
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+            <div className="w-full h-4 bg-[#e2e8f0] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-1000 ${
+                  isExpiringSoon ? 'bg-[#d97706]' : 'bg-[#005a36]'
+                }`}
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
