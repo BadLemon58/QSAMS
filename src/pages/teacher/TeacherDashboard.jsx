@@ -827,7 +827,7 @@ export default function TeacherDashboard() {
                           onClick={handleRefresh}
                           className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
                         >
-                          <MorphIcon icon={RefreshCw} size={16} className={refreshing ? 'animate-spin' : ''} />
+                          <MorphIcon icon={RefreshCw} size={16} className={refreshing ? 'animate-pulse' : ''} />
                           Refresh
                         </button>
                         <button

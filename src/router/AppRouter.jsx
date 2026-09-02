@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import Spinner from '../components/common/Spinner'
+import { Skeleton } from '../components/common/Skeleton'
 
 // Auth Pages
 import LoginPage from '../pages/auth/LoginPage'
@@ -16,20 +16,44 @@ import StudentDashboard from '../pages/student/StudentDashboard'
 import MyQRPage from '../pages/student/MyQRPage'
 import ScanPage from '../pages/student/ScanPage'
 import StudentClassPage from '../pages/student/StudentClassPage'
+
 // Common / Shared Pages
 import ProfilePage from '../pages/common/ProfilePage'
 import DebugPanel from '../components/common/DebugPanel'
+
+function AppLoadingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#f4f6f8] flex flex-col">
+      <div className="h-16 bg-white border-b border-[#e2e8f0] px-6 flex items-center justify-between">
+        <Skeleton className="h-8 w-32 rounded-xl" />
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-24 rounded-xl" />
+          <Skeleton className="h-9 w-9 rounded-full" />
+        </div>
+      </div>
+      <div className="max-w-7xl w-full mx-auto p-6 sm:p-8 space-y-6">
+        <Skeleton className="h-44 w-full rounded-[24px]" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Skeleton className="h-64 rounded-[22px] md:col-span-2" />
+          <Skeleton className="h-64 rounded-[22px]" />
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ── Protected Route Wrapper ─────────────────────────────────
 function ProtectedRoute({ children, allowedRole }) {
   const { user, profile, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
-        <Spinner size="lg" />
-      </div>
-    )
+    return <AppLoadingSkeleton />
   }
 
   if (!user) return <Navigate to="/login" replace />
@@ -45,11 +69,7 @@ function RootRedirect() {
   const { user, profile, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#ffffff]">
-        <Spinner size="lg" />
-      </div>
-    )
+    return <AppLoadingSkeleton />
   }
 
   if (!user) return <Navigate to="/login" replace />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import Badge from '../common/Badge'
-import Spinner from '../common/Spinner'
+import { Skeleton } from '../common/Skeleton'
 import { X, Calendar, Clock, AlertTriangle, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format, parseISO } from 'date-fns'
@@ -132,9 +132,10 @@ export default function StudentSummaryModal({ student, classId, className, onClo
 
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[160px]">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-10">
-              <Spinner size="md" />
-              <p className="text-xs text-[#64748b] mt-2 font-medium">Loading records...</p>
+            <div className="space-y-2 py-2">
+              <Skeleton className="h-12 w-full rounded-[16px]" />
+              <Skeleton className="h-12 w-full rounded-[16px]" />
+              <Skeleton className="h-12 w-full rounded-[16px]" />
             </div>
           ) : logs.length === 0 ? (
             <div className="text-center py-10 bg-[#f8fafc] rounded-[16px]">

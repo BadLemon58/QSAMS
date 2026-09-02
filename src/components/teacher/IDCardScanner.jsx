@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
-import Spinner from '../common/Spinner'
+import { Skeleton } from '../common/Skeleton'
 
 export default function IDCardScanner({ onScan, onError }) {
   const scannerRef = useRef(null)
@@ -99,9 +99,9 @@ export default function IDCardScanner({ onScan, onError }) {
         )}
 
         {status === 'requesting' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm">
-            <Spinner size="lg" />
-            <p className="text-[#0f172a] text-xs font-semibold">Starting camera...</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm p-6">
+            <Skeleton className="w-16 h-16 rounded-2xl" />
+            <Skeleton className="h-4 w-32 rounded-md" />
           </div>
         )}
 

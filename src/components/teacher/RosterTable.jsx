@@ -115,7 +115,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
                   </td>
                   <td className="px-4 py-3">
                     {updating === student.id ? (
-                      <div className="w-4 h-4 border-2 border-[#cbd5e1] border-t-[#005a36] rounded-full animate-spin" />
+                      <div className="w-16 h-6 bg-[#e2e8f0] rounded-[10px] animate-pulse" />
                     ) : (
                       <div className="relative inline-block">
                         <select

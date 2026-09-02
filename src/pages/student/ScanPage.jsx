@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
-import Spinner from '../../components/common/Spinner'
+import { Skeleton } from '../../components/common/Skeleton'
 import Navbar from '../../components/common/Navbar'
 import { Camera, CameraOff, AlertTriangle, CheckCircle, ArrowLeft, RotateCcw, MapPin, Shield } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
@@ -290,17 +290,17 @@ export default function ScanPage() {
             />
 
             {status === 'requesting' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px]">
-                <Spinner size="lg" />
-                <p className="text-xs font-semibold text-[#0f172a]">Starting camera...</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px] p-6">
+                <Skeleton className="w-16 h-16 rounded-2xl" />
+                <Skeleton className="h-4 w-32 rounded-md" />
               </div>
             )}
 
             {status === 'verifying' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-4 text-center">
-                <Spinner size="lg" />
-                <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a]">Verifying Check-in...</p>
-                <p className="text-xs text-[#64748b]">Recording classroom attendance...</p>
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-6 text-center">
+                <Skeleton className="w-16 h-16 rounded-full" />
+                <Skeleton className="h-5 w-40 rounded-md" />
+                <Skeleton className="h-3.5 w-48 rounded-md" />
               </div>
             )}
 

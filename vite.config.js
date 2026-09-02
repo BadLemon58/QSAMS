@@ -9,6 +9,15 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
+      },
+      devOptions: {
+        enabled: true
+      },
       includeAssets: ['favicon.ico', 'favicon.svg', 'apple-touch-icon-180x180.png', 'QsamsLogoNew.png'],
       manifest: {
         name: 'QSAMS — QR Smart Attendance',

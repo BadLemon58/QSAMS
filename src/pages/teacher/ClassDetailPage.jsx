@@ -387,10 +387,10 @@ function JoinCodeModal({ joinCode, className, onClose }) {
   )
 }
 
-// ── Manual Add Student Modal (NDMC Forest Green Style) ─────────────────────
+// ── Manual Add Student Modal (NDMC Forest Green Style - Multi-Select) ─────────
 function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled }) {
   const [students, setStudents] = useState([])
-  const [selectedStudentId, setSelectedStudentId] = useState('')
+  const [selectedStudentIds, setSelectedStudentIds] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -418,15 +418,36 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
      s.student_id?.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  const toggleStudent = (id) => {
+    setSelectedStudentIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  const handleSelectAll = () => {
+    const filteredIds = availableStudents.map(s => s.id)
+    const allSelected = filteredIds.length > 0 && filteredIds.every(id => selectedStudentIds.includes(id))
+    if (allSelected) {
+      setSelectedStudentIds(prev => prev.filter(id => !filteredIds.includes(id)))
+    } else {
+      setSelectedStudentIds(prev => Array.from(new Set([...prev, ...filteredIds])))
+    }
+  }
+
   const handleEnroll = async (e) => {
     e.preventDefault()
-    if (!selectedStudentId) return
+    if (selectedStudentIds.length === 0) return
     setSubmitting(true)
     setError('')
 
+    const inserts = selectedStudentIds.map(studentId => ({
+      class_id: classId,
+      student_id: studentId,
+    }))
+
     const { error: err } = await supabase
       .from('enrollments')
-      .insert({ class_id: classId, student_id: selectedStudentId })
+      .insert(inserts)
 
     if (err) {
       setError(err.message)
@@ -434,10 +455,14 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
       return
     }
 
-    const newlyEnrolled = students.find(s => s.id === selectedStudentId)
+    const newlyEnrolled = students.filter(s => selectedStudentIds.includes(s.id))
     onEnrolled(newlyEnrolled)
     onClose()
   }
+
+  const allFilteredSelected =
+    availableStudents.length > 0 &&
+    availableStudents.every(s => selectedStudentIds.includes(s.id))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
@@ -452,9 +477,9 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
         <div className="mb-5">
           <span className="text-xs uppercase font-bold tracking-wider text-[#005a36]">Student Roster</span>
           <h2 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mt-0.5">
-            Add Student to Class
+            Add Students to Class
           </h2>
-          <p className="text-[#64748b] text-xs mt-1">Select a registered student to add directly to this class roster</p>
+          <p className="text-[#64748b] text-xs mt-1">Select one or multiple registered students to add to this roster</p>
         </div>
 
         {error && (
@@ -479,40 +504,58 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-              Select Student *
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b]">
+                Select Students {selectedStudentIds.length > 0 && `(${selectedStudentIds.length} selected)`}
+              </label>
+              {availableStudents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  className="text-xs font-semibold text-[#005a36] hover:underline"
+                >
+                  {allFilteredSelected ? 'Deselect All' : 'Select All'}
+                </button>
+              )}
+            </div>
+
             {loading ? (
-              <div className="py-6 text-center text-xs text-[#64748b]"><Spinner size="sm" /></div>
+              <div className="space-y-2 py-1">
+                <Skeleton className="h-10 w-full rounded-[14px]" />
+                <Skeleton className="h-10 w-full rounded-[14px]" />
+                <Skeleton className="h-10 w-full rounded-[14px]" />
+              </div>
             ) : availableStudents.length === 0 ? (
               <p className="text-xs text-[#64748b] italic p-3 bg-[#f8fafc] rounded-[16px]">
                 No available students matching search.
               </p>
             ) : (
-              <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1">
-                {availableStudents.map(st => (
-                  <label
-                    key={st.id}
-                    className={`flex items-center justify-between p-3 rounded-[14px] border cursor-pointer transition-all ${
-                      selectedStudentId === st.id
-                        ? 'bg-[#e6f2ec] border-[#005a36] text-[#005a36]'
-                        : 'bg-[#f8fafc] border-[#e2e8f0] text-[#0f172a] hover:bg-[#f1f5f9]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <input
-                        type="radio"
-                        name="student"
-                        value={st.id}
-                        checked={selectedStudentId === st.id}
-                        onChange={() => setSelectedStudentId(st.id)}
-                        className="accent-[#005a36]"
-                      />
-                      <span className="font-semibold text-sm">{st.full_name}</span>
-                    </div>
-                    <span className="text-xs font-mono text-[#64748b]">{st.student_id || 'No ID'}</span>
-                  </label>
-                ))}
+              <div className="max-h-52 overflow-y-auto space-y-1.5 pr-1">
+                {availableStudents.map(st => {
+                  const isSelected = selectedStudentIds.includes(st.id)
+                  return (
+                    <label
+                      key={st.id}
+                      onClick={() => toggleStudent(st.id)}
+                      className={`flex items-center justify-between p-3 rounded-[14px] border cursor-pointer select-none transition-all ${
+                        isSelected
+                          ? 'bg-[#e6f2ec] border-[#005a36] text-[#005a36] shadow-sm'
+                          : 'bg-[#f8fafc] border-[#e2e8f0] text-[#0f172a] hover:bg-[#f1f5f9]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}} // Controlled by label click
+                          className="w-4 h-4 rounded text-[#005a36] focus:ring-[#005a36] accent-[#005a36]"
+                        />
+                        <span className="font-semibold text-sm">{st.full_name}</span>
+                      </div>
+                      <span className="text-xs font-mono text-[#64748b]">{st.student_id || 'No ID'}</span>
+                    </label>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -521,8 +564,20 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
             <button type="button" onClick={onClose} className="btn-secondary flex-1 justify-center py-3">
               Cancel
             </button>
-            <button type="submit" disabled={submitting || !selectedStudentId} className="btn-primary flex-1 justify-center py-3">
-              {submitting ? <Spinner size="sm" /> : 'Add to Roster'}
+            <button
+              type="submit"
+              disabled={submitting || selectedStudentIds.length === 0}
+              className="btn-primary flex-1 justify-center py-3"
+            >
+              {submitting ? (
+                <Spinner size="sm" />
+              ) : selectedStudentIds.length > 1 ? (
+                `Add ${selectedStudentIds.length} Students`
+              ) : selectedStudentIds.length === 1 ? (
+                'Add 1 Student'
+              ) : (
+                'Add to Roster'
+              )}
             </button>
           </div>
         </form>
@@ -1118,7 +1173,7 @@ export default function ClassDetailPage() {
           classId={classId}
           existingStudentIds={students.map(s => s.id)}
           onClose={() => setShowEnroll(false)}
-          onEnrolled={(newStudent) => setStudents(prev => [...prev, newStudent])}
+          onEnrolled={(newlyAdded) => setStudents(prev => Array.isArray(newlyAdded) ? [...prev, ...newlyAdded] : [...prev, newlyAdded])}
         />
       )}
 

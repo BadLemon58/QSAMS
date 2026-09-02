@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
+import Spinner from '../../components/common/Spinner'
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function LoginPage() {
@@ -109,12 +110,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-primary w-full justify-center py-3.5 mt-2"
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </span>
-              ) : 'Sign In'}
+              {loading ? <Spinner size="sm" /> : 'Sign In'}
             </button>
           </form>
 

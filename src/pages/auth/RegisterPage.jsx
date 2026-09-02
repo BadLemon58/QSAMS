@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { Mail, Lock, User, Hash, GraduationCap, BookOpen, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
+import Spinner from '../../components/common/Spinner'
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function RegisterPage() {
@@ -227,12 +228,7 @@ export default function RegisterPage() {
               disabled={loading}
               className="btn-primary w-full justify-center py-3.5 mt-2"
             >
-              {loading ? (
-                <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Creating account...
-                </span>
-              ) : 'Create Account'}
+              {loading ? <Spinner size="sm" /> : 'Create Account'}
             </button>
           </form>
 

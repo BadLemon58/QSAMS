@@ -263,7 +263,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
       <div className="w-full max-w-[260px] space-y-2">
         <div className="flex items-center justify-between text-xs font-semibold text-[#0f172a]">
           <div className="flex items-center gap-1.5 text-[#64748b]">
-            <MorphIcon icon={Clock} size={13} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
+            <MorphIcon icon={Clock} size={13} className={isExpiringSoon ? 'text-[#d97706] animate-pulse' : 'text-[#005a36]'} />
             <span className="text-[11px] uppercase tracking-wider font-bold">QR Token Expires in</span>
           </div>
           <span className={`font-mono text-sm font-bold ${isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}`}>
@@ -366,7 +366,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
           <div className="w-full max-w-lg flex flex-col items-center gap-2">
             <div className="w-full flex items-center justify-between text-sm font-semibold">
               <div className="flex items-center gap-2 text-[#64748b]">
-                <MorphIcon icon={Clock} size={15} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
+                <MorphIcon icon={Clock} size={15} className={isExpiringSoon ? 'text-[#d97706] animate-pulse' : 'text-[#005a36]'} />
                 <span className="text-xs uppercase tracking-wider font-bold">QR Token Expires in</span>
               </div>
               <span className={`font-mono text-base font-bold ${isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}`}>

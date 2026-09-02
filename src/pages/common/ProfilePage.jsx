@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
+import { Skeleton } from '../../components/common/Skeleton'
 import { User, Mail, Shield, KeyRound, Camera, Trash2, CheckCircle, AlertCircle, Save, ArrowLeft, Hash } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { useNavigate } from 'react-router-dom'
@@ -253,7 +254,7 @@ export default function ProfilePage() {
               <div className="relative group">
                 <div className="w-20 h-20 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center text-2xl font-bold shadow-sm overflow-hidden border-2 border-[#ffffff]">
                   {uploadingAvatar ? (
-                    <Spinner size="md" />
+                    <Skeleton className="w-full h-full rounded-full" />
                   ) : avatarUrl ? (
                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
