@@ -7,7 +7,7 @@ import Spinner from '../../components/common/Spinner'
 import { CourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
 import HoldToDeleteButton from '../../components/common/HoldToDeleteButton'
 import Badge from '../../components/common/Badge'
-import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, Sparkles, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays } from 'lucide';
+import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format, isToday } from 'date-fns'
 

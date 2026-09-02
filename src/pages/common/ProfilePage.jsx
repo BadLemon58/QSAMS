@@ -1,12 +1,29 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import { Skeleton } from '../../components/common/Skeleton'
-import { User, Mail, Shield, KeyRound, Camera, Trash2, CheckCircle, AlertCircle, Save, ArrowLeft, Hash } from 'lucide';
+import {
+  User,
+  Shield,
+  KeyRound,
+  Camera,
+  CheckCircle,
+  AlertCircle,
+  Save,
+  ArrowLeft,
+  Sun,
+  Moon,
+  Monitor,
+  Download,
+  Check,
+  Palette
+} from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { useNavigate } from 'react-router-dom'
+import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 function SuccessModal({ title, message, onClose }) {
   return (
@@ -27,6 +44,7 @@ function SuccessModal({ title, message, onClose }) {
 
 export default function ProfilePage() {
   const { user, profile, updateProfile, updatePassword, signIn } = useAuth()
+  const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -42,12 +60,53 @@ export default function ProfilePage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [savingPassword, setSavingPassword] = useState(false)
 
+  // Install PWA state
+  const [installPromptEvent, setInstallPromptEvent] = useState(null)
+  const [isInstalled, setIsInstalled] = useState(false)
+  const [installedSuccess, setInstalledSuccess] = useState(false)
+
   // Alert state
   const [profileMessage, setProfileMessage] = useState(null)
   const [passwordMessage, setPasswordMessage] = useState(null)
   const [showSuccessModal, setShowSuccessModal] = useState(null) // 'profile' | 'password' | 'avatar' | null
 
   const isTeacher = profile?.role === 'teacher'
+
+  useEffect(() => {
+    // Detect if app is already running as installed standalone PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+    setIsInstalled(isStandalone)
+
+    const handler = (e) => {
+      e.preventDefault()
+      setInstallPromptEvent(e)
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => {
+      setIsInstalled(true)
+      setInstalledSuccess(true)
+      setInstallPromptEvent(null)
+    })
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+    }
+  }, [])
+
+  const handleInstallApp = async () => {
+    if (installPromptEvent) {
+      installPromptEvent.prompt()
+      const { outcome } = await installPromptEvent.userChoice
+      if (outcome === 'accepted') {
+        setIsInstalled(true)
+        setInstalledSuccess(true)
+      }
+      setInstallPromptEvent(null)
+    } else {
+      alert('To install QSAMS on your device:\n\n• On iOS Safari: Tap the Share button ⎋ at the bottom, then choose "Add to Home Screen".\n• On Android/Chrome: Tap the 3-dots menu ⋮ and choose "Install App" or "Add to Home Screen".\n• On Desktop Chrome/Edge: Click the Install icon in the address bar.')
+    }
+  }
 
   // Handle Avatar File Selection
   const handleAvatarChange = async (e) => {
@@ -223,10 +282,10 @@ export default function ProfilePage() {
             NDMC Account & Identity Settings
           </span>
           <h1 className="font-['Source_Serif_4',Georgia,serif] text-2xl sm:text-3xl font-bold tracking-tight text-white">
-            User Profile
+            User Profile & Preferences
           </h1>
           <p className="text-xs opacity-90 mt-1">
-            Manage your personal profile picture, identity details, and account credentials
+            Manage your personal profile, appearance themes, offline app download, and account security
           </p>
         </div>
 
@@ -274,15 +333,21 @@ export default function ProfilePage() {
 
               <div className="space-y-2">
                 <p className="text-sm font-semibold text-[#0f172a]">Profile Picture</p>
-                <p className="text-xs text-[#64748b]">JPG, PNG or GIF up to 2MB</p>
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div className="flex flex-wrap gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingAvatar}
                     className="btn-secondary btn-sm"
                   >
-                    Upload New Photo
+                    Upload New
                   </button>
                   {avatarUrl && (
                     <button
@@ -291,17 +356,11 @@ export default function ProfilePage() {
                       disabled={uploadingAvatar}
                       className="px-3 py-1.5 rounded-[12px] bg-[#ffffff] text-[#b91c1c] border border-[#fca5a5] text-xs font-semibold hover:bg-[#fee2e2] transition-colors flex items-center gap-1"
                     >
-                      <MorphIcon icon={Trash2} size={12} /> Remove
+                      Remove
                     </button>
                   )}
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
+                <p className="text-[11px] text-[#64748b]">Max 2MB file (PNG, JPG, WebP)</p>
               </div>
             </div>
 
@@ -312,62 +371,51 @@ export default function ProfilePage() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
                     Full Name
                   </label>
-                  <div className="relative">
-                    <MorphIcon icon={User} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-                    <input
-                      type="text"
-                      className="input-field pl-10"
-                      value={fullName}
-                      onChange={e => setFullName(e.target.value)}
-                      required
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    className="input-field"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    required
+                  />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
                     Email Address
                   </label>
-                  <div className="relative">
-                    <MorphIcon icon={Mail} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-                    <input
-                      type="email"
-                      className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9]"
-                      value={user?.email || ''}
-                      disabled
-                    />
-                  </div>
+                  <input
+                    type="email"
+                    className="input-field opacity-75 cursor-not-allowed bg-[#f1f5f9]"
+                    value={user?.email || ''}
+                    disabled
+                  />
+                  <span className="text-[11px] text-[#94a3b8] mt-1 block">Managed by NDMC authentication</span>
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                    User Role
+                    System Role
                   </label>
-                  <div className="relative">
-                    <MorphIcon icon={Shield} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-                    <input
-                      type="text"
-                      className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] capitalize"
-                      value={profile?.role || 'user'}
-                      disabled
-                    />
+                  <div className="flex items-center gap-2 p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-[16px]">
+                    <MorphIcon icon={Shield} size={16} className="text-[#005a36]" />
+                    <span className="text-xs font-semibold capitalize text-[#0f172a]">{profile?.role || 'User'}</span>
                   </div>
                 </div>
 
-                {profile?.student_id && (
+                {!isTeacher && (
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                      Student ID
+                      Student ID Number
                     </label>
-                    <div className="relative">
-                      <MorphIcon icon={Hash} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-                      <input
-                        type="text"
-                        className="input-field pl-10 opacity-70 cursor-not-allowed bg-[#f1f5f9] font-mono font-bold text-[#005a36]"
-                        value={profile?.student_id}
-                        disabled
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      className="input-field font-mono opacity-75 cursor-not-allowed bg-[#f1f5f9]"
+                      value={profile?.student_id || 'Not assigned'}
+                      disabled
+                    />
                   </div>
                 )}
               </div>
@@ -385,7 +433,123 @@ export default function ProfilePage() {
             </form>
           </div>
 
-          {/* ── CARD 2: Security & Password Change ── */}
+          {/* ── CARD 2: Appearance & Theme Customization ── */}
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-7 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] flex items-center gap-2">
+                  <MorphIcon icon={Palette} size={18} className="text-[#005a36]" /> Appearance & Theme
+                </h2>
+                <p className="text-[#64748b] text-xs mt-0.5">
+                  Select interface display mode for this device
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {/* Light Theme Button */}
+              <button
+                type="button"
+                onClick={() => setTheme('light')}
+                className={`flex items-center justify-between px-4 py-3 rounded-[16px] border text-xs font-bold transition-all ${
+                  theme === 'light'
+                    ? 'border-[#005a36] bg-[#005a36] text-white shadow-sm'
+                    : 'border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:bg-[#f1f5f9]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <MorphIcon icon={Sun} size={16} className={theme === 'light' ? 'text-white' : 'text-[#64748b]'} />
+                  <span>Light Mode</span>
+                </div>
+                {theme === 'light' && <MorphIcon icon={Check} size={14} className="text-white" />}
+              </button>
+
+              {/* Dark Theme Button */}
+              <button
+                type="button"
+                onClick={() => setTheme('dark')}
+                className={`flex items-center justify-between px-4 py-3 rounded-[16px] border text-xs font-bold transition-all ${
+                  theme === 'dark'
+                    ? 'border-[#005a36] bg-[#005a36] text-white shadow-sm'
+                    : 'border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:bg-[#f1f5f9]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <MorphIcon icon={Moon} size={16} className={theme === 'dark' ? 'text-white' : 'text-[#64748b]'} />
+                  <span>Dark Mode</span>
+                </div>
+                {theme === 'dark' && <MorphIcon icon={Check} size={14} className="text-white" />}
+              </button>
+
+              {/* System Default Button */}
+              <button
+                type="button"
+                onClick={() => setTheme('system')}
+                className={`flex items-center justify-between px-4 py-3 rounded-[16px] border text-xs font-bold transition-all ${
+                  theme === 'system'
+                    ? 'border-[#005a36] bg-[#005a36] text-white shadow-sm'
+                    : 'border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:bg-[#f1f5f9]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <MorphIcon icon={Monitor} size={16} className={theme === 'system' ? 'text-white' : 'text-[#64748b]'} />
+                  <span>System Default</span>
+                </div>
+                {theme === 'system' && <MorphIcon icon={Check} size={14} className="text-white" />}
+              </button>
+            </div>
+          </div>
+
+          {/* ── CARD 3: App Download & Offline Installation ── */}
+          <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-[#005a36]/10 border border-[#005a36]/20 p-2 shrink-0 flex items-center justify-center">
+                  <img src={qsamsLogo} alt="QSAMS Logo" className="w-full h-full object-contain" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a]">
+                      Download QSAMS App
+                    </h2>
+                    <span className="text-[10px] font-bold font-mono bg-[#e2e8f0] text-[#64748b] px-2 py-0.5 rounded-full">
+                      v1.3.0
+                    </span>
+                  </div>
+                  <p className="text-[#64748b] text-xs mt-1 leading-relaxed max-w-md">
+                    Install QSAMS on your home screen or desktop for fast instant launch, smooth full-screen mode, and offline QR scanning.
+                  </p>
+                </div>
+              </div>
+
+              <div className="sm:self-center shrink-0">
+                {isInstalled ? (
+                  <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#dcfce7] text-[#15803d] border border-[#86efac] font-bold text-xs">
+                    <MorphIcon icon={CheckCircle} size={16} />
+                    <span>App Installed</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleInstallApp}
+                    className="btn-primary w-full sm:w-auto justify-center"
+                  >
+                    <MorphIcon icon={Download} size={16} />
+                    <span>Install / Download App</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {installedSuccess && (
+              <div className="mt-4 p-3 bg-[#dcfce7] border border-[#86efac] text-[#15803d] rounded-[14px] text-xs font-semibold flex items-center gap-2">
+                <MorphIcon icon={CheckCircle} size={15} />
+                <span>QSAMS has been installed on your device successfully!</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── CARD 4: Security & Password Change ── */}
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 shadow-sm">
             <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-2 flex items-center gap-2">
               <MorphIcon icon={KeyRound} size={18} className="text-[#005a36]" /> Security & Password

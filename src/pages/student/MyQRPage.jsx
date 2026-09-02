@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
-import { Download, ArrowLeft, Check, Shield, Share2, Sparkles, RefreshCw, User } from 'lucide';
+import { Download, ArrowLeft, Check, Shield, Share2, RefreshCw, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 
 export default function MyQRPage() {

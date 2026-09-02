@@ -13,6 +13,19 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source%20Serif%204:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=gambarino@400,500,700&display=swap">
     <title>QSAMS — QR Smart Attendance</title>
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('qsams-theme') || 'system';
+          var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

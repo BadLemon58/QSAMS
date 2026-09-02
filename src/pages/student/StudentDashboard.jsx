@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { QRCodeSVG } from 'qrcode.react'
 import { format, isToday } from 'date-fns'
-import { Camera, RefreshCw, Share2, Plus, X, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut, MapPin } from 'lucide';
+import { Camera, RefreshCw, Share2, Plus, X, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Check, Download, Shield, LogOut, MapPin } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
 import { StudentCourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
@@ -613,8 +613,7 @@ export default function StudentDashboard() {
                             Checked in at {checkInTimeString}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
-                            <MorphIcon icon={Sparkles} size={14} className="text-[#d97706]" />
+                          <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
                             ID: {profile?.student_id || 'Ready to scan'}
                           </span>
                         )}
