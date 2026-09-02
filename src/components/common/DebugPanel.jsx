@@ -30,15 +30,15 @@ export default function DebugPanel() {
     }
   }
 
-  const resetStreak = async () => {
-    if (!window.confirm('Delete ALL your attendance logs to reset streak?')) return
+  const resetLogs = async () => {
+    if (!window.confirm('Delete ALL your attendance logs?')) return
     await handleAction(async () => {
       const { error } = await supabase
         .from('attendance_logs')
         .delete()
         .eq('student_id', profile.id)
       if (error) throw error
-    }, 'Attendance logs deleted and streak reset')
+    }, 'Attendance logs deleted successfully')
   }
 
   const clearEnrollments = async () => {
@@ -105,14 +105,14 @@ export default function DebugPanel() {
               {profile.role === 'student' && (
                 <>
                   <button
-                    onClick={resetStreak}
+                    onClick={resetLogs}
                     disabled={loading}
                     className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors group disabled:opacity-50"
                   >
                     <div className="flex items-center gap-3 text-white">
                       <MorphIcon icon={RefreshCw} size={18} className="text-slate-400 group-hover:text-blue-400" />
                       <div className="text-left">
-                        <p className="font-semibold text-sm">Reset Streak & Logs</p>
+                        <p className="font-semibold text-sm">Reset Attendance Logs</p>
                         <p className="text-xs text-slate-400">Deletes all your attendance history</p>
                       </div>
                     </div>

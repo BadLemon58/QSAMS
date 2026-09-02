@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Search, ChevronDown, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Badge from '../common/Badge'
+import { TableRowSkeleton } from '../common/Skeleton'
 
 const STATUS_OPTIONS = ['present', 'late', 'absent', 'excused']
 
@@ -64,9 +65,8 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
       {/* Table Card (Matches Institutional Assessment Table Style from Image) */}
       <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] overflow-hidden shadow-sm">
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="w-6 h-6 border-2 border-[#e2e8f0] border-t-[#005a36] rounded-full animate-spin mx-auto mb-2" />
-            <p className="text-[#64748b] text-xs font-semibold">Loading classroom roster...</p>
+          <div className="p-3">
+            <TableRowSkeleton rows={5} />
           </div>
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">

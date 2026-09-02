@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
+import { Skeleton } from '../../components/common/Skeleton'
+import HoldToDeleteButton from '../../components/common/HoldToDeleteButton'
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import StudentSummaryModal from '../../components/teacher/StudentSummaryModal'
 import { Users, QrCode, ArrowLeft, Plus, Clock, MapPin, ClipboardList, Copy, Check, X, AlertCircle, Trash2, BarChart2, FileSpreadsheet, UserPlus, AlertTriangle, User, CalendarDays, Pencil, Camera } from 'lucide';
@@ -634,9 +636,12 @@ function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
           <button onClick={onCancel} disabled={deleting} className="btn-secondary flex-1 justify-center py-3">
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={deleting} className="btn-danger flex-1 justify-center py-3">
-            {deleting ? <Spinner size="sm" /> : 'Delete Class'}
-          </button>
+          <HoldToDeleteButton
+            onConfirm={onConfirm}
+            deleting={deleting}
+            label="Delete Class"
+            durationMs={1000}
+          />
         </div>
       </div>
     </div>
@@ -659,9 +664,12 @@ function DeleteStudentModal({ student, onConfirm, onCancel, deleting }) {
           <button onClick={onCancel} disabled={deleting} className="btn-secondary flex-1 justify-center py-3">
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={deleting} className="btn-danger flex-1 justify-center py-3">
-            {deleting ? <Spinner size="sm" /> : 'Remove Student'}
-          </button>
+          <HoldToDeleteButton
+            onConfirm={onConfirm}
+            deleting={deleting}
+            label="Remove Student"
+            durationMs={1000}
+          />
         </div>
       </div>
     </div>
@@ -857,15 +865,28 @@ export default function ClassDetailPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center"><Spinner size="xl" /></div>
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a]">
+      <Navbar />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <Skeleton className="h-4 w-32 rounded" />
+        <Skeleton className="h-40 w-full rounded-[24px]" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+          <Skeleton className="h-24 rounded-[20px]" />
+        </div>
+        <Skeleton className="h-80 w-full rounded-[20px]" />
+      </div>
+    </div>
   )
 
   return (
     <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
       <Navbar />
 
-      {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Container (Hidden during Print) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 print:hidden">
         
         {/* Back Link */}
         <button

@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
+import { Skeleton } from '../../components/common/Skeleton'
 import Badge from '../../components/common/Badge'
 import { ArrowLeft, BookOpen, Clock, MapPin, Calendar, CheckCircle, AlertTriangle, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
@@ -47,7 +48,19 @@ export default function StudentClassPage() {
   const logMap = new Map(logs.map(l => [l.session_id, l]))
 
   if (loading) return (
-    <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center"><Spinner size="xl" /></div>
+    <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a]">
+      <Navbar />
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <Skeleton className="h-4 w-32 rounded" />
+        <Skeleton className="h-36 w-full rounded-[24px]" />
+        <div className="grid grid-cols-3 gap-3">
+          <Skeleton className="h-20 w-full rounded-[20px]" />
+          <Skeleton className="h-20 w-full rounded-[20px]" />
+          <Skeleton className="h-20 w-full rounded-[20px]" />
+        </div>
+        <Skeleton className="h-64 w-full rounded-[20px]" />
+      </div>
+    </div>
   )
 
   return (

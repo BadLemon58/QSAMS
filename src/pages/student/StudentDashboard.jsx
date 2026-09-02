@@ -4,9 +4,10 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { QRCodeSVG } from 'qrcode.react'
 import { format, isToday } from 'date-fns'
-import { Camera, RefreshCw, Share2, Plus, X, Flame, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut } from 'lucide';
+import { Camera, RefreshCw, Share2, Plus, X, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Sparkles, Check, Download, Shield, LogOut, MapPin } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
+import { StudentCourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
 import Navbar from '../../components/common/Navbar'
 import Badge from '../../components/common/Badge'
 
@@ -181,16 +182,6 @@ export default function StudentDashboard() {
   const absentCount = logs.filter(l => l.status === 'absent').length
   const attendancePct = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0
 
-  // Calculate Streak
-  let currentStreak = 0
-  for (const log of logs) {
-    if (log.status === 'present' || log.status === 'late') {
-      currentStreak++
-    } else if (log.status === 'absent') {
-      break
-    }
-  }
-
   // Classes done today
   const todayLogs = logs.filter(l => {
     const markedDate = l.marked_at ? new Date(l.marked_at) : null
@@ -296,8 +287,8 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Stat Metric Cards Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+          {/* 4 Key Institutional Stat Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Attendance Rate</span>
               <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] mt-1">
@@ -320,15 +311,6 @@ export default function StudentDashboard() {
               <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Missed Sessions</span>
               <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#b91c1c] mt-1">
                 {absentCount}
-              </p>
-            </div>
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm col-span-2 lg:col-span-1">
-              <div className="flex items-center gap-1.5">
-                <MorphIcon icon={Flame} size={15} className="text-[#d97706]" />
-                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Streak</span>
-              </div>
-              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] mt-1">
-                {currentStreak} Days
               </p>
             </div>
           </div>
@@ -357,7 +339,7 @@ export default function StudentDashboard() {
                 </div>
 
                 {loading ? (
-                  <div className="p-8 text-center"><Spinner size="lg" /></div>
+                  <StudentCourseCardSkeleton count={2} />
                 ) : enrollments.length === 0 ? (
                   <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-8 text-center">
                     <p className="text-sm font-semibold text-[#0f172a] mb-1">No enrolled courses</p>
@@ -389,9 +371,16 @@ export default function StudentDashboard() {
                                 {rate}%
                               </span>
                             </div>
-                            <p className="text-xs text-[#64748b] mb-3">
-                              {cls.schedule || 'Schedule TBA'} {cls.room ? `• ${cls.room}` : ''}
-                            </p>
+                            <div className="flex flex-wrap items-center gap-1.5 text-xs text-[#64748b] mb-3">
+                              <span className="inline-flex items-center gap-1 bg-[#e6f2ec] text-[#005a36] font-semibold px-2 py-0.5 rounded-md text-[11px]">
+                                <MorphIcon icon={Clock} size={12} /> {cls.schedule || 'Schedule TBA'}
+                              </span>
+                              {cls.room && (
+                                <span className="inline-flex items-center gap-1 bg-[#f1f5f9] text-[#64748b] font-medium px-2 py-0.5 rounded-md text-[11px]">
+                                  <MorphIcon icon={MapPin} size={12} /> {cls.room}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="space-y-1.5 pt-2">
@@ -588,9 +577,10 @@ export default function StudentDashboard() {
             </section>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Spinner size="lg" />
-                <p className="text-xs text-[#64748b] mt-3 font-medium">Syncing student roll...</p>
+              <div className="space-y-4 py-2">
+                <Skeleton className="h-56 w-full rounded-[24px]" />
+                <Skeleton className="h-14 w-full rounded-[16px]" />
+                <Skeleton className="h-28 w-full rounded-[20px]" />
               </div>
             ) : (
               <>
@@ -668,12 +658,9 @@ export default function StudentDashboard() {
                     {/* Stat Pair Band — Expands gracefully into 4 columns on tablet */}
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <div className="flex items-center gap-1.5">
-                          <MorphIcon icon={Flame} size={15} className="text-[#d97706]" />
-                          <span className="text-[12px] text-[#64748b] font-medium">Streak</span>
-                        </div>
+                        <span className="text-[12px] text-[#64748b] font-medium">Attendance Rate</span>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#005a36]">
-                          {currentStreak} Days
+                          {attendancePct}%
                         </span>
                       </div>
 
@@ -820,9 +807,16 @@ export default function StudentDashboard() {
                                   <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] md:text-[17px] text-[#0f172a]">
                                     {cls.name}
                                   </h3>
-                                  <p className="text-[12px] text-[#64748b] mt-0.5">
-                                    {cls.schedule || 'Schedule TBA'} {cls.room ? `· ${cls.room}` : ''}
-                                  </p>
+                                  <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#64748b] mt-1.5">
+                                    <span className="inline-flex items-center gap-1 bg-[#e6f2ec] text-[#005a36] font-semibold px-2 py-0.5 rounded-md text-[11px]">
+                                      <MorphIcon icon={Clock} size={12} /> {cls.schedule || 'Schedule TBA'}
+                                    </span>
+                                    {cls.room && (
+                                      <span className="inline-flex items-center gap-1 bg-[#f1f5f9] text-[#64748b] font-medium px-2 py-0.5 rounded-md text-[11px]">
+                                        <MorphIcon icon={MapPin} size={12} /> {cls.room}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="text-right">
                                   <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] md:text-[18px] text-[#005a36]">

@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
+import { CourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
+import HoldToDeleteButton from '../../components/common/HoldToDeleteButton'
 import Badge from '../../components/common/Badge'
 import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, Sparkles, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
@@ -92,7 +94,7 @@ function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
         <div className="w-12 h-12 rounded-full bg-[#fee2e2] text-[#b91c1c] flex items-center justify-center mx-auto mb-3">
           <MorphIcon icon={Trash2} size={24} />
         </div>
-        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Delete Class Section?</h3>
+        <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Delete Course?</h3>
         <p className="text-[#64748b] text-xs mb-5 leading-relaxed">
           Are you sure you want to permanently delete <strong className="text-[#0f172a]">{className}</strong>? All student enrollments, sessions, and attendance history will be deleted.
         </p>
@@ -100,9 +102,12 @@ function DeleteClassModal({ className, onConfirm, onCancel, deleting }) {
           <button onClick={onCancel} disabled={deleting} className="btn-secondary flex-1 justify-center py-3">
             Cancel
           </button>
-          <button onClick={onConfirm} disabled={deleting} className="btn-danger flex-1 justify-center py-3">
-            {deleting ? <Spinner size="sm" /> : 'Delete Class'}
-          </button>
+          <HoldToDeleteButton
+            onConfirm={onConfirm}
+            deleting={deleting}
+            label="Delete Class"
+            durationMs={1000}
+          />
         </div>
       </div>
     </div>
@@ -605,9 +610,7 @@ export default function TeacherDashboard() {
 
           {/* Classes Grid */}
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Spinner size="lg" />
-            </div>
+            <CourseCardSkeleton count={4} />
           ) : classes.length === 0 ? (
             <div className="bg-[#ffffff] rounded-[24px] border border-[#e2e8f0] p-12 text-center max-w-md mx-auto shadow-sm">
               <div className="w-14 h-14 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center mx-auto mb-3">
@@ -631,9 +634,9 @@ export default function TeacherDashboard() {
                   key={cls.id}
                   className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-5 group hover:border-[#005a36]/40 hover:shadow-md transition-all flex flex-col justify-between"
                 >
-                  <div>
+                  <Link to={`/teacher/class/${cls.id}`} className="block">
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shadow-sm">
+                      <div className="w-10 h-10 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                         <MorphIcon icon={BookOpen} size={18} />
                       </div>
                       <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#f8fafc] text-[#005a36] border border-[#e2e8f0]">
@@ -641,15 +644,17 @@ export default function TeacherDashboard() {
                       </span>
                     </div>
 
-                    <Link to={`/teacher/class/${cls.id}`} className="block">
-                      <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-base mb-1 group-hover:text-[#005a36] transition-colors line-clamp-1">
-                        {cls.name}
-                      </h3>
-                      {cls.description && (
-                        <p className="text-[#64748b] text-xs mb-3 line-clamp-2 leading-relaxed">{cls.description}</p>
-                      )}
-                    </Link>
-                  </div>
+                    <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-base mb-1 group-hover:text-[#005a36] transition-colors line-clamp-1">
+                      {cls.name}
+                    </h3>
+                    {cls.description && (
+                      <p className="text-[#64748b] text-xs mb-2 line-clamp-2 leading-relaxed">{cls.description}</p>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs text-[#005a36] font-semibold bg-[#e6f2ec] px-2.5 py-1 rounded-lg w-fit mt-2">
+                      <MorphIcon icon={Clock} size={12} />
+                      <span>{cls.schedule || 'Schedule TBA'}</span>
+                    </div>
+                  </Link>
 
                   <div className="space-y-3 pt-3 border-t border-[#e2e8f0] mt-3">
                     <div className="flex items-center justify-between text-xs text-[#64748b]">
@@ -736,9 +741,10 @@ export default function TeacherDashboard() {
             </section>
 
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-24">
-                <Spinner size="lg" />
-                <p className="text-xs text-[#64748b] mt-3 font-medium">Syncing class data...</p>
+              <div className="space-y-4 py-2">
+                <Skeleton className="h-48 w-full rounded-[24px]" />
+                <Skeleton className="h-14 w-full rounded-[16px]" />
+                <Skeleton className="h-32 w-full rounded-[20px]" />
               </div>
             ) : (
               <>
@@ -759,11 +765,22 @@ export default function TeacherDashboard() {
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] md:text-[26px] text-[#0f172a] tracking-tight">
                           {primaryClass ? primaryClass.name : 'Create Your First Class'}
                         </span>
-                        <p className="text-xs text-[#64748b]">
-                          {primaryClass
-                            ? `${primaryClass.schedule || 'Schedule TBA'} · ${primaryClass.room || 'Room TBA'}`
-                            : 'Set up class sections and launch live kiosk tokens'}
-                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-2 mt-1 text-xs text-[#64748b]">
+                          {primaryClass ? (
+                            <>
+                              <span className="inline-flex items-center gap-1.5 bg-[#e6f2ec] text-[#005a36] font-semibold px-3 py-1 rounded-full text-xs">
+                                <MorphIcon icon={Clock} size={13} /> {primaryClass.schedule || 'Schedule TBA'}
+                              </span>
+                              {primaryClass.room && (
+                                <span className="inline-flex items-center gap-1.5 bg-[#f1f5f9] text-[#64748b] font-medium px-3 py-1 rounded-full text-xs">
+                                  <MorphIcon icon={MapPin} size={13} /> {primaryClass.room}
+                                </span>
+                              )}
+                            </>
+                          ) : (
+                            'Set up class sections and launch live kiosk tokens'
+                          )}
+                        </div>
                       </div>
 
                       {primaryClass && (
@@ -879,9 +896,16 @@ export default function TeacherDashboard() {
                                 <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] text-[#0f172a]">
                                   {cls.name}
                                 </h3>
-                                <p className="text-[12px] text-[#64748b] mt-0.5">
-                                  {cls.schedule || 'Schedule TBA'} {cls.room ? `· ${cls.room}` : ''}
-                                </p>
+                                <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#64748b] mt-1.5">
+                                  <span className="inline-flex items-center gap-1 bg-[#e6f2ec] text-[#005a36] font-semibold px-2 py-0.5 rounded-md text-[11px]">
+                                    <MorphIcon icon={Clock} size={12} /> {cls.schedule || 'Schedule TBA'}
+                                  </span>
+                                  {cls.room && (
+                                    <span className="inline-flex items-center gap-1 bg-[#f1f5f9] text-[#64748b] font-medium px-2 py-0.5 rounded-md text-[11px]">
+                                      <MorphIcon icon={MapPin} size={12} /> {cls.room}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <span className="text-xs font-mono font-bold text-[#005a36] bg-[#e6f2ec] px-2.5 py-0.5 rounded-full">
                                 {cls.enrollments?.length || 0} Students
@@ -950,22 +974,29 @@ export default function TeacherDashboard() {
                             key={cls.id}
                             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 md:p-5 flex flex-col justify-between gap-3 shadow-sm hover:border-[#005a36]/40 transition-all"
                           >
-                            <div>
+                            <Link to={`/teacher/class/${cls.id}`} className="block group">
                               <div className="flex items-start justify-between mb-1">
-                                <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] md:text-[17px] text-[#0f172a]">
+                                <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] md:text-[17px] text-[#0f172a] group-hover:text-[#005a36] transition-colors">
                                   {cls.name}
                                 </h3>
                                 <span className="font-mono text-xs font-bold text-[#005a36] bg-[#e6f2ec] px-2 py-0.5 rounded-md">
                                   {cls.join_code || cls.id.substring(0,6).toUpperCase()}
                                 </span>
                               </div>
-                              <p className="text-[12px] text-[#64748b]">
-                                {cls.schedule || 'Schedule TBA'} {cls.room ? `· ${cls.room}` : ''}
-                              </p>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#64748b] mt-1.5">
+                                <span className="inline-flex items-center gap-1 bg-[#e6f2ec] text-[#005a36] font-semibold px-2 py-0.5 rounded-md text-[11px]">
+                                  <MorphIcon icon={Clock} size={12} /> {cls.schedule || 'Schedule TBA'}
+                                </span>
+                                {cls.room && (
+                                  <span className="inline-flex items-center gap-1 bg-[#f1f5f9] text-[#64748b] font-medium px-2 py-0.5 rounded-md text-[11px]">
+                                    <MorphIcon icon={MapPin} size={12} /> {cls.room}
+                                  </span>
+                                )}
+                              </div>
                               {cls.description && (
-                                <p className="text-[11px] text-[#64748b] mt-1.5 line-clamp-2">{cls.description}</p>
+                                <p className="text-[11px] text-[#64748b] mt-2 line-clamp-2">{cls.description}</p>
                               )}
-                            </div>
+                            </Link>
 
                             <div className="space-y-2 pt-2 border-t border-[#e2e8f0]">
                               <div className="flex items-center justify-between text-[11px] text-[#64748b]">

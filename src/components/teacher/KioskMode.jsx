@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { RefreshCw, Clock, Shield, Tv2, AlertCircle, Maximize2, X } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
+import { QrBoxSkeleton } from '../common/Skeleton'
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
@@ -221,10 +222,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
       {/* QR Code Container with Pulse Ring */}
       <div className="relative">
         {initialLoading ? (
-          <div className="w-[250px] h-[250px] rounded-[20px] bg-[#ffffff] flex flex-col items-center justify-center gap-3 shadow-sm border border-[#e2e8f0]">
-            <div className="w-8 h-8 border-3 border-[#e2e8f0] border-t-[#005a36] rounded-full animate-spin" />
-            <span className="text-xs text-[#64748b]">Initializing kiosk...</span>
-          </div>
+          <QrBoxSkeleton />
         ) : session ? (
           <div className="relative group p-5 bg-[#ffffff] rounded-[24px] shadow-sm flex items-center justify-center border border-[#e2e8f0]">
             <div
