@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import { Skeleton } from '../../components/common/Skeleton'
+import ImageCropperModal from '../../components/common/ImageCropperModal'
 import {
   User,
   Shield,
@@ -53,6 +54,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '')
   const [savingProfile, setSavingProfile] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [cropTargetSrc, setCropTargetSrc] = useState(null)
 
   // Password fields state
   const [oldPassword, setOldPassword] = useState('')
@@ -108,53 +110,65 @@ export default function ProfilePage() {
     }
   }
 
-  // Handle Avatar File Selection
-  const handleAvatarChange = async (e) => {
+  // Handle Avatar File Selection -> Open Cropper
+  const handleAvatarChange = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 2 * 1024 * 1024) {
-      setProfileMessage({ type: 'error', text: 'Image must be under 2MB.' })
+    if (file.size > 8 * 1024 * 1024) {
+      setProfileMessage({ type: 'error', text: 'Image file must be under 8MB.' })
       return
     }
 
+    setProfileMessage(null)
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      setCropTargetSrc(reader.result)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  // Handle Crop Confirmation -> Upload to Supabase
+  const handleCropComplete = async ({ blob, dataUrl }) => {
+    setCropTargetSrc(null)
     setUploadingAvatar(true)
     setProfileMessage(null)
 
     try {
-      const fileExt = file.name.split('.').pop()
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`
+      const filePath = `${user.id}/${Date.now()}.jpg`
+      const fileToUpload = blob || dataUrl
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, { upsert: true })
-
-      if (!uploadError && uploadData) {
-        const { data: urlData } = supabase.storage
+      if (blob) {
+        const { data: uploadData, error: uploadError } = await supabase.storage
           .from('avatars')
-          .getPublicUrl(filePath)
+          .upload(filePath, fileToUpload, { upsert: true, contentType: 'image/jpeg' })
 
-        if (urlData?.publicUrl) {
-          setAvatarUrl(urlData.publicUrl)
-          await updateProfile({ avatar_url: urlData.publicUrl })
-          setShowSuccessModal('avatar')
-          setUploadingAvatar(false)
-          return
+        if (!uploadError && uploadData) {
+          const { data: urlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath)
+
+          if (urlData?.publicUrl) {
+            setAvatarUrl(urlData.publicUrl)
+            await updateProfile({ avatar_url: urlData.publicUrl })
+            setShowSuccessModal('avatar')
+            setUploadingAvatar(false)
+            return
+          }
         }
       }
 
       // Base64 Data URL fallback
-      const reader = new FileReader()
-      reader.onloadend = async () => {
-        const base64Data = reader.result
-        setAvatarUrl(base64Data)
-        await updateProfile({ avatar_url: base64Data })
-        setShowSuccessModal('avatar')
-        setUploadingAvatar(false)
-      }
-      reader.readAsDataURL(file)
+      setAvatarUrl(dataUrl)
+      await updateProfile({ avatar_url: dataUrl })
+      setShowSuccessModal('avatar')
+      setUploadingAvatar(false)
     } catch (err) {
-      setProfileMessage({ type: 'error', text: `Failed to upload image: ${err.message}` })
+      setProfileMessage({ type: 'error', text: `Failed to upload cropped image: ${err.message}` })
       setUploadingAvatar(false)
     }
   }
@@ -264,6 +278,14 @@ export default function ProfilePage() {
           title="Avatar Updated"
           message="Your profile picture has been updated successfully."
           onClose={() => setShowSuccessModal(null)}
+        />
+      )}
+
+      {cropTargetSrc && (
+        <ImageCropperModal
+          imageSrc={cropTargetSrc}
+          onCropComplete={handleCropComplete}
+          onClose={() => setCropTargetSrc(null)}
         />
       )}
 
