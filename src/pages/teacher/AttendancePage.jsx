@@ -451,7 +451,7 @@ export default function AttendancePage() {
             {/* Active Tool Panel */}
             <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm animate-fade-in">
               {mode === 'kiosk' && (
-                <KioskMode classId={classId} />
+                <KioskMode classId={classId} classInfo={classInfo} />
               )}
               {mode === 'idcard' && (
                 <IDCardScanner

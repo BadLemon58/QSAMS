@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '../../lib/supabase'
@@ -8,15 +9,54 @@ import { MorphIcon } from 'morphicons/react';
 
 const TOKEN_DURATION_MS = 15 * 1000 // 15 seconds
 
-export default function KioskMode({ classId }) {
+export default function KioskMode({ classId, classInfo: propClassInfo }) {
   const { profile } = useAuth()
+  const [classInfo, setClassInfo] = useState(propClassInfo || null)
   const [session, setSession] = useState(null)
   const [timeLeft, setTimeLeft] = useState(15)
   const [initialLoading, setInitialLoading] = useState(true)
   const [error, setError] = useState('')
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
   const cachedLocationRef = useRef(null)
   const rotatingRef = useRef(false)
+
+  // Sync / fetch class info for subject name
+  useEffect(() => {
+    if (propClassInfo) {
+      setClassInfo(propClassInfo)
+      return
+    }
+    if (!classId) return
+    const fetchClass = async () => {
+      const { data } = await supabase
+        .from('classes')
+        .select('*')
+        .eq('id', classId)
+        .single()
+      if (data) setClassInfo(data)
+    }
+    fetchClass()
+  }, [classId, propClassInfo])
+
+  // Live time clock
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Keyboard shortcut: Esc to exit fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setIsFullscreen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // 1. Fetch Geolocation once and cache it
   const fetchAndCacheLocation = () => {
@@ -57,7 +97,6 @@ export default function KioskMode({ classId }) {
     const loc = cachedLocationRef.current || await fetchAndCacheLocation()
 
     try {
-      // Find existing active session for today
       let currentSessionId = session?.id
 
       if (!currentSessionId) {
@@ -201,8 +240,8 @@ export default function KioskMode({ classId }) {
             />
             <button
               onClick={() => setIsFullscreen(true)}
-              className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur shadow-sm border border-gray-100 rounded-full text-gray-500 hover:text-[#005a36] hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-all duration-200"
-              title="Full Screen"
+              className="absolute top-2 right-2 p-1.5 bg-white/95 backdrop-blur shadow-sm border border-gray-200 rounded-full text-gray-600 hover:text-[#005a36] hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-all duration-200"
+              title="Full Screen Mode"
             >
               <MorphIcon icon={Maximize2} size={16} />
             </button>
@@ -245,14 +284,22 @@ export default function KioskMode({ classId }) {
         </div>
       </div>
 
-      {/* Manual Refresh & Security Info */}
+      {/* Action Buttons & Security Info */}
       <div className="flex flex-col items-center gap-2 text-center mt-1">
-        <button
-          onClick={() => rotateSessionToken(false)}
-          className="text-xs text-[#005a36] hover:underline flex items-center gap-1.5 font-semibold py-1 px-3 rounded-full hover:bg-[#e6f2ec] transition-colors"
-        >
-          <MorphIcon icon={RefreshCw} size={12} /> Rotate Token Now
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => rotateSessionToken(false)}
+            className="text-xs text-[#005a36] hover:underline flex items-center gap-1.5 font-semibold py-1.5 px-3 rounded-full hover:bg-[#e6f2ec] transition-colors border border-transparent hover:border-[#005a36]/20"
+          >
+            <MorphIcon icon={RefreshCw} size={12} /> Rotate Token Now
+          </button>
+          <button
+            onClick={() => setIsFullscreen(true)}
+            className="text-xs bg-[#005a36] text-white hover:bg-[#00462a] flex items-center gap-1.5 font-semibold py-1.5 px-3.5 rounded-full shadow-sm transition-all hover:scale-105 active:scale-95"
+          >
+            <MorphIcon icon={Maximize2} size={12} /> Full Screen
+          </button>
+        </div>
 
         <div className="flex items-center gap-1 text-[11px] text-[#64748b]">
           <MorphIcon icon={Shield} size={11} className="text-[#005a36]" />
@@ -260,42 +307,77 @@ export default function KioskMode({ classId }) {
         </div>
       </div>
 
-      {/* Full Screen Overlay */}
-      {isFullscreen && session && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-8">
-          <button
-            onClick={() => setIsFullscreen(false)}
-            className="absolute top-6 right-6 p-3 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 transition-colors"
-          >
-            <MorphIcon icon={X} size={24} />
-          </button>
+      {/* ── Dedicated Full Screen Mode Portal ── */}
+      {isFullscreen && session && typeof document !== 'undefined' && createPortal(
+        <div className="fixed inset-0 z-[999999] bg-[#ffffff] flex flex-col items-center justify-between p-6 sm:p-12 select-none overflow-hidden">
           
-          <div className="text-center mb-10">
-            <h2 className="text-4xl font-bold text-[#005a36] mb-3">Scan to join class</h2>
-            <p className="text-gray-500 text-xl">Use the QSAMS app to scan this QR code</p>
+          {/* Top: Subject Name & Live Time & Close */}
+          <div className="w-full flex items-center justify-between max-w-5xl">
+            <div className="flex flex-col">
+              <span className="text-xs uppercase font-bold tracking-widest text-[#005a36] flex items-center gap-1.5 mb-1">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#005a36] animate-pulse" />
+                Live Attendance Session
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-bold font-['Source_Serif_4',Georgia,serif] text-[#0f172a] tracking-tight">
+                {classInfo?.name || 'Class Subject'}
+              </h1>
+              {classInfo?.room && (
+                <p className="text-sm sm:text-base font-semibold text-[#64748b] mt-1">
+                  Room: {classInfo.room} {classInfo.schedule ? `• ${classInfo.schedule}` : ''}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4">
+              {/* Current Clock Time */}
+              <div className="flex flex-col items-end px-4 py-2 bg-[#f8fafc] rounded-[16px] border border-[#e2e8f0] shadow-sm">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#64748b]">Current Time</span>
+                <span className="font-mono text-base sm:text-lg font-bold text-[#0f172a]">{currentTime}</span>
+              </div>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setIsFullscreen(false)}
+                className="p-3 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#0f172a] rounded-[16px] transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 text-xs font-bold"
+                title="Exit Fullscreen (Esc)"
+              >
+                <MorphIcon icon={X} size={20} />
+                <span className="hidden sm:inline">Close</span>
+              </button>
+            </div>
           </div>
-          
-          <div className="relative p-10 bg-white rounded-[40px] shadow-2xl border border-gray-100 mb-16">
-            <div
-              className="absolute inset-[-8px] rounded-[48px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
-              style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
-            />
-            <QRCodeSVG
-              value={qrValue}
-              size={400}
-              level="H"
-              includeMargin={false}
-              fgColor="#005a36"
-            />
+
+          {/* Center: Extra Large QR Code */}
+          <div className="my-auto flex flex-col items-center">
+            <div className="relative p-6 sm:p-10 bg-white rounded-[40px] shadow-2xl border-2 border-[#e2e8f0] flex items-center justify-center">
+              <div
+                className="absolute inset-[-8px] rounded-[48px] border-2 border-[#005a36]/30 pointer-events-none"
+                style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
+              />
+              <QRCodeSVG
+                value={qrValue}
+                size={Math.min(typeof window !== 'undefined' ? window.innerHeight * 0.46 : 420, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 420, 440)}
+                level="H"
+                includeMargin={false}
+                fgColor="#005a36"
+              />
+            </div>
           </div>
-          
-          <div className="w-full max-w-lg space-y-4 text-center">
-            <div className="text-3xl font-bold">
-              <span className={isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}>
+
+          {/* Bottom: Expiration Countdown & Time Left */}
+          <div className="w-full max-w-lg flex flex-col items-center gap-2">
+            <div className="w-full flex items-center justify-between text-sm font-semibold">
+              <div className="flex items-center gap-2 text-[#64748b]">
+                <MorphIcon icon={Clock} size={15} className={isExpiringSoon ? 'text-[#d97706] animate-spin' : 'text-[#005a36]'} />
+                <span className="text-xs uppercase tracking-wider font-bold">QR Token Expires in</span>
+              </div>
+              <span className={`font-mono text-base font-bold ${isExpiringSoon ? 'text-[#d97706]' : 'text-[#005a36]'}`}>
                 {formatTime(timeLeft)}
               </span>
             </div>
-            <div className="w-full h-4 bg-[#e2e8f0] rounded-full overflow-hidden">
+
+            {/* Progress Bar */}
+            <div className="w-full h-3 bg-[#e2e8f0] rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ${
                   isExpiringSoon ? 'bg-[#d97706]' : 'bg-[#005a36]'
@@ -303,9 +385,15 @@ export default function KioskMode({ classId }) {
                 style={{ width: `${pct}%` }}
               />
             </div>
+
+            <span className="text-[11px] text-[#94a3b8] font-medium mt-1">
+              Press <kbd className="px-1.5 py-0.5 bg-[#f1f5f9] border border-[#cbd5e1] rounded text-[10px] font-mono text-[#0f172a]">Esc</kbd> to exit fullscreen
+            </span>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
 }
+
