@@ -78,7 +78,7 @@ export default function ScanPage() {
 
     const html5QrCode = new Html5Qrcode(SCANNER_ID, {
       experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true, // Native hardware acceleration
+        useBarCodeDetectorIfSupported: false,
       }
     })
     scannerRef.current = html5QrCode
