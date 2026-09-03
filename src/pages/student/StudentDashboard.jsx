@@ -474,9 +474,10 @@ export default function StudentDashboard() {
                     id="student-id-qr-desk"
                     value={qrPayload}
                     size={170}
-                    level="H"
-                    includeMargin={false}
-                    fgColor="#005a36"
+                    level="M"
+                    includeMargin={true}
+                    fgColor="#000000"
+                    bgColor="#ffffff"
                   />
                 </div>
 
@@ -598,9 +599,10 @@ export default function StudentDashboard() {
                           id="student-live-qr"
                           value={qrPayload}
                           size={190}
-                          level="H"
-                          includeMargin={false}
-                          fgColor="#005a36"
+                          level="M"
+                          includeMargin={true}
+                          fgColor="#000000"
+                          bgColor="#ffffff"
                         />
                       </div>
                       <div className="flex flex-col items-center gap-1.5 text-center mt-1">

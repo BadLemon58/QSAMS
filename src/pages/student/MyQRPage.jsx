@@ -99,9 +99,10 @@ export default function MyQRPage() {
                 id="student-id-qr"
                 value={studentQrData}
                 size={180}
-                level="H"
-                includeMargin={false}
-                fgColor="#005a36"
+                level="M"
+                includeMargin={true}
+                fgColor="#000000"
+                bgColor="#ffffff"
               />
             </div>
 

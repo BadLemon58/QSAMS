@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Html5Qrcode } from 'html5-qrcode'
-import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw } from 'lucide';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
+import { Camera, CameraOff, AlertTriangle, CheckCircle, RotateCcw, RefreshCw } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { Skeleton } from '../common/Skeleton'
 
@@ -9,14 +9,41 @@ export default function IDCardScanner({ onScan, onError }) {
   const [status, setStatus] = useState('idle') // idle | requesting | scanning | error | success
   const [errorMsg, setErrorMsg] = useState('')
   const [lastScanned, setLastScanned] = useState(null)
+  const [facingMode, setFacingMode] = useState('environment')
   const SCANNER_ID = 'id-card-scanner'
 
-  const startScanner = async () => {
+  // Play quick audio chime on successful scan
+  const playSuccessChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext
+      if (!AudioCtx) return
+      const ctx = new AudioCtx()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12)
+      gain.gain.setValueAtTime(0.15, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.15)
+    } catch (_) {}
+  }
+
+  const startScanner = async (targetFacing = facingMode) => {
     setStatus('requesting')
     setErrorMsg('')
 
+    await stopScanner()
+
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true })
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        // Release camera tracks immediately
+        stream.getTracks().forEach(t => t.stop())
+      }
     } catch (permErr) {
       const msg = permErr.name === 'NotAllowedError'
         ? 'Camera permission denied. Please allow camera access in your browser settings.'
@@ -27,34 +54,55 @@ export default function IDCardScanner({ onScan, onError }) {
       return
     }
 
-    const html5QrCode = new Html5Qrcode(SCANNER_ID, {
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false,
-      }
-    })
-    scannerRef.current = html5QrCode
-
     try {
-      await html5QrCode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 24, // Fast scan rate
-          qrbox: { width: 260, height: 260 },
-          aspectRatio: 1.0,
-        },
-        (decodedText) => {
-          if (decodedText === lastScanned) return
-          setLastScanned(decodedText)
-          setStatus('success')
-          onScan?.(decodedText)
+      const html5QrCode = new Html5Qrcode(SCANNER_ID, {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false,
+      })
+      scannerRef.current = html5QrCode
 
-          setTimeout(() => {
-            setLastScanned(null)
-            setStatus('scanning')
-          }, 1200)
+      const scanConfig = {
+        fps: 10,
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
+          const size = Math.floor(minEdge * 0.78)
+          return {
+            width: Math.max(size, 180),
+            height: Math.max(size, 180)
+          }
         },
-        () => {}
-      )
+      }
+
+      const onScanSuccess = (decodedText) => {
+        if (decodedText === lastScanned) return
+        playSuccessChime()
+        setLastScanned(decodedText)
+        setStatus('success')
+        onScan?.(decodedText)
+
+        setTimeout(() => {
+          setLastScanned(null)
+          setStatus('scanning')
+        }, 1200)
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: targetFacing },
+          scanConfig,
+          onScanSuccess,
+          () => {}
+        )
+      } catch (cameraErr) {
+        console.warn('Target facingMode failed, falling back to any camera:', cameraErr)
+        await html5QrCode.start(
+          { facingMode: 'user' },
+          scanConfig,
+          onScanSuccess,
+          () => {}
+        )
+      }
+
       setStatus('scanning')
     } catch (err) {
       const msg = `Failed to start scanner: ${err?.message || err}`
@@ -64,10 +112,20 @@ export default function IDCardScanner({ onScan, onError }) {
     }
   }
 
+  const toggleCamera = async () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment'
+    setFacingMode(nextMode)
+    await startScanner(nextMode)
+  }
+
+
+
   const stopScanner = async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.stop()
+        if (scannerRef.current.isScanning) {
+          await scannerRef.current.stop()
+        }
         await scannerRef.current.clear()
       } catch (_) {}
       scannerRef.current = null
@@ -130,18 +188,27 @@ export default function IDCardScanner({ onScan, onError }) {
       <div className="flex gap-2.5 w-full max-w-sm">
         {status === 'idle' || status === 'error' ? (
           <button
-            onClick={startScanner}
+            onClick={() => startScanner()}
             className="btn-primary w-full justify-center text-xs py-3.5"
           >
             <MorphIcon icon={Camera} size={16} /> Start Camera Scanner
           </button>
         ) : (
-          <button
-            onClick={stopScanner}
-            className="btn-secondary w-full justify-center text-xs py-3.5"
-          >
-            <MorphIcon icon={CameraOff} size={16} /> Stop Camera
-          </button>
+          <div className="flex gap-2 w-full">
+            <button
+              onClick={stopScanner}
+              className="btn-secondary flex-1 justify-center text-xs py-3.5"
+            >
+              <MorphIcon icon={CameraOff} size={16} /> Stop Camera
+            </button>
+            <button
+              onClick={toggleCamera}
+              className="btn-secondary text-xs py-3.5 px-3.5"
+              title="Flip Camera (Front/Back)"
+            >
+              <MorphIcon icon={RefreshCw} size={16} />
+            </button>
+          </div>
         )}
       </div>
     </div>

@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Html5Qrcode } from 'html5-qrcode'
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { Skeleton } from '../../components/common/Skeleton'
 import Navbar from '../../components/common/Navbar'
-import { Camera, CameraOff, AlertTriangle, CheckCircle, ArrowLeft, RotateCcw, MapPin, Shield } from 'lucide';
+import { AlertTriangle, CheckCircle, ArrowLeft, RotateCcw, Shield, RefreshCw } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 
 export default function ScanPage() {
@@ -17,8 +17,29 @@ export default function ScanPage() {
   const [status, setStatus] = useState('idle') // idle | requesting | scanning | verifying | success | error
   const [message, setMessage] = useState('')
   const [scanResult, setScanResult] = useState(null)
+  const [facingMode, setFacingMode] = useState('environment')
 
   const SCANNER_ID = 'student-camera-scanner'
+
+  // Play quick audio chime on successful scan
+  const playSuccessChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext
+      if (!AudioCtx) return
+      const ctx = new AudioCtx()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12)
+      gain.gain.setValueAtTime(0.15, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.15)
+    } catch (_) {}
+  }
 
   // 1. Fetch and warm-up GPS location immediately on mount
   const fetchLocation = () => {
@@ -57,7 +78,7 @@ export default function ScanPage() {
     return R * c
   }
 
-  const startScanner = async () => {
+  const startScanner = async (targetFacing = facingMode) => {
     setStatus('requesting')
     setMessage('')
     setScanResult(null)
@@ -65,8 +86,16 @@ export default function ScanPage() {
     // Pre-fetch location in parallel with camera request
     fetchLocation()
 
+    // Stop existing scanner instance if running
+    await stopScanner()
+
+    // Check camera permission and release track immediately
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true })
+      if (navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        // CRITICAL: Stop tracks immediately so Html5Qrcode gets exclusive hardware access
+        stream.getTracks().forEach(t => t.stop())
+      }
     } catch (permErr) {
       const msg = permErr.name === 'NotAllowedError'
         ? 'Camera permission denied. Please allow camera permissions in your browser settings.'
@@ -76,24 +105,43 @@ export default function ScanPage() {
       return
     }
 
-    const html5QrCode = new Html5Qrcode(SCANNER_ID, {
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: false,
-      }
-    })
-    scannerRef.current = html5QrCode
-
     try {
-      await html5QrCode.start(
-        { facingMode: 'environment' },
-        {
-          fps: 24, // Fast scan rate
-          qrbox: { width: 260, height: 260 },
-          aspectRatio: 1.0,
+      const html5QrCode = new Html5Qrcode(SCANNER_ID, {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false,
+      })
+      scannerRef.current = html5QrCode
+
+      const scanConfig = {
+        fps: 10, // Optimal rate for JS decoding loop without frame drops
+        qrbox: (viewfinderWidth, viewfinderHeight) => {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
+          const size = Math.floor(minEdge * 0.78)
+          return {
+            width: Math.max(size, 180),
+            height: Math.max(size, 180)
+          }
         },
-        handleScanSuccess,
-        () => {}
-      )
+      }
+
+      try {
+        await html5QrCode.start(
+          { facingMode: targetFacing },
+          scanConfig,
+          handleScanSuccess,
+          () => {}
+        )
+      } catch (cameraErr) {
+        console.warn('Target facingMode failed, falling back to any camera:', cameraErr)
+        // Fallback to user/default camera
+        await html5QrCode.start(
+          { facingMode: 'user' },
+          scanConfig,
+          handleScanSuccess,
+          () => {}
+        )
+      }
+
       setStatus('scanning')
     } catch (err) {
       setMessage(`Failed to start camera: ${err?.message || err}`)
@@ -101,17 +149,27 @@ export default function ScanPage() {
     }
   }
 
+  const toggleCamera = async () => {
+    const nextMode = facingMode === 'environment' ? 'user' : 'environment'
+    setFacingMode(nextMode)
+    await startScanner(nextMode)
+  }
+
   const stopScanner = async () => {
     if (scannerRef.current) {
       try {
-        await scannerRef.current.stop()
+        if (scannerRef.current.isScanning) {
+          await scannerRef.current.stop()
+        }
         await scannerRef.current.clear()
       } catch (_) {}
       scannerRef.current = null
     }
   }
 
+
   const handleScanSuccess = async (decodedText) => {
+    playSuccessChime()
     await stopScanner()
     setStatus('verifying')
 
@@ -311,6 +369,21 @@ export default function ScanPage() {
             )}
           </div>
 
+          {/* Quick Scanner Action Toolbar */}
+          {status === 'scanning' && (
+            <div className="flex items-center gap-2.5 w-full max-w-xs justify-center">
+              <button
+                type="button"
+                onClick={toggleCamera}
+                className="btn-secondary text-xs py-2 px-4 flex items-center gap-1.5 shadow-sm"
+                title="Switch Camera (Front/Back)"
+              >
+                <MorphIcon icon={RefreshCw} size={13} />
+                <span>Flip Camera</span>
+              </button>
+            </div>
+          )}
+
           {/* Results / Feedback */}
           {status === 'success' && scanResult && (
             <div className="w-full bg-[#dcfce7] border border-[#86efac] rounded-[20px] p-5 text-center flex flex-col items-center gap-2 animate-fade-in text-[#15803d]">
@@ -339,8 +412,9 @@ export default function ScanPage() {
               <MorphIcon icon={AlertTriangle} size={32} />
               <h3 className="font-bold text-sm">Scan Failed</h3>
               <p className="text-xs">{message}</p>
+              
               <button
-                onClick={startScanner}
+                onClick={() => startScanner()}
                 className="btn-secondary w-full justify-center mt-2 text-xs py-3 flex items-center gap-1.5"
               >
                 <MorphIcon icon={RotateCcw} size={14} /> Try Again

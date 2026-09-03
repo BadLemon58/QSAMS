@@ -370,7 +370,7 @@ function JoinCodeModal({ joinCode, className, onClose }) {
 
         <div className="flex justify-center mb-5">
           <div className="p-4 bg-[#f8fafc] rounded-[20px] border border-[#e2e8f0] shadow-sm">
-            <QRCodeSVG value={qrData} size={190} level="H" includeMargin={false} fgColor="#005a36" />
+            <QRCodeSVG value={qrData} size={190} level="M" includeMargin={true} fgColor="#000000" bgColor="#ffffff" />
           </div>
         </div>
 

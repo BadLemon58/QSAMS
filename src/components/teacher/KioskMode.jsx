@@ -232,9 +232,10 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
             <QRCodeSVG
               value={qrValue}
               size={210}
-              level="H"
-              includeMargin={false}
-              fgColor="#005a36"
+              level="M"
+              includeMargin={true}
+              fgColor="#000000"
+              bgColor="#ffffff"
             />
             <button
               onClick={() => setIsFullscreen(true)}
@@ -355,9 +356,10 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
               <QRCodeSVG
                 value={qrValue}
                 size={Math.min(typeof window !== 'undefined' ? window.innerHeight * 0.46 : 420, typeof window !== 'undefined' ? window.innerWidth * 0.8 : 420, 440)}
-                level="H"
-                includeMargin={false}
-                fgColor="#005a36"
+                level="M"
+                includeMargin={true}
+                fgColor="#000000"
+                bgColor="#ffffff"
               />
             </div>
           </div>
