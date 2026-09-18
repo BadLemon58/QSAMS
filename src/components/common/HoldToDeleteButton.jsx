@@ -58,7 +58,7 @@ export default function HoldToDeleteButton({
       onTouchEnd={handleHoldEnd}
       onTouchCancel={handleHoldEnd}
       disabled={deleting}
-      className={`relative flex-1 overflow-hidden select-none py-3 px-4 rounded-[14px] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] border border-[#fca5a5]/80 bg-[#fee2e2] hover:bg-[#fecaca] text-[#b91c1c] ${className}`}
+      className={`relative flex-1 overflow-hidden select-none py-3 px-4 rounded-[14px] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] border border-[#ef4444] bg-[#ffffff] hover:bg-[#fef2f2] text-[#ef4444] ${className}`}
       style={{ touchAction: 'none' }}
     >
       {/* Slow, Continuous Linear Progress Fill Layer */}
@@ -85,9 +85,9 @@ export default function HoldToDeleteButton({
             <MorphIcon
               icon={Trash2}
               size={14}
-              className={`transition-colors duration-150 ${holding ? 'text-white' : 'text-[#b91c1c]'}`}
+              className={`transition-colors duration-150 ${holding ? 'text-white' : 'text-[#ef4444]'}`}
             />
-            <span className={`transition-colors duration-150 ${holding ? 'text-white drop-shadow-sm' : 'text-[#b91c1c]'}`}>
+            <span className={`transition-colors duration-150 ${holding ? 'text-white drop-shadow-sm' : 'text-[#ef4444]'}`}>
               {label}
             </span>
           </>

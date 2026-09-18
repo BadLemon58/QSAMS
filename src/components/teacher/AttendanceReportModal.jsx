@@ -368,30 +368,36 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
           ) : viewMode === 'matrix' ? (
             /* ── VIEW 1: DATES MATRIX VIEW (Detailed Breakdown) ── */
             <div className="border border-[#e2e8f0] print:border-slate-300 rounded-[18px] print:rounded-none overflow-x-auto shadow-sm">
-              <table className="w-full text-left border-collapse min-w-[700px]">
+              <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-[#005a36] text-white print:bg-[#005a36] print:text-white border-b border-[#00482b] text-[10px] print:text-[8px] font-bold uppercase tracking-wider">
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5 w-8 sticky left-0 bg-[#005a36] z-10">#</th>
                     <th className="py-2.5 px-3 print:py-1 print:px-1.5 sticky left-8 bg-[#005a36] z-10">Student Name</th>
-                    {sessions.map((s, idx) => (
-                      <th key={s.id} className="py-2.5 px-2 print:py-1 print:px-1 text-center border-l border-white/20" title={format(new Date(s.date), 'MMMM d, yyyy')}>
-                        <span className="block text-[9px] opacity-80">S{idx + 1}</span>
-                        <span>{format(new Date(s.date), 'M/d')}</span>
+                    {sessions.map(s => (
+                      <th
+                        key={s.id}
+                        className={`py-2.5 px-3 print:py-1 print:px-1 text-center border-l border-white/20 whitespace-nowrap font-bold text-xs print:text-[8.5px] text-white tracking-normal capitalize ${
+                          sessions.length >= 4 ? 'w-1' : ''
+                        }`}
+                        style={sessions.length >= 4 ? { width: '1%' } : {}}
+                        title={format(new Date(s.date), 'MMMM d, yyyy')}
+                      >
+                        {format(new Date(s.date), 'MMMM d')}
                       </th>
                     ))}
-                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center border-l border-white/30 bg-[#00462a]">Attended</th>
-                    <th className="py-2.5 px-3 print:py-1 print:px-1.5 text-center bg-[#00462a]">Rate</th>
+                    <th className={`py-2.5 px-3 print:py-1 print:px-1.5 text-center border-l border-white/30 bg-[#00462a] whitespace-nowrap ${sessions.length >= 4 ? 'w-1' : ''}`} style={sessions.length >= 4 ? { width: '1%' } : {}}>Attended</th>
+                    <th className={`py-2.5 px-3 print:py-1 print:px-1.5 text-center bg-[#00462a] whitespace-nowrap ${sessions.length >= 4 ? 'w-1' : ''}`} style={sessions.length >= 4 ? { width: '1%' } : {}}>Rate</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e2e8f0] print:divide-slate-200 text-xs print:text-[8px]">
                   {reportData.map((row, idx) => (
                     <tr key={row.id} className="hover:bg-[#f8fafc] print:hover:bg-transparent">
                       <td className="py-2 px-3 print:py-0.5 print:px-1 text-[#64748b] print:text-black font-mono sticky left-0 bg-white">{idx + 1}</td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1 font-semibold text-[#0f172a] print:text-black sticky left-8 bg-white truncate max-w-[160px]">{row.name}</td>
+                      <td className="py-2 px-3 print:py-0.5 print:px-1 font-semibold text-[#0f172a] print:text-black sticky left-8 bg-white truncate max-w-[200px]">{row.name}</td>
                       {sessions.map(s => {
                         const status = row.sessionStatusMap[s.id] || 'absent'
                         return (
-                          <td key={s.id} className="py-2 px-1.5 print:py-0.5 print:px-1 text-center border-l border-[#e2e8f0]">
+                          <td key={s.id} className={`py-2 px-2 print:py-0.5 print:px-1 text-center border-l border-[#e2e8f0] whitespace-nowrap ${sessions.length >= 4 ? 'w-1' : ''}`} style={sessions.length >= 4 ? { width: '1%' } : {}}>
                             {status === 'present' && (
                               <span className="inline-block px-1.5 py-0.5 text-[10px] font-bold text-[#15803d] bg-[#dcfce7] rounded">P</span>
                             )}
@@ -407,10 +413,10 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
                           </td>
                         )
                       })}
-                      <td className="py-2 px-3 print:py-0.5 print:px-1 text-center font-bold text-[#0f172a] border-l border-[#e2e8f0] bg-[#f8fafc]">
+                      <td className={`py-2 px-3 print:py-0.5 print:px-1 text-center font-bold text-[#0f172a] border-l border-[#e2e8f0] bg-[#f8fafc] whitespace-nowrap ${sessions.length >= 4 ? 'w-1' : ''}`} style={sessions.length >= 4 ? { width: '1%' } : {}}>
                         {row.totalAttended} / {sessions.length}
                       </td>
-                      <td className="py-2 px-3 print:py-0.5 print:px-1 text-center font-bold text-[#005a36] bg-[#f8fafc]">
+                      <td className={`py-2 px-3 print:py-0.5 print:px-1 text-center font-bold text-[#005a36] bg-[#f8fafc] whitespace-nowrap ${sessions.length >= 4 ? 'w-1' : ''}`} style={sessions.length >= 4 ? { width: '1%' } : {}}>
                         {row.rate}%
                       </td>
                     </tr>
