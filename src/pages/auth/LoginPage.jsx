@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
+import { TermsModal, PrivacyModal } from '../../components/common/PolicyModals'
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function LoginPage() {
@@ -14,6 +15,8 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showTerms, setShowTerms] = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -120,8 +123,18 @@ export default function LoginPage() {
               Create an account
             </Link>
           </p>
+
+          <p className="text-center text-[11px] text-[#94a3b8] mt-5 leading-relaxed">
+            By signing in, you agree to our <br className="sm:hidden" />
+            <button onClick={() => setShowTerms(true)} className="text-[#64748b] hover:text-[#005a36] underline decoration-[#e2e8f0] hover:decoration-[#005a36] transition-colors bg-transparent border-none p-0 cursor-pointer">Terms & Conditions</button>
+            {' '}and{' '}
+            <button onClick={() => setShowPrivacy(true)} className="text-[#64748b] hover:text-[#005a36] underline decoration-[#e2e8f0] hover:decoration-[#005a36] transition-colors bg-transparent border-none p-0 cursor-pointer">Privacy Policy</button>.
+          </p>
         </div>
       </div>
+
+      {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
+      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </div>
   )
 }

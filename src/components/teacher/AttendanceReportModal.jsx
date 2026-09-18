@@ -220,10 +220,6 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
                 <h2 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] leading-none">
                   Semester Attendance Master Record
                 </h2>
-                <span className="inline-flex items-center gap-1 bg-[#dcfce7] text-[#15803d] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#15803d] animate-pulse" />
-                  Live Sync
-                </span>
               </div>
               <p className="text-xs text-[#64748b] mt-1">
                 Cumulative attendance record across all {sessions.length} class sessions • Auto-updates live
