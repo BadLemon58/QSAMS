@@ -308,7 +308,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
 
       {/* ── Dedicated Full Screen Mode Portal ── */}
       {isFullscreen && session && typeof document !== 'undefined' && createPortal(
-        <div className="fixed inset-0 z-[999999] bg-[#ffffff] dark:bg-[#0b1120] flex flex-col items-center justify-between p-6 sm:p-12 select-none overflow-hidden">
+        <div className="fixed inset-0 z-[999999] bg-[#ffffff] flex flex-col items-center justify-between p-6 sm:p-12 select-none overflow-hidden">
           
           {/* Top: Subject Name & Live Time & Close */}
           <div className="w-full flex items-center justify-between max-w-5xl">
@@ -329,15 +329,15 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
 
             <div className="flex items-center gap-3 sm:gap-4">
               {/* Current Clock Time */}
-              <div className="flex flex-col items-end px-4 py-2 bg-[#f8fafc] dark:bg-[#1e293b] rounded-[16px] border border-[#e2e8f0] dark:border-[#334155] shadow-sm">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#64748b] dark:text-[#94a3b8]">Current Time</span>
-                <span className="font-mono text-base sm:text-lg font-bold text-[#0f172a] dark:text-[#f8fafc]">{currentTime}</span>
+              <div className="flex flex-col items-end px-4 py-2 bg-[#f8fafc] rounded-[16px] border border-[#e2e8f0] shadow-sm">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#64748b]">Current Time</span>
+                <span className="font-mono text-base sm:text-lg font-bold text-[#0f172a]">{currentTime}</span>
               </div>
 
               {/* Close Button */}
               <button
                 onClick={() => setIsFullscreen(false)}
-                className="px-4 py-2 h-full bg-[#f8fafc] hover:bg-[#e2e8f0] text-[#0f172a] dark:bg-[#1e293b] dark:hover:bg-[#334155] dark:text-[#f8fafc] border border-[#e2e8f0] dark:border-[#334155] rounded-[16px] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm"
+                className="px-4 py-2 h-full bg-[#f8fafc] hover:bg-[#e2e8f0] text-[#0f172a] border border-[#e2e8f0] rounded-[16px] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-1.5 text-sm font-bold shadow-sm"
                 title="Exit Fullscreen (Esc)"
               >
                 <MorphIcon icon={X} size={20} />
@@ -348,7 +348,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
 
           {/* Center: Extra Large QR Code */}
           <div className="my-auto flex flex-col items-center">
-            <div className="relative p-6 sm:p-10 bg-white dark:bg-[#1e293b] rounded-[40px] shadow-2xl border-2 border-[#e2e8f0] dark:border-[#334155] flex items-center justify-center">
+            <div className="relative p-6 sm:p-10 bg-white rounded-[40px] shadow-2xl border-2 border-[#e2e8f0] flex items-center justify-center">
               <div
                 className="absolute inset-[-8px] rounded-[48px] border-2 border-[#005a36]/30 pointer-events-none"
                 style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
@@ -377,7 +377,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-3 bg-[#e2e8f0] dark:bg-[#1e293b] border border-transparent dark:border-[#334155] rounded-full overflow-hidden">
+            <div className="w-full h-3 bg-[#e2e8f0] border border-transparent rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-1000 ${
                   isExpiringSoon ? 'bg-[#d97706]' : 'bg-[#005a36]'
@@ -387,7 +387,7 @@ export default function KioskMode({ classId, classInfo: propClassInfo }) {
             </div>
 
             <span className="text-[11px] text-[#94a3b8] font-medium mt-1">
-              Press <kbd className="px-1.5 py-0.5 bg-[#f1f5f9] dark:bg-[#1e293b] border border-[#cbd5e1] dark:border-[#334155] rounded text-[10px] font-mono text-[#0f172a] dark:text-[#f8fafc]">Esc</kbd> to exit fullscreen
+              Press <kbd className="px-1.5 py-0.5 bg-[#f1f5f9] border border-[#cbd5e1] rounded text-[10px] font-mono text-[#0f172a]">Esc</kbd> to exit fullscreen
             </span>
           </div>
         </div>,

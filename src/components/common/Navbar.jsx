@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
-import { QrCode, LayoutDashboard, ScanLine, BookOpen, LogOut, User, Home, Clock } from 'lucide';
+import { QrCode, LayoutDashboard, ScanLine, BookOpen, LogOut, User, Home, Clock, Tv2, Calendar } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
@@ -124,39 +124,77 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-[#ffffff] border-t border-[#e2e8f0] flex items-end justify-between px-2 pb-5 pt-2 z-[60] shadow-[0_-8px_20px_rgba(0,0,0,0.04)] font-['Gambarino',system-ui,sans-serif]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-[60] shadow-[0_-8px_20px_rgba(0,0,0,0.04)] font-['Gambarino',system-ui,sans-serif]">
         
-        <Link to={isTeacher ? '/teacher' : '/student'} className={`flex flex-col items-center p-2 flex-1 transition-colors ${isActive(isTeacher ? '/teacher' : '/student') && location.pathname === (isTeacher ? '/teacher' : '/student') ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
-          <MorphIcon icon={Home} size={22} />
-          <span className="text-[10px] font-bold mt-1">Home</span>
-        </Link>
+        {isTeacher ? (
+          <>
+            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={Home} size={22} />
+              <span className="text-[10px] font-bold mt-1">Home</span>
+            </Link>
 
-        <Link to={isTeacher ? '/teacher' : '/student'} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#005a36] transition-colors">
-          <MorphIcon icon={BookOpen} size={22} />
-          <span className="text-[10px] font-bold mt-1">Classes</span>
-        </Link>
+            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={BookOpen} size={22} />
+              <span className="text-[10px] font-bold mt-1">Classes</span>
+            </Link>
 
-        {/* Center QR Button */}
-        <div className="relative flex flex-col items-center flex-shrink-0 w-[72px]">
-          <Link 
-            to={isTeacher ? '/teacher' : '/student/scan'} 
-            className="absolute bottom-6 w-14 h-14 rounded-full bg-[#ffffff] border-4 border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg hover:bg-[#005a36] hover:text-white transition-all transform hover:scale-105 active:scale-95 z-10"
-          >
-            <MorphIcon icon={ScanLine} size={26} />
-          </Link>
-          <span className="text-[10px] font-bold text-[#94a3b8] absolute bottom-0">Scan</span>
-        </div>
+            {/* Teacher Center Floating Kiosk Button */}
+            <div className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group">
+              <Link 
+                to="/teacher" 
+                className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
+              >
+                <MorphIcon icon={Tv2} size={26} />
+              </Link>
+              <div className="h-[24px]"></div>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Kiosk</span>
+            </div>
 
-        <Link to={isTeacher ? '/teacher' : '/student'} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#005a36] transition-colors">
-          <MorphIcon icon={Clock} size={22} />
-          <span className="text-[10px] font-bold mt-1">History</span>
-        </Link>
+            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={Calendar} size={22} />
+              <span className="text-[10px] font-bold mt-1">Activity</span>
+            </Link>
 
-        <button onClick={handleSignOut} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors">
-          <MorphIcon icon={LogOut} size={22} />
-          <span className="text-[10px] font-bold mt-1">Sign Out</span>
-        </button>
+            <button onClick={handleSignOut} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors">
+              <MorphIcon icon={LogOut} size={22} />
+              <span className="text-[10px] font-bold mt-1">Sign Out</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/student" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/student' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={Home} size={22} />
+              <span className="text-[10px] font-bold mt-1">Home</span>
+            </Link>
 
+            <Link to="/student" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/student' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={BookOpen} size={22} />
+              <span className="text-[10px] font-bold mt-1">Classes</span>
+            </Link>
+
+            {/* Student Center Floating Scan Button */}
+            <div className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group">
+              <Link 
+                to="/student/scan" 
+                className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
+              >
+                <MorphIcon icon={ScanLine} size={26} />
+              </Link>
+              <div className="h-[24px]"></div>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Scan</span>
+            </div>
+
+            <Link to="/student" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/student' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <MorphIcon icon={Clock} size={22} />
+              <span className="text-[10px] font-bold mt-1">History</span>
+            </Link>
+
+            <button onClick={handleSignOut} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors">
+              <MorphIcon icon={LogOut} size={22} />
+              <span className="text-[10px] font-bold mt-1">Sign Out</span>
+            </button>
+          </>
+        )}
       </div>
     </>
   )

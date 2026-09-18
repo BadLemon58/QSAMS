@@ -455,6 +455,63 @@ function SelectKioskClassModal({ classes, onSelect, onClose }) {
   )
 }
 
+// ── Grouped Activity Card (For Mobile Activity Tab) ───────────────────────
+function GroupedActivityCard({ sessionKey, className, date, students }) {
+  const [expanded, setExpanded] = useState(false)
+  
+  return (
+    <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] overflow-hidden shadow-sm mb-3">
+      <button 
+        onClick={() => setExpanded(!expanded)} 
+        className="w-full p-4 flex items-center justify-between text-left hover:bg-[#f8fafc] transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-[14px] bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shrink-0">
+            <MorphIcon icon={Clock} size={20} />
+          </div>
+          <div>
+            <h4 className="font-bold text-sm text-[#0f172a]">{className}</h4>
+            <p className="text-xs text-[#64748b]">
+              {date ? format(new Date(date), 'MMM d, yyyy • h:mm a') : 'Unknown time'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 ml-2">
+          <span className="text-[10px] font-semibold text-[#005a36] bg-[#e6f2ec] px-2 py-0.5 rounded-full">
+            {students.length} Logs
+          </span>
+          <MorphIcon 
+            icon={ChevronRight} 
+            size={16} 
+            className={`text-[#94a3b8] transition-transform ${expanded ? 'rotate-90' : ''}`} 
+          />
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="border-t border-[#f1f5f9] bg-[#f8fafc]/50 p-2 divide-y divide-[#f1f5f9]">
+          {students.map(log => (
+            <div key={log.id} className="p-2.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full bg-[#ffffff] border border-[#e2e8f0] text-[#0f172a] flex items-center justify-center font-bold text-[10px]">
+                  {log.profiles?.full_name?.[0] || 'S'}
+                </div>
+                <p className="font-semibold text-[13px] text-[#0f172a]">{log.profiles?.full_name || 'Student'}</p>
+              </div>
+              <div className="text-right">
+                <Badge status={log.status} />
+                <p className="text-[9px] text-[#94a3b8] mt-0.5">
+                  {log.marked_at ? format(new Date(log.marked_at), 'h:mm a') : ''}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Component: Responsive Teacher Dashboard ───────────────────────────
 export default function TeacherDashboard() {
   const { profile, signOut } = useAuth()
@@ -1011,25 +1068,28 @@ export default function TeacherDashboard() {
                         </p>
                       </div>
                     ) : (
-                      <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-2 divide-y divide-[#f1f5f9] shadow-sm">
-                        {logs.map((log) => (
-                          <div key={log.id} className="p-3 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full bg-[#e6f2ec] text-[#005a36] flex items-center justify-center font-bold text-xs">
-                                {log.profiles?.full_name?.[0] || 'S'}
-                              </div>
-                              <div>
-                                <p className="font-semibold text-xs text-[#0f172a]">{log.profiles?.full_name || 'Student'}</p>
-                                <p className="text-[10px] text-[#64748b]">{log.classes?.name || 'Class'}</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <Badge status={log.status} />
-                              <p className="text-[9px] text-[#94a3b8] mt-0.5">
-                                {log.marked_at ? format(new Date(log.marked_at), 'h:mm a') : ''}
-                              </p>
-                            </div>
-                          </div>
+                      <div>
+                        {Object.entries(
+                          logs.reduce((acc, log) => {
+                            const key = log.session_id || `${log.class_id}-${format(new Date(log.marked_at || new Date()), 'yyyy-MM-dd')}`;
+                            if (!acc[key]) {
+                              acc[key] = {
+                                className: log.classes?.name || 'Class',
+                                date: log.marked_at,
+                                students: []
+                              }
+                            }
+                            acc[key].students.push(log)
+                            return acc
+                          }, {})
+                        ).map(([key, group]) => (
+                          <GroupedActivityCard 
+                            key={key} 
+                            sessionKey={key} 
+                            className={group.className} 
+                            date={group.date} 
+                            students={group.students} 
+                          />
                         ))}
                       </div>
                     )}
