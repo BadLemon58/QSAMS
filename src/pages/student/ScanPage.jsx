@@ -267,6 +267,20 @@ export default function ScanPage() {
       return
     }
 
+    // 1.5. Verify enrollment
+    const { data: enrollment, error: enrollmentErr } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('class_id', session.class_id)
+      .eq('student_id', profile.id)
+      .single()
+
+    if (enrollmentErr || !enrollment) {
+      setStatus('error')
+      setMessage(`You are not enrolled in "${session.classes?.name || 'this class'}". Please scan the Class Join QR code to enroll before taking attendance.`)
+      return
+    }
+
     // 2. Geofence verification (instant via pre-fetched coords)
     const currentCoords = userLocationRef.current || await fetchLocation()
     if (session.latitude && session.longitude && currentCoords) {

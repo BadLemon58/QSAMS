@@ -4,12 +4,13 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import { QRCodeSVG } from 'qrcode.react'
 import { format, isToday } from 'date-fns'
-import { Camera, RefreshCw, Share2, Plus, X, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Check, Download, Shield, LogOut, MapPin } from 'lucide';
+import { Camera, RefreshCw, Share2, Plus, X, CheckCircle, AlertCircle, BookOpen, Clock, Calendar, QrCode, ArrowLeft, Users, User, ChevronRight, Check, Download, Shield, LogOut, MapPin, Home, ScanLine } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
 import { StudentCourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
 import Navbar from '../../components/common/Navbar'
 import Badge from '../../components/common/Badge'
+import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 // ── Join Class Modal (NDMC Forest Green Style) ───────────────────────────
 function JoinClassModal({ studentId, onClose, onEnrolled }) {
@@ -542,38 +543,21 @@ export default function StudentDashboard() {
 
             {/* 1. Header Row */}
             <section className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <img src={qsamsLogo} alt="QSAMS" className="w-8 h-8 rounded-lg shadow-sm" />
+                <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-lg leading-none">QSAMS</span>
+              </div>
+
               <button
                 onClick={() => navigate('/profile')}
                 aria-label="Profile settings"
-                className="flex items-center gap-2.5 group text-left"
+                className="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#005a36] text-[#ffffff] font-bold text-sm shadow-sm overflow-hidden border-2 border-[#e2e8f0] transition-transform active:scale-95"
               >
-                <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden border border-[#e2e8f0]">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
-                  )}
-                </div>
-                <div className="hidden xs:block">
-                  <p className="text-xs font-bold text-[#0f172a] leading-none group-hover:text-[#005a36] transition-colors truncate max-w-[120px] sm:max-w-[180px]">
-                    {profile?.full_name || 'Student'}
-                  </p>
-                  <p className="text-[11px] text-[#64748b] font-mono leading-none mt-1">
-                    {profile?.student_id || 'Student Portal'}
-                  </p>
-                </div>
-              </button>
-
-              <button
-                onClick={async () => {
-                  await signOut()
-                  navigate('/login')
-                }}
-                className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[14px] text-xs sm:text-sm font-semibold text-[#b91c1c] hover:bg-[#fecaca] active:scale-95 transition-all border border-[#fca5a5] bg-[#fee2e2] shadow-sm"
-                title="Sign out of account"
-              >
-                <MorphIcon icon={LogOut} size={16} />
-                <span>Sign out</span>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
+                )}
               </button>
             </section>
 
@@ -904,39 +888,55 @@ export default function StudentDashboard() {
 
           </div>
 
-          {/* ── Fixed Bottom Tab Bar — Widened comfortably on tablet (max-w-2xl) ── */}
+          {/* ── Fixed Bottom Tab Bar ── */}
           <nav
             data-component="TabBar"
-            className="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl md:max-w-2xl mx-auto h-16 md:h-18 bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-6 sm:px-12 md:px-16 z-40 shadow-lg"
+            className="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl md:max-w-2xl mx-auto h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-40 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]"
           >
             <button
               onClick={() => setActiveTab('live')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'live' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'live' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={QrCode} size={22} className={activeTab === 'live' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>Live Session</span>
+              <MorphIcon icon={Home} size={22} />
+              <span className="text-[10px] font-bold mt-1">Home</span>
             </button>
 
             <button
               onClick={() => setActiveTab('classes')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'classes' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={BookOpen} size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>Classes</span>
+              <MorphIcon icon={BookOpen} size={22} />
+              <span className="text-[10px] font-bold mt-1">Classes</span>
             </button>
+
+            {/* Center Floating QR Scanner Button */}
+            <div className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group" onClick={() => navigate('/student/scan')}>
+              <div 
+                className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
+              >
+                <MorphIcon icon={ScanLine} size={26} />
+              </div>
+              <div className="h-[24px]"></div>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Scan</span>
+            </div>
 
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'history' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'history' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={Calendar} size={22} className={activeTab === 'history' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>History</span>
+              <MorphIcon icon={Clock} size={22} />
+              <span className="text-[10px] font-bold mt-1">History</span>
+            </button>
+
+            <button 
+              onClick={async () => {
+                await signOut()
+                navigate('/login')
+              }} 
+              className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors"
+            >
+              <MorphIcon icon={LogOut} size={22} />
+              <span className="text-[10px] font-bold mt-1">Sign Out</span>
             </button>
           </nav>
 
