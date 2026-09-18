@@ -10,6 +10,7 @@ import Badge from '../../components/common/Badge'
 import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format, isToday } from 'date-fns'
+import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 import {
   checkClassScheduleConflict,
@@ -412,6 +413,48 @@ function CreateClassModal({ onClose, onCreated }) {
   )
 }
 
+// ── Select Class for Kiosk Modal ──────────────────────────────────────────
+function SelectKioskClassModal({ classes, onSelect, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in font-['Gambarino',system-ui,sans-serif]">
+      <div className="bg-[#ffffff] text-[#0f172a] w-full max-w-sm p-6 rounded-[24px] shadow-2xl border border-[#e2e8f0] relative max-h-[80vh] flex flex-col">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 w-8 h-8 rounded-full bg-[#f1f5f9] flex items-center justify-center text-[#64748b] hover:text-[#0f172a] transition-colors"
+        >
+          <MorphIcon icon={X} size={16} />
+        </button>
+
+        <div className="mb-4 shrink-0">
+          <div className="w-12 h-12 rounded-[16px] bg-[#e6f2ec] text-[#005a36] flex items-center justify-center mb-3">
+            <MorphIcon icon={Tv2} size={24} />
+          </div>
+          <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Select Class</h3>
+          <p className="text-[#64748b] text-xs leading-relaxed">
+            Which class would you like to start a live attendance kiosk for?
+          </p>
+        </div>
+
+        <div className="overflow-y-auto pr-2 space-y-2">
+          {classes.map(cls => (
+            <button
+              key={cls.id}
+              onClick={() => onSelect(cls)}
+              className="w-full text-left p-3.5 rounded-[16px] border border-[#e2e8f0] hover:border-[#005a36] hover:bg-[#f8fafc] transition-all flex items-center justify-between group"
+            >
+              <div>
+                <p className="font-bold text-sm text-[#0f172a] group-hover:text-[#005a36]">{cls.name}</p>
+                <p className="text-[11px] text-[#64748b] mt-0.5">{cls.schedule || 'No schedule'}</p>
+              </div>
+              <MorphIcon icon={ChevronRight} size={16} className="text-[#94a3b8] group-hover:text-[#005a36]" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component: Responsive Teacher Dashboard ───────────────────────────
 export default function TeacherDashboard() {
   const { profile, signOut } = useAuth()
@@ -426,6 +469,7 @@ export default function TeacherDashboard() {
   const [classToDelete, setClassToDelete] = useState(null)
   const [deletingClass, setDeletingClass] = useState(false)
   const [scheduleErrorModal, setScheduleErrorModal] = useState(null)
+  const [showKioskSelectModal, setShowKioskSelectModal] = useState(false)
 
   const handleLaunchKiosk = (cls) => {
     if (!cls) return
@@ -705,38 +749,21 @@ export default function TeacherDashboard() {
 
             {/* 1. Header Row (Exact same location as student dashboard) */}
             <section className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <img src={qsamsLogo} alt="QSAMS" className="w-8 h-8 rounded-lg shadow-sm" />
+                <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-lg leading-none">QSAMS</span>
+              </div>
+
               <button
                 onClick={() => navigate('/profile')}
                 aria-label="Profile settings"
-                className="flex items-center gap-2.5 group text-left"
+                className="flex items-center justify-center w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#005a36] text-[#ffffff] font-bold text-sm shadow-sm overflow-hidden border-2 border-[#e2e8f0] transition-transform active:scale-95"
               >
-                <div className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-[#005a36] text-[#ffffff] flex items-center justify-center font-bold text-sm shadow-sm overflow-hidden border border-[#e2e8f0]">
-                  {profile?.avatar_url ? (
-                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-[#0f172a] leading-none group-hover:text-[#005a36] transition-colors truncate max-w-[120px] sm:max-w-[180px]">
-                    {profile?.full_name || 'Faculty Member'}
-                  </p>
-                  <p className="text-[11px] text-[#005a36] font-semibold leading-none mt-1">
-                    Instructor Portal
-                  </p>
-                </div>
-              </button>
-
-              <button
-                onClick={async () => {
-                  await signOut()
-                  navigate('/login')
-                }}
-                className="flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-[14px] text-xs sm:text-sm font-semibold text-[#b91c1c] hover:bg-[#fecaca] active:scale-95 transition-all border border-[#fca5a5] bg-[#fee2e2] shadow-sm"
-                title="Sign out of account"
-              >
-                <MorphIcon icon={LogOut} size={16} />
-                <span>Sign out</span>
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  profile?.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={18} />
+                )}
               </button>
             </section>
 
@@ -751,93 +778,22 @@ export default function TeacherDashboard() {
                 {/* ── TAB 1: OVERVIEW / QUICK LAUNCH (DEFAULT) ── */}
                 {activeTab === 'overview' && (
                   <>
-                    {/* Faculty Hero Hub Stage */}
-                    <section className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[24px] p-6 sm:p-8 md:p-10 flex flex-col items-center gap-4 relative shadow-sm">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-[22px] bg-[#005a36] text-white flex items-center justify-center shadow-md relative">
-                        <div
-                          className="absolute inset-[-6px] rounded-[26px] border-2 border-[#005a36]/20 opacity-55 pointer-events-none"
-                          style={{ animation: 'gesso-qr-breathe 3.2s ease-in-out infinite' }}
-                        />
-                        <MorphIcon icon={Tv2} size={36} className="text-white" />
-                      </div>
-
-                      <div className="flex flex-col items-center gap-1 text-center mt-1">
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[22px] md:text-[26px] text-[#0f172a] tracking-tight">
-                          {primaryClass ? primaryClass.name : 'Create Your First Class'}
-                        </span>
-                        <div className="flex flex-wrap items-center justify-center gap-2 mt-1 text-xs text-[#64748b]">
-                          {primaryClass ? (
-                            <>
-                              <span className="inline-flex items-center gap-1.5 bg-[#e6f2ec] text-[#005a36] font-semibold px-3 py-1 rounded-full text-xs">
-                                <MorphIcon icon={Clock} size={13} /> {primaryClass.schedule || 'Schedule TBA'}
-                              </span>
-                              {primaryClass.room && (
-                                <span className="inline-flex items-center gap-1.5 bg-[#f1f5f9] text-[#64748b] font-medium px-3 py-1 rounded-full text-xs">
-                                  <MorphIcon icon={MapPin} size={13} /> {primaryClass.room}
-                                </span>
-                              )}
-                            </>
-                          ) : (
-                            'Set up class sections and launch live kiosk tokens'
-                          )}
-                        </div>
-                      </div>
-
-                      {primaryClass && (
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#dcfce7] text-[#15803d] font-bold text-xs border border-[#86efac]">
-                            <MorphIcon icon={Users} size={13} /> {primaryClass.enrollments?.length || 0} Students Enrolled
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-mono font-bold text-xs border border-[#e2e8f0] shadow-sm">
-                            Code: {primaryClass.join_code || primaryClass.id.substring(0,6).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </section>
-
                     {/* Action Buttons Row */}
-                    <section className="flex flex-col gap-3">
-                      {primaryClass ? (
-                        <button
-                          onClick={() => handleLaunchKiosk(primaryClass)}
-                          className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <MorphIcon icon={Tv2} size={18} />
-                          Launch Live Attendance Kiosk
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setShowModal(true)}
-                          className="w-full py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] md:text-[15px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <MorphIcon icon={Plus} size={18} />
-                          Create First Course
-                        </button>
-                      )}
-
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => setShowModal(true)}
-                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <MorphIcon icon={Plus} size={16} />
-                          New Class
-                        </button>
-                        <button
-                          onClick={handleRefresh}
-                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <MorphIcon icon={RefreshCw} size={16} className={refreshing ? 'animate-pulse' : ''} />
-                          Refresh
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('classes')}
-                          className="flex-1 py-3.5 px-3 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
-                        >
-                          <MorphIcon icon={BookOpen} size={16} />
-                          All ({classes.length})
-                        </button>
-                      </div>
+                    <section className="flex gap-3">
+                      <button
+                        onClick={() => setShowModal(true)}
+                        className="flex-1 py-4 px-4 rounded-[16px] bg-[#005a36] text-[#ffffff] font-semibold text-[14px] flex items-center justify-center gap-2 hover:bg-[#00482b] active:scale-[0.98] transition-all shadow-sm"
+                      >
+                        <MorphIcon icon={Plus} size={18} />
+                        Create New Class
+                      </button>
+                      <button
+                        onClick={handleRefresh}
+                        className="py-4 px-5 rounded-[16px] bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0] font-semibold text-[14px] flex items-center justify-center hover:bg-[#f1f5f9] active:scale-[0.98] transition-all shadow-sm"
+                        title="Refresh Data"
+                      >
+                        <MorphIcon icon={RefreshCw} size={20} className={refreshing ? 'animate-pulse' : ''} />
+                      </button>
                     </section>
 
                     {/* Stat Pair Band — 4-columns on tablet */}
@@ -1087,36 +1043,63 @@ export default function TeacherDashboard() {
           {/* ── Fixed Bottom Tab Bar ── */}
           <nav
             data-component="TeacherTabBar"
-            className="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl md:max-w-2xl mx-auto h-16 md:h-18 bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-6 sm:px-12 md:px-16 z-40 shadow-lg"
+            className="fixed bottom-0 left-0 right-0 max-w-md sm:max-w-xl md:max-w-2xl mx-auto h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-40 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]"
           >
             <button
               onClick={() => setActiveTab('overview')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'overview' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'overview' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={Tv2} size={22} className={activeTab === 'overview' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>Overview</span>
+              <MorphIcon icon={Tv2} size={22} />
+              <span className="text-[10px] font-bold mt-1">Home</span>
             </button>
 
             <button
               onClick={() => setActiveTab('classes')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'classes' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={BookOpen} size={22} className={activeTab === 'classes' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>Courses</span>
+              <MorphIcon icon={BookOpen} size={22} />
+              <span className="text-[10px] font-bold mt-1">Classes</span>
             </button>
+
+            {/* Center Floating Kiosk Button */}
+            <div 
+              className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group" 
+              onClick={() => {
+                if (classes.length === 1) {
+                  handleLaunchKiosk(classes[0])
+                } else if (classes.length > 1) {
+                  setShowKioskSelectModal(true)
+                } else {
+                  setShowModal(true)
+                }
+              }}
+            >
+              <div 
+                className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
+              >
+                <MorphIcon icon={Tv2} size={26} />
+              </div>
+              <div className="h-[24px]"></div>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Kiosk</span>
+            </div>
 
             <button
               onClick={() => setActiveTab('activity')}
-              className={`flex flex-col items-center gap-1 flex-1 text-[10px] md:text-xs font-semibold transition-all hover:scale-105 active:scale-95 ${
-                activeTab === 'activity' ? 'text-[#005a36] font-bold' : 'text-[#64748b]'
-              }`}
+              className={`flex flex-col items-center p-2 flex-1 transition-colors ${activeTab === 'activity' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}
             >
-              <MorphIcon icon={Calendar} size={22} className={activeTab === 'activity' ? 'text-[#005a36]' : 'text-[#64748b]'} />
-              <span>Activity</span>
+              <MorphIcon icon={Calendar} size={22} />
+              <span className="text-[10px] font-bold mt-1">Activity</span>
+            </button>
+
+            <button 
+              onClick={async () => {
+                await signOut()
+                navigate('/login')
+              }} 
+              className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors"
+            >
+              <MorphIcon icon={LogOut} size={22} />
+              <span className="text-[10px] font-bold mt-1">Sign Out</span>
             </button>
           </nav>
 
@@ -1143,6 +1126,17 @@ export default function TeacherDashboard() {
         <ScheduleRestrictionModal
           schedule={scheduleErrorModal}
           onClose={() => setScheduleErrorModal(null)}
+        />
+      )}
+
+      {showKioskSelectModal && (
+        <SelectKioskClassModal
+          classes={classes}
+          onSelect={(cls) => {
+            setShowKioskSelectModal(false)
+            handleLaunchKiosk(cls)
+          }}
+          onClose={() => setShowKioskSelectModal(false)}
         />
       )}
     </div>
