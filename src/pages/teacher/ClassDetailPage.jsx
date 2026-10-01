@@ -13,6 +13,7 @@ import { Users, QrCode, ArrowLeft, Plus, Clock, MapPin, ClipboardList, Copy, Che
 import { MorphIcon } from 'morphicons/react';
 import { format } from 'date-fns'
 import useDebounce from '../../hooks/useDebounce'
+import { formatName } from '../../utils/formatName'
 import {
   checkClassScheduleConflict,
   formatTime24to12,
@@ -553,7 +554,7 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
                           onChange={() => {}} // Controlled by label click
                           className="w-4 h-4 rounded text-[#005a36] focus:ring-[#005a36] accent-[#005a36]"
                         />
-                        <span className="font-semibold text-sm">{st.full_name}</span>
+                        <span className="font-semibold text-sm">{formatName(st)}</span>
                       </div>
                       <span className="text-xs font-mono text-[#64748b]">{st.student_id || 'No ID'}</span>
                     </label>
@@ -716,7 +717,7 @@ function DeleteStudentModal({ student, onConfirm, onCancel, deleting }) {
         </div>
         <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Remove Student?</h3>
         <p className="text-[#64748b] text-xs mb-5">
-          Are you sure you want to remove <strong className="text-[#0f172a]">{student?.full_name}</strong> from this class roster?
+          Are you sure you want to remove <strong className="text-[#0f172a]">{formatName(student)}</strong> from this class roster?
         </p>
         <div className="flex gap-2.5">
           <button onClick={onCancel} disabled={deleting} className="btn-secondary flex-1 justify-center py-3">
@@ -837,10 +838,14 @@ export default function ClassDetailPage() {
 
       const { data: enrollments } = await supabase
         .from('enrollments')
-        .select('student_id, profiles(id, full_name, student_id, avatar_url)')
+        .select('student_id, profiles(id, full_name, first_name, last_name, student_id, avatar_url)')
         .eq('class_id', classId)
       const fetchedStudents = (enrollments || []).map(e => e.profiles).filter(Boolean)
-      fetchedStudents.sort((a, b) => (a.full_name || '').localeCompare(b.full_name || ''))
+      fetchedStudents.sort((a, b) => {
+        const lastA = (a.last_name || a.full_name || '').toLowerCase()
+        const lastB = (b.last_name || b.full_name || '').toLowerCase()
+        return lastA.localeCompare(lastB)
+      })
       setStudents(fetchedStudents)
 
       const { data: sess } = await supabase
@@ -1077,7 +1082,7 @@ export default function ClassDetailPage() {
                         )}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-[#0f172a]">{student.full_name}</p>
+                        <p className="font-semibold text-sm text-[#0f172a]">{formatName(student)}</p>
                         <p className="text-xs text-[#64748b] font-mono">{student.student_id || 'No ID'}</p>
                       </div>
                     </div>

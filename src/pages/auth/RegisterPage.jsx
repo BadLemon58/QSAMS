@@ -15,7 +15,8 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     role: 'student',
     studentId: '',
   })
@@ -47,7 +48,8 @@ export default function RegisterPage() {
     const { error: err } = await signUp({
       email: form.email,
       password: form.password,
-      fullName: form.fullName,
+      firstName: form.firstName,
+      lastName: form.lastName,
       role: form.role,
       studentId: form.role === 'student' ? form.studentId : null,
     })
@@ -132,20 +134,37 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                Full Name
-              </label>
-              <div className="relative">
-                <MorphIcon icon={User} size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
-                <input
-                  type="text"
-                  className="input-field pl-10"
-                  placeholder="Juan Dela Cruz"
-                  value={form.fullName}
-                  onChange={e => setForm({ ...form, fullName: e.target.value })}
-                  required
-                />
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                  First Name
+                </label>
+                <div className="relative">
+                  <MorphIcon icon={User} size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+                  <input
+                    type="text"
+                    className="input-field pl-10"
+                    placeholder="Juan"
+                    value={form.firstName}
+                    onChange={e => setForm({ ...form, firstName: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    className="input-field"
+                    placeholder="Dela Cruz"
+                    value={form.lastName}
+                    onChange={e => setForm({ ...form, lastName: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
             </div>
 

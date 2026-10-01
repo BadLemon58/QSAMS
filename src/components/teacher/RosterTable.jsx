@@ -4,6 +4,7 @@ import { MorphIcon } from 'morphicons/react';
 import Badge from '../common/Badge'
 import { TableRowSkeleton } from '../common/Skeleton'
 import useDebounce from '../../hooks/useDebounce'
+import { formatName } from '../../utils/formatName'
 
 const STATUS_OPTIONS = ['present', 'late', 'absent', 'excused']
 
@@ -103,7 +104,7 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
                           student.full_name?.[0]?.toUpperCase() || <MorphIcon icon={User} size={12} />
                         )}
                       </div>
-                      <span className="text-sm font-semibold text-[#0f172a]">{student.full_name}</span>
+                      <span className="text-sm font-semibold text-[#0f172a]">{formatName(student)}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-xs text-[#64748b] hidden sm:table-cell font-mono">

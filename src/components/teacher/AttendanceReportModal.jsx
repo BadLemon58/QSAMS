@@ -5,6 +5,7 @@ import { MorphIcon } from 'morphicons/react';
 import { exportAttendanceReportToExcel } from '../../lib/excelExport'
 import { TableRowSkeleton } from '../common/Skeleton'
 import { format } from 'date-fns'
+import { formatName } from '../../utils/formatName'
 
 export default function AttendanceReportModal({ classId, classInfo, teacherName, onClose }) {
   const [loading, setLoading] = useState(true)
@@ -31,7 +32,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
       // 1. Fetch all officially enrolled students
       const { data: enrollments } = await supabase
         .from('enrollments')
-        .select('student_id, profiles(id, full_name, student_id, avatar_url)')
+        .select('student_id, profiles(id, full_name, first_name, last_name, student_id, avatar_url)')
         .eq('class_id', classId)
 
       const students = (enrollments || []).map(e => e.profiles).filter(Boolean)
@@ -101,7 +102,8 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
 
         return {
           id: st.id,
-          name: st.full_name,
+          name: formatName(st),
+          lastName: (st.last_name || st.full_name || '').toLowerCase(),
           studentId: st.student_id || '—',
           avatarUrl: st.avatar_url,
           present,
@@ -114,7 +116,7 @@ export default function AttendanceReportModal({ classId, classInfo, teacherName,
         }
       })
 
-      studentRows.sort((a, b) => a.name.localeCompare(b.name))
+      studentRows.sort((a, b) => a.lastName.localeCompare(b.lastName))
 
       const totalExpected = students.length * allSessions.length
       const avgRate = totalExpected > 0 ? Math.round(((totalPresents + totalLates) / totalExpected) * 100) : 0

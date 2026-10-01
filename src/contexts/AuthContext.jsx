@@ -51,6 +51,8 @@ export function AuthProvider({ children }) {
         if (user) {
           const fallback = {
             id: user.id,
+            first_name: user.user_metadata?.first_name || 'User',
+            last_name: user.user_metadata?.last_name || '',
             full_name: user.user_metadata?.full_name || 'User',
             role: user.user_metadata?.role || 'student',
             student_id: user.user_metadata?.student_id || null,
@@ -67,13 +69,15 @@ export function AuthProvider({ children }) {
     }
   }
 
-  const signUp = async ({ email, password, fullName, role, studentId }) => {
+  const signUp = async ({ email, password, firstName, lastName, role, studentId }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          full_name: fullName,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`.trim(),
           role,
           student_id: studentId || null,
         },

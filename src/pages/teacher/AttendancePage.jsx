@@ -12,6 +12,7 @@ import { MorphIcon } from 'morphicons/react';
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import { exportSingleSessionToExcel, exportAttendanceReportToExcel } from '../../lib/excelExport'
 import { format } from 'date-fns'
+import { formatName } from '../../utils/formatName'
 
 // ── Mode Toggle Button (NDMC Forest Green Style) ───────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
@@ -101,7 +102,7 @@ export default function AttendancePage() {
       // 1. Fetch enrolled students
       const { data: enrollments } = await supabase
         .from('enrollments')
-        .select('student_id, profiles(id, full_name, student_id)')
+        .select('student_id, profiles(id, full_name, first_name, last_name, student_id)')
         .eq('class_id', classId)
 
       const students = (enrollments || []).map(e => e.profiles).filter(Boolean)
@@ -159,7 +160,8 @@ export default function AttendancePage() {
 
         return {
           id: st.id,
-          name: st.full_name,
+          name: formatName(st),
+          lastName: (st.last_name || st.full_name || '').toLowerCase(),
           studentId: st.student_id || '—',
           present,
           late,
@@ -170,7 +172,7 @@ export default function AttendancePage() {
         }
       })
 
-      studentRows.sort((a, b) => a.name.localeCompare(b.name))
+      studentRows.sort((a, b) => a.lastName.localeCompare(b.lastName))
 
       const totalExpected = students.length * allSessions.length
       const avgRate = totalExpected > 0 ? Math.round(((totalPresents + totalLates) / totalExpected) * 100) : 0
@@ -247,7 +249,7 @@ export default function AttendancePage() {
 
     const { data: enrollments } = await supabase
       .from('enrollments')
-      .select('student_id, profiles(id, full_name, student_id, avatar_url)')
+      .select('student_id, profiles(id, full_name, first_name, last_name, student_id, avatar_url)')
       .eq('class_id', classId)
 
     if (!enrollments) { setLoadingRoster(false); return }
@@ -265,13 +267,15 @@ export default function AttendancePage() {
 
     const merged = students.map(s => {
       const log = logs.find(l => l.student_id === s.id)
-      return { ...s, status: log?.status || null, log_id: log?.id || null }
+      return { ...s, formattedName: formatName(s), status: log?.status || null, log_id: log?.id || null }
     })
 
     merged.sort((a, b) => {
       if (a.status && !b.status) return -1
       if (!a.status && b.status) return 1
-      return (a.full_name || '').localeCompare(b.full_name || '')
+      const lastA = (a.last_name || a.full_name || '').toLowerCase()
+      const lastB = (b.last_name || b.full_name || '').toLowerCase()
+      return lastA.localeCompare(lastB)
     })
 
     setRoster(merged)
