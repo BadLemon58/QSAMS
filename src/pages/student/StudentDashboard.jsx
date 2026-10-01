@@ -520,7 +520,7 @@ export default function StudentDashboard() {
                 <div className="flex items-center gap-1.5 font-bold text-[#005a36]">
                   <MorphIcon icon={Shield} size={14} /> NDMC Attendance Rules
                 </div>
-                <p>Ensure you are within the classroom geofence before scanning the rotating kiosk token.</p>
+                <p>Ensure you are within the classroom geofence before scanning the rotating projector QR code.</p>
               </div>
             </div>
 

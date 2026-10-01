@@ -147,7 +147,7 @@ export default function Navbar() {
                 <MorphIcon icon={Tv2} size={26} />
               </Link>
               <div className="h-[24px]"></div>
-              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Kiosk</span>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Attendance</span>
             </div>
 
             <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>

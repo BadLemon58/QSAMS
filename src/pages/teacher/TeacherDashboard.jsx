@@ -431,7 +431,7 @@ function SelectKioskClassModal({ classes, onSelect, onClose }) {
           </div>
           <h3 className="font-['Source_Serif_4',Georgia,serif] text-xl font-bold text-[#0f172a] mb-1">Select Class</h3>
           <p className="text-[#64748b] text-xs leading-relaxed">
-            Which class would you like to start a live attendance kiosk for?
+            Which class would you like to start a live attendance session for?
           </p>
         </div>
 
@@ -682,7 +682,7 @@ export default function TeacherDashboard() {
             </div>
 
             <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Active Kiosks</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Active Sessions</span>
               <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#15803d] block mt-1">
                 {activeSessionsCount} Live
               </span>
@@ -768,7 +768,7 @@ export default function TeacherDashboard() {
                         onClick={() => handleLaunchKiosk(cls)}
                         className="btn-primary flex-1 justify-center text-xs py-2"
                       >
-                        <MorphIcon icon={Tv2} size={13} /> Live Kiosk
+                        <MorphIcon icon={Tv2} size={13} /> Start Attendance
                       </button>
                       <Link
                         to={`/teacher/class/${cls.id}`}
@@ -870,7 +870,7 @@ export default function TeacherDashboard() {
                       </div>
 
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Active Kiosks</span>
+                        <span className="text-[12px] text-[#64748b] font-medium">Active Sessions</span>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#15803d]">
                           {activeSessionsCount} Live
                         </span>
@@ -1021,7 +1021,7 @@ export default function TeacherDashboard() {
                                   onClick={() => handleLaunchKiosk(cls)}
                                   className="btn-primary flex-1 justify-center text-xs py-2"
                                 >
-                                  <MorphIcon icon={Tv2} size={13} /> Kiosk
+                                  <MorphIcon icon={Tv2} size={13} /> Start Attendance
                                 </button>
                                 <Link
                                   to={`/teacher/class/${cls.id}`}
@@ -1064,7 +1064,7 @@ export default function TeacherDashboard() {
                         </div>
                         <p className="font-['Source_Serif_4',Georgia,serif] font-bold text-base text-[#0f172a] mb-1">No check-ins yet</p>
                         <p className="text-xs text-[#64748b] leading-relaxed max-w-xs mx-auto">
-                          Launch a live attendance kiosk to start recording real-time student check-ins.
+                          Launch a live attendance session to start recording real-time student check-ins.
                         </p>
                       </div>
                     ) : (
@@ -1140,7 +1140,7 @@ export default function TeacherDashboard() {
                 <MorphIcon icon={Tv2} size={26} />
               </div>
               <div className="h-[24px]"></div>
-              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Kiosk</span>
+              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Attendance</span>
             </div>
 
             <button
