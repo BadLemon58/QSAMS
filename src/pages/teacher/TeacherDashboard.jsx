@@ -733,9 +733,10 @@ export default function TeacherDashboard() {
               {classes.map(cls => (
                 <div
                   key={cls.id}
-                  className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-5 group hover:border-[#005a36]/40 hover:shadow-md transition-all flex flex-col justify-between"
+                  onClick={() => navigate(`/teacher/class/${cls.id}`)}
+                  className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-5 group hover:border-[#005a36]/40 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer"
                 >
-                  <Link to={`/teacher/class/${cls.id}`} className="block">
+                  <div className="block">
                     <div className="flex items-start justify-between mb-3">
                       <div className="w-10 h-10 rounded-xl bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                         <MorphIcon icon={BookOpen} size={18} />
@@ -755,7 +756,7 @@ export default function TeacherDashboard() {
                       <MorphIcon icon={Clock} size={12} />
                       <span>{cls.schedule || 'Schedule TBA'}</span>
                     </div>
-                  </Link>
+                  </div>
 
                   <div className="space-y-3 pt-3 border-t border-[#e2e8f0] mt-3">
                     <div className="flex items-center justify-between text-xs text-[#64748b]">
@@ -765,19 +766,28 @@ export default function TeacherDashboard() {
 
                     <div className="flex gap-2">
                       <button
-                        onClick={() => handleLaunchKiosk(cls)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleLaunchKiosk(cls)
+                        }}
                         className="btn-primary flex-1 justify-center text-xs py-2"
                       >
                         <MorphIcon icon={Tv2} size={13} /> Start Attendance
                       </button>
-                      <Link
-                        to={`/teacher/class/${cls.id}`}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          navigate(`/teacher/class/${cls.id}`)
+                        }}
                         className="btn-secondary flex-1 justify-center text-xs py-2"
                       >
-                        Details
-                      </Link>
+                        Manage Students
+                      </button>
                       <button
-                        onClick={() => setClassToDelete(cls)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setClassToDelete(cls)
+                        }}
                         className="p-2 rounded-[12px] bg-transparent text-[#ef4444] hover:bg-[#fee2e2] transition-colors border border-[#ef4444]"
                         title="Delete Class"
                       >
@@ -985,9 +995,10 @@ export default function TeacherDashboard() {
                         {classes.map(cls => (
                           <div
                             key={cls.id}
-                            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 md:p-5 flex flex-col justify-between gap-3 shadow-sm hover:border-[#005a36]/40 transition-all"
+                            onClick={() => navigate(`/teacher/class/${cls.id}`)}
+                            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[20px] p-4 md:p-5 flex flex-col justify-between gap-3 shadow-sm hover:border-[#005a36]/40 transition-all cursor-pointer group"
                           >
-                            <Link to={`/teacher/class/${cls.id}`} className="block group">
+                            <div className="block">
                               <div className="flex items-start justify-between mb-1">
                                 <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[16px] md:text-[17px] text-[#0f172a] group-hover:text-[#005a36] transition-colors">
                                   {cls.name}
@@ -1009,7 +1020,7 @@ export default function TeacherDashboard() {
                               {cls.description && (
                                 <p className="text-[11px] text-[#64748b] mt-2 line-clamp-2">{cls.description}</p>
                               )}
-                            </Link>
+                            </div>
 
                             <div className="space-y-2 pt-2 border-t border-[#e2e8f0]">
                               <div className="flex items-center justify-between text-[11px] text-[#64748b]">
@@ -1018,19 +1029,28 @@ export default function TeacherDashboard() {
                               </div>
                               <div className="flex gap-2">
                                 <button
-                                  onClick={() => handleLaunchKiosk(cls)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleLaunchKiosk(cls)
+                                  }}
                                   className="btn-primary flex-1 justify-center text-xs py-2"
                                 >
                                   <MorphIcon icon={Tv2} size={13} /> Start Attendance
                                 </button>
-                                <Link
-                                  to={`/teacher/class/${cls.id}`}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    navigate(`/teacher/class/${cls.id}`)
+                                  }}
                                   className="btn-secondary flex-1 justify-center text-xs py-2"
                                 >
-                                  Roster
-                                </Link>
+                                  Manage Students
+                                </button>
                                 <button
-                                  onClick={() => setClassToDelete(cls)}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setClassToDelete(cls)
+                                  }}
                                   className="p-2 rounded-[12px] bg-transparent text-[#ef4444] hover:bg-[#fee2e2] transition-colors border border-[#ef4444] flex items-center justify-center"
                                   title="Delete Class"
                                 >
