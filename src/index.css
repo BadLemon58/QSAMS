@@ -11,9 +11,16 @@
     color: #1a1a1a;
     margin: 0;
     padding: 0;
+    padding-bottom: 100px; /* Space for mobile bottom nav */
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (min-width: 768px) {
+    body {
+      padding-bottom: 0;
+    }
   }
 
   h1, h2, h3, h4, .font-display {

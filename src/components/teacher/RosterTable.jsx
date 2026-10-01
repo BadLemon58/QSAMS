@@ -3,6 +3,7 @@ import { Search, ChevronDown, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Badge from '../common/Badge'
 import { TableRowSkeleton } from '../common/Skeleton'
+import useDebounce from '../../hooks/useDebounce'
 
 const STATUS_OPTIONS = ['present', 'late', 'absent', 'excused']
 
@@ -10,9 +11,11 @@ export default function RosterTable({ students = [], onStatusChange, loading = f
   const [search, setSearch] = useState('')
   const [updating, setUpdating] = useState(null)
 
+  const debouncedSearch = useDebounce(search, 300)
+
   const filtered = students.filter(s =>
-    s.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.student_id?.toLowerCase().includes(search.toLowerCase())
+    s.full_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    s.student_id?.toLowerCase().includes(debouncedSearch.toLowerCase())
   )
 
   const handleChange = async (studentId, newStatus) => {

@@ -930,13 +930,13 @@ export default function TeacherDashboard() {
                                 to={`/teacher/attendance/${cls.id}`}
                                 className="btn-primary flex-1 justify-center text-xs py-2.5"
                               >
-                                <MorphIcon icon={Tv2} size={14} /> Start Kiosk
+                                <MorphIcon icon={Tv2} size={14} /> Start Attendance
                               </Link>
                               <Link
                                 to={`/teacher/class/${cls.id}`}
                                 className="btn-secondary flex-1 justify-center text-xs py-2.5"
                               >
-                                Manage Roster
+                                Manage Students
                               </Link>
                               <button
                                 onClick={() => setClassToDelete(cls)}

@@ -11,6 +11,7 @@ export default function IDCardScanner({ onScan, onError }) {
   const [lastScanned, setLastScanned] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
   const SCANNER_ID = 'id-card-scanner'
+  const lastScanTimeRef = useRef(0)
 
   // Play quick audio chime on successful scan
   const playSuccessChime = () => {
@@ -74,7 +75,13 @@ export default function IDCardScanner({ onScan, onError }) {
       }
 
       const onScanSuccess = (decodedText) => {
+        const now = Date.now()
+        // Rate limit: Enforce a global 2-second cooldown between ANY successful scans
+        if (now - lastScanTimeRef.current < 2000) return
+        
         if (decodedText === lastScanned) return
+        
+        lastScanTimeRef.current = now
         playSuccessChime()
         setLastScanned(decodedText)
         setStatus('success')

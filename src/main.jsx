@@ -23,6 +23,24 @@ if (typeof window !== 'undefined') {
       updateSW(true)
     }
   })
+
+  // Global UI Debounce/Throttle to prevent rapid double-clicks on buttons/links
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('button, a, [role="button"]');
+    if (target) {
+      const now = Date.now();
+      const lastClick = parseInt(target.getAttribute('data-last-click') || '0', 10);
+      
+      // Enforce a 500ms cooldown on the exact same button
+      if (now - lastClick < 500) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+      }
+      target.setAttribute('data-last-click', now.toString());
+    }
+  }, true); // Use capture phase to intercept before React handles it
 }
 
 createRoot(document.getElementById('root')).render(

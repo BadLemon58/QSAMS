@@ -1,16 +1,23 @@
-# React + Vite
+# QSAMS: QR Code-Based Student Attendance Monitoring System
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+QSAMS is a Progressive Web Application (PWA) designed to simplify attendance management for Notre Dame of Midsayap College (NDMC). It allows teachers to generate QR codes for class sessions and enables students to quickly record their attendance by scanning these codes, providing a more secure, accessible, and efficient solution.
 
-Currently, two official plugins are available:
+## Software Specifications
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+| Software | Specification |
+| :--- | :--- |
+| **Operating System** | Windows 10 or Windows 11 64-bit operating system |
+| **Integrated Development Environment (IDE)** | Antigravity IDE |
+| **Front-End Library** | React v19 |
+| **Build Tool** | Vite v8 |
+| **CSS Framework** | Tailwind CSS v4 |
+| **Routing Library** | React Router DOM |
+| **Icon Library** | Morphicons |
+| **QR Code Generation** | qrcode.react |
+| **QR Code Scanning** | html5-qrcode |
+| **Backend Platform** | Supabase |
+| **Database Management System** | PostgreSQL |
+| **Web Browser** | Google Chrome, Microsoft Edge, Mozilla Firefox, or Safari |
+| **Version Control** | Git and GitHub |
+| **Word Processing** | Microsoft Word |
+| **Spreadsheet Software** | Microsoft Excel |

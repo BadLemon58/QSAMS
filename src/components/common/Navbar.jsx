@@ -124,7 +124,7 @@ export default function Navbar() {
       </nav>
 
       {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-[60] shadow-[0_-8px_20px_rgba(0,0,0,0.04)] font-['Gambarino',system-ui,sans-serif]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-[60] shadow-[0_-8px_20px_rgba(0,0,0,0.04)] font-['Gambarino',system-ui,sans-serif]">
         
         {isTeacher ? (
           <>
@@ -195,7 +195,7 @@ export default function Navbar() {
             </button>
           </>
         )}
-      </div>
+      </nav>
     </>
   )
 }

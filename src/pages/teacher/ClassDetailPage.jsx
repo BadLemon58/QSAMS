@@ -12,6 +12,7 @@ import StudentSummaryModal from '../../components/teacher/StudentSummaryModal'
 import { Users, QrCode, ArrowLeft, Plus, Clock, MapPin, ClipboardList, Copy, Check, X, AlertCircle, Trash2, BarChart2, FileSpreadsheet, UserPlus, AlertTriangle, User, CalendarDays, Pencil, Camera } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format } from 'date-fns'
+import useDebounce from '../../hooks/useDebounce'
 import {
   checkClassScheduleConflict,
   formatTime24to12,
@@ -412,10 +413,12 @@ function ManualEnrollModal({ classId, existingStudentIds, onClose, onEnrolled })
     fetchAvailableStudents()
   }, [])
 
+  const debouncedSearchTerm = useDebounce(searchTerm, 300)
+
   const availableStudents = students.filter(
     s => !existingStudentIds.includes(s.id) &&
-    (s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     s.student_id?.toLowerCase().includes(searchTerm.toLowerCase()))
+    (s.full_name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+     s.student_id?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()))
   )
 
   const toggleStudent = (id) => {
