@@ -50,7 +50,8 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null)
 
   // Profile fields state
-  const [fullName, setFullName] = useState(profile?.full_name || '')
+  const [firstName, setFirstName] = useState(profile?.first_name || profile?.full_name?.split(' ')[0] || '')
+  const [lastName, setLastName] = useState(profile?.last_name || profile?.full_name?.split(' ').slice(1).join(' ') || '')
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '')
   const [savingProfile, setSavingProfile] = useState(false)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -189,15 +190,21 @@ export default function ProfilePage() {
   // Save Profile Details
   const handleSaveProfile = async (e) => {
     e.preventDefault()
-    if (!fullName.trim()) {
-      setProfileMessage({ type: 'error', text: 'Full name cannot be empty.' })
+    if (!firstName.trim() || !lastName.trim()) {
+      setProfileMessage({ type: 'error', text: 'First and Last name cannot be empty.' })
       return
     }
 
     setSavingProfile(true)
     setProfileMessage(null)
 
-    const { error } = await updateProfile({ full_name: fullName.trim() })
+    const updatedFullName = `${firstName.trim()} ${lastName.trim()}`
+
+    const { error } = await updateProfile({ 
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      full_name: updatedFullName 
+    })
     if (error) {
       setProfileMessage({ type: 'error', text: `Update failed: ${error.message}` })
     } else {
@@ -389,17 +396,31 @@ export default function ProfilePage() {
             {/* Profile Form */}
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    className="input-field"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={firstName}
+                      onChange={e => setFirstName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      value={lastName}
+                      onChange={e => setLastName(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
 
                 <div>
