@@ -3,7 +3,7 @@
 -- Run this in your Supabase Dashboard -> SQL Editor
 -- ============================================================
 
-DO $$
+DO $seed$
 DECLARE
   v_teacher_id UUID;
   v_class_id UUID;
@@ -123,4 +123,4 @@ BEGIN
   END LOOP;
 
   RAISE NOTICE 'Successfully seeded demo class with 10 students and 8 sessions!';
-END $$;
+END $seed$;

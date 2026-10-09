@@ -14,32 +14,46 @@ export function parseDays(daysStr) {
   const clean = daysStr.toUpperCase().trim()
 
   if (clean === 'MW') return ['M', 'W']
-  if (clean === 'TTH' || clean === 'TH' || clean === 'T-TH') return ['T', 'TH']
+  if (clean === 'TTH' || clean === 'T-TH') return ['T', 'TH']
   if (clean === 'FS' || clean === 'F-S') return ['F', 'S']
   if (clean === 'MWF') return ['M', 'W', 'F']
 
+  const matchDayWord = (word) => {
+    const w = word.trim()
+    if (w === 'SUN' || w === 'SUNDAY') return 'SUN'
+    if (w === 'TH' || w === 'THU' || w === 'THURSDAY') return 'TH'
+    if (w === 'M' || w === 'MON' || w === 'MONDAY') return 'M'
+    if (w === 'T' || w === 'TUE' || w === 'TUESDAY') return 'T'
+    if (w === 'W' || w === 'WED' || w === 'WEDNESDAY') return 'W'
+    if (w === 'F' || w === 'FRI' || w === 'FRIDAY') return 'F'
+    if (w === 'S' || w === 'SAT' || w === 'SATURDAY') return 'S'
+    return null
+  }
+
+  const direct = matchDayWord(clean)
+  if (direct) return [direct]
+
+  // If separated by slash, comma, or space
+  if (/[\/,\s\-]/.test(clean)) {
+    const parts = clean.split(/[\/,\s\-]+/).filter(Boolean)
+    const tokens = []
+    for (const p of parts) {
+      const matched = matchDayWord(p)
+      if (matched) tokens.push(matched)
+    }
+    if (tokens.length > 0) return Array.from(new Set(tokens))
+  }
+
+  // Fallback sequential check for unseparated abbreviations like TTH, MWF, MTWTH
   const tokens = []
-  if (clean.includes('TH') || clean.includes('THU')) {
-    tokens.push('TH')
-  }
-  if (clean.includes('M') || clean.includes('MON')) {
-    tokens.push('M')
-  }
-  if (clean.includes('T') && !clean.includes('TH') || clean.includes('TUE')) {
-    tokens.push('T')
-  }
-  if (clean.includes('W') || clean.includes('WED')) {
-    tokens.push('W')
-  }
-  if (clean.includes('F') || clean.includes('FRI')) {
-    tokens.push('F')
-  }
-  if (clean.includes('S') && !clean.includes('SUN') || clean.includes('SAT')) {
-    tokens.push('S')
-  }
-  if (clean.includes('SUN')) {
-    tokens.push('SUN')
-  }
+  let remaining = clean
+  if (remaining.includes('SUN')) { tokens.push('SUN'); remaining = remaining.replace(/SUN/g, '') }
+  if (remaining.includes('TH')) { tokens.push('TH'); remaining = remaining.replace(/TH/g, '') }
+  if (remaining.includes('M')) { tokens.push('M') }
+  if (remaining.includes('T')) { tokens.push('T') }
+  if (remaining.includes('W')) { tokens.push('W') }
+  if (remaining.includes('F')) { tokens.push('F') }
+  if (remaining.includes('S')) { tokens.push('S') }
 
   return tokens.length > 0 ? Array.from(new Set(tokens)) : [clean]
 }
@@ -76,7 +90,7 @@ export function parseSchedule(scheduleStr) {
 
   // Match: [Days] [StartTime] - [EndTime]
   // e.g. "TTH 10:00 AM - 11:30 AM" or "MW 09:00 - 10:30" or "FS 1:00 PM - 3:00 PM"
-  const regex = /^([A-Za-z,\s]+?)\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM)?)\s*(?:-|–|TO)\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM)?)$/i
+  const regex = /^([A-Za-z,\s\/\-]+?)\s+(\d{1,2}(?::\d{2})?\s*(?:AM|PM)?)\s*(?:-|–|TO)\s*(\d{1,2}(?::\d{2})?\s*(?:AM|PM)?)$/i
   const match = trimmed.match(regex)
 
   if (!match) {
@@ -215,4 +229,49 @@ export function checkClassScheduleConflict({
   }
 
   return { hasConflict: false }
+}
+
+/**
+ * Check if attendance is currently allowed for a given schedule string.
+ * Window: 30 minutes before start time until 30 minutes after end time on scheduled days.
+ * 
+ * @param {string} scheduleStr - e.g. "MWF 9:00 AM - 10:30 AM"
+ * @returns {{ allowed: boolean, reason?: string, schedule?: string }}
+ */
+export function isAttendanceAllowed(scheduleStr) {
+  if (!scheduleStr) {
+    return {
+      allowed: false,
+      reason: 'No schedule specified for this class.'
+    }
+  }
+
+  const parsed = parseSchedule(scheduleStr)
+  if (!parsed || !parsed.days || parsed.startMin == null || parsed.endMin == null) {
+    return {
+      allowed: false,
+      reason: 'Class schedule format could not be verified.'
+    }
+  }
+
+  const now = new Date()
+  const dayMap = ['SUN', 'M', 'T', 'W', 'TH', 'F', 'S']
+  const currentDay = dayMap[now.getDay()]
+  const currentMin = now.getHours() * 60 + now.getMinutes()
+  const BUFFER = 30 // 30 minutes grace buffer
+
+  const isCorrectDay = parsed.days.includes(currentDay)
+  const isWithinTime = currentMin >= (parsed.startMin - BUFFER) && currentMin <= (parsed.endMin + BUFFER)
+
+  if (!isCorrectDay || !isWithinTime) {
+    return {
+      allowed: false,
+      reason: 'Live attendance sessions can only be launched within 30 minutes before or after the designated class schedule.',
+      isCorrectDay,
+      isWithinTime,
+      parsed
+    }
+  }
+
+  return { allowed: true, parsed }
 }

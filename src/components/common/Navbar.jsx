@@ -127,39 +127,41 @@ export default function Navbar() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[68px] bg-[#ffffff]/95 backdrop-blur-md border-t border-[#e2e8f0] flex items-center justify-between px-2 z-[60] shadow-[0_-8px_20px_rgba(0,0,0,0.04)] font-['Gambarino',system-ui,sans-serif]">
         
         {isTeacher ? (
-          <>
-            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
-              <MorphIcon icon={Home} size={22} />
-              <span className="text-[10px] font-bold mt-1">Home</span>
-            </Link>
-
-            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
-              <MorphIcon icon={BookOpen} size={22} />
-              <span className="text-[10px] font-bold mt-1">Classes</span>
-            </Link>
-
-            {/* Teacher Center Floating Kiosk Button */}
-            <div className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group">
-              <Link 
-                to="/teacher" 
-                className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
-              >
-                <MorphIcon icon={Tv2} size={26} />
+          !(location.pathname === '/teacher') && (
+            <>
+              <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+                <MorphIcon icon={Home} size={22} />
+                <span className="text-[10px] font-bold mt-1">Home</span>
               </Link>
-              <div className="h-[24px]"></div>
-              <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Attendance</span>
-            </div>
 
-            <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
-              <MorphIcon icon={Calendar} size={22} />
-              <span className="text-[10px] font-bold mt-1">Activity</span>
-            </Link>
+              <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+                <MorphIcon icon={BookOpen} size={22} />
+                <span className="text-[10px] font-bold mt-1">Classes</span>
+              </Link>
 
-            <button onClick={handleSignOut} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors">
-              <MorphIcon icon={LogOut} size={22} />
-              <span className="text-[10px] font-bold mt-1">Sign Out</span>
-            </button>
-          </>
+              {/* Teacher Center Floating Kiosk Button */}
+              <div className="relative flex flex-col items-center flex-shrink-0 w-[72px] cursor-pointer group">
+                <Link 
+                  to="/teacher" 
+                  className="absolute -top-8 w-14 h-14 rounded-full bg-[#ffffff] border-[3px] border-[#005a36] text-[#005a36] flex items-center justify-center shadow-lg group-hover:bg-[#005a36] group-hover:text-white transition-all transform group-hover:scale-105 active:scale-95 z-10"
+                >
+                  <MorphIcon icon={Tv2} size={26} />
+                </Link>
+                <div className="h-[24px]"></div>
+                <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Attendance</span>
+              </div>
+
+              <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+                <MorphIcon icon={Calendar} size={22} />
+                <span className="text-[10px] font-bold mt-1">Activity</span>
+              </Link>
+
+              <button onClick={handleSignOut} className="flex flex-col items-center p-2 flex-1 text-[#94a3b8] hover:text-[#b91c1c] transition-colors">
+                <MorphIcon icon={LogOut} size={22} />
+                <span className="text-[10px] font-bold mt-1">Sign Out</span>
+              </button>
+            </>
+          )
         ) : (
           <>
             <Link to="/student" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/student' ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>

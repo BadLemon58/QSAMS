@@ -13,6 +13,8 @@ import AttendanceReportModal from '../../components/teacher/AttendanceReportModa
 import { exportSingleSessionToExcel, exportAttendanceReportToExcel } from '../../lib/excelExport'
 import { format } from 'date-fns'
 import { formatName } from '../../utils/formatName'
+import { parseSchedule, isAttendanceAllowed } from '../../lib/scheduleValidator'
+import ScheduleRestrictionModal from '../../components/teacher/ScheduleRestrictionModal'
 
 // ── Mode Toggle Button (NDMC Forest Green Style) ───────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
@@ -70,6 +72,8 @@ export default function AttendancePage() {
   const [mode, setMode] = useState('kiosk') // 'kiosk' | 'idcard'
   const [toast, setToast] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [scheduleChecked, setScheduleChecked] = useState(false) // guard flag
+  const [scheduleBlocked, setScheduleBlocked] = useState(false) // blocked flag
 
   // Data state
   const [classInfo, setClassInfo] = useState(null)
@@ -216,6 +220,19 @@ export default function AttendancePage() {
     fetchClass()
   }, [classId])
 
+  // ── Schedule Time Guard ─────────────────────────────────────────────────
+  // Block access if current time is not within 30 mins of the class schedule.
+  useEffect(() => {
+    if (!classInfo) return
+
+    const check = isAttendanceAllowed(classInfo.schedule)
+    if (!check.allowed) {
+      setScheduleBlocked(true)
+    } else {
+      setScheduleChecked(true)
+    }
+  }, [classInfo])
+
   // Load active session
   useEffect(() => {
     const fetchSession = async () => {
@@ -361,6 +378,29 @@ export default function AttendancePage() {
   const handleManualOverride = useCallback((studentId, status) => {
     return markAttendance(studentId, status, 'manual')
   }, [markAttendance])
+
+  // If schedule is outside allowed window, show restriction modal directly
+  if (scheduleBlocked) {
+    return (
+      <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif]">
+        <Navbar />
+        <ScheduleRestrictionModal
+          schedule={classInfo?.schedule}
+          onClose={() => navigate('/teacher')}
+          buttonLabel="Back to Dashboard"
+        />
+      </div>
+    )
+  }
+
+  // Don't render the page at all until schedule check passes
+  if (!scheduleChecked) {
+    return (
+      <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center">
+        <Spinner />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#f4f6f8] text-[#0f172a] font-['Gambarino',system-ui,sans-serif] selection:bg-[#005a36]/20">
