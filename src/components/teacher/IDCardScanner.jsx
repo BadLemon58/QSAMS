@@ -10,6 +10,7 @@ export default function IDCardScanner({ onScan, onError }) {
   const [errorMsg, setErrorMsg] = useState('')
   const [lastScanned, setLastScanned] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
+  const [scanBoxSize, setScanBoxSize] = useState(null)
   const SCANNER_ID = 'id-card-scanner'
   const lastScanTimeRef = useRef(0)
 
@@ -66,10 +67,11 @@ export default function IDCardScanner({ onScan, onError }) {
         fps: 10,
         qrbox: (viewfinderWidth, viewfinderHeight) => {
           const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
-          const size = Math.floor(minEdge * 0.78)
+          const size = Math.max(Math.floor(minEdge * 0.72), 160)
+          setScanBoxSize(size)
           return {
-            width: Math.max(size, 180),
-            height: Math.max(size, 180)
+            width: size,
+            height: size
           }
         },
       }
@@ -95,7 +97,11 @@ export default function IDCardScanner({ onScan, onError }) {
 
       try {
         await html5QrCode.start(
-          { facingMode: targetFacing },
+          {
+            facingMode: targetFacing,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
           scanConfig,
           onScanSuccess,
           () => {}
@@ -148,43 +154,67 @@ export default function IDCardScanner({ onScan, onError }) {
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Scanner Viewport */}
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm mx-auto">
         <div
           id={SCANNER_ID}
-          className="w-full rounded-[20px] overflow-hidden bg-[#f8fafc] min-h-[280px] flex items-center justify-center border border-[#cbd5e1]"
+          className={`w-full rounded-[24px] overflow-hidden bg-[#f8fafc] dark:bg-[#0f172a] border border-[#cbd5e1] dark:border-[#334155] shadow-inner flex items-center justify-center transition-all duration-200 ${
+            status === 'scanning' ? 'min-h-0' : 'min-h-[260px]'
+          }`}
         />
 
         {status === 'idle' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#f8fafc]">
-            <div className="w-14 h-14 rounded-full bg-[#ffffff] flex items-center justify-center text-[#64748b] shadow-sm border border-[#e2e8f0]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[24px] bg-[#f8fafc] dark:bg-[#0f172a]">
+            <div className="w-14 h-14 rounded-full bg-[#ffffff] dark:bg-[#1e293b] flex items-center justify-center text-[#64748b] dark:text-[#94a3b8] shadow-sm border border-[#e2e8f0] dark:border-[#334155]">
               <MorphIcon icon={Camera} size={26} />
             </div>
-            <p className="text-[#64748b] text-xs font-semibold">Camera is off</p>
+            <p className="text-[#64748b] dark:text-[#94a3b8] text-xs font-semibold">Camera is off</p>
           </div>
         )}
 
         {status === 'requesting' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[20px] bg-[#ffffff]/90 backdrop-blur-sm p-6">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-[24px] bg-[#ffffff]/90 dark:bg-[#0f172a]/90 backdrop-blur-xs p-6">
             <Skeleton className="w-16 h-16 rounded-2xl" />
             <Skeleton className="h-4 w-32 rounded-md" />
           </div>
         )}
 
         {status === 'scanning' && (
-          <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-3">
+            {/* Precision Centered Scan Reticle */}
+            <div
+              className="relative flex items-center justify-center pointer-events-none transition-all duration-300"
+              style={{
+                width: scanBoxSize ? `${scanBoxSize}px` : '72%',
+                height: scanBoxSize ? `${scanBoxSize}px` : undefined,
+                maxWidth: '85%',
+                maxHeight: '85%',
+                aspectRatio: '1 / 1',
+              }}
+            >
+              {/* Subtle outer glow & dashed frame */}
+              <div className="absolute inset-0 border-2 border-dashed border-[#005a36] dark:border-[#22c55e] rounded-2xl animate-pulse" />
+              
+              {/* High-visibility corner targeting brackets */}
+              <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-[#005a36] dark:border-[#22c55e] rounded-tl-lg" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-[#005a36] dark:border-[#22c55e] rounded-tr-lg" />
+              <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-[#005a36] dark:border-[#22c55e] rounded-bl-lg" />
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-[#005a36] dark:border-[#22c55e] rounded-br-lg" />
+
+              {/* Laser Scan Sweeper */}
+              <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-[#22c55e] to-transparent shadow-[0_0_8px_#22c55e] animate-laser-scan" />
+            </div>
           </div>
         )}
 
         {status === 'success' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[20px] bg-[#005a36]/90 text-white backdrop-blur-sm animate-fade-in">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[24px] bg-[#005a36]/90 text-white backdrop-blur-xs animate-fade-in">
             <MorphIcon icon={CheckCircle} size={44} className="text-white" />
             <p className="font-['Source_Serif_4',Georgia,serif] text-base font-bold">ID Card Scanned!</p>
           </div>
         )}
 
         {status === 'error' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-5 text-center rounded-[20px] bg-[#fee2e2] text-[#b91c1c]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-5 text-center rounded-[24px] bg-[#fee2e2] dark:bg-[#7f1d1d]/80 text-[#b91c1c] dark:text-[#fca5a5]">
             <MorphIcon icon={AlertTriangle} size={32} />
             <p className="text-xs font-semibold">{errorMsg}</p>
           </div>

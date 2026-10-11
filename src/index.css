@@ -633,4 +633,56 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
 
+/* QR Camera Scanner Viewport & Video normalization */
+#student-camera-scanner,
+#id-card-scanner {
+  position: relative !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#student-camera-scanner video,
+#id-card-scanner video {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  display: block !important;
+  border-radius: 24px !important;
+  margin: 0 auto !important;
+}
+
+#student-camera-scanner #qr-shaded-region,
+#id-card-scanner #qr-shaded-region {
+  display: none !important;
+}
+
+#student-camera-scanner #qr-canvas-visible,
+#id-card-scanner #qr-canvas-visible {
+  display: none !important;
+}
+
+/* Reticle scan laser animation */
+@keyframes laser-sweep {
+  0% {
+    top: 6%;
+    opacity: 0.3;
+  }
+  50% {
+    top: 92%;
+    opacity: 0.95;
+  }
+  100% {
+    top: 6%;
+    opacity: 0.3;
+  }
+}
+
+.animate-laser-scan {
+  animation: laser-sweep 2.4s ease-in-out infinite;
+}
+
 

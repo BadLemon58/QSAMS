@@ -11,6 +11,7 @@ import { StudentCourseCardSkeleton, Skeleton } from '../../components/common/Ske
 import Navbar from '../../components/common/Navbar'
 import Badge from '../../components/common/Badge'
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
+import { parseSchedule } from '../../lib/scheduleValidator'
 
 // ── Join Class Modal (NDMC Forest Green Style) ───────────────────────────
 function JoinClassModal({ studentId, onClose, onEnrolled }) {
@@ -137,6 +138,7 @@ export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('live') // 'live' | 'classes' | 'history'
   const [enrollments, setEnrollments] = useState([])
   const [logs, setLogs] = useState([])
+  const [activeSessions, setActiveSessions] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
@@ -146,19 +148,33 @@ export default function StudentDashboard() {
   const fetchData = async () => {
     if (!profile?.id) return
     try {
-      const [{ data: enr }, { data: attendanceLogs }] = await Promise.all([
-        supabase
-          .from('enrollments')
-          .select('class_id, classes(id, name, schedule, room, join_code)')
-          .eq('student_id', profile.id),
+      const { data: enr } = await supabase
+        .from('enrollments')
+        .select('class_id, classes(id, name, schedule, room, join_code)')
+        .eq('student_id', profile.id)
+
+      const enrolledClasses = (enr || []).map(e => e.classes).filter(Boolean)
+      setEnrollments(enrolledClasses)
+
+      const classIds = enrolledClasses.map(c => c.id).filter(Boolean)
+
+      const [logsRes, activeSessRes] = await Promise.all([
         supabase
           .from('attendance_logs')
           .select('*, attendance_sessions(date), classes(name, room, schedule)')
           .eq('student_id', profile.id)
           .order('marked_at', { ascending: false }),
+        classIds.length > 0
+          ? supabase
+              .from('attendance_sessions')
+              .select('id, class_id, is_active, date, classes(name, room)')
+              .in('class_id', classIds)
+              .eq('is_active', true)
+          : Promise.resolve({ data: [] }),
       ])
-      setEnrollments((enr || []).map(e => e.classes).filter(Boolean))
-      setLogs(attendanceLogs || [])
+
+      setLogs(logsRes.data || [])
+      setActiveSessions(activeSessRes.data || [])
     } catch (err) {
       console.error('Error loading student data:', err)
     } finally {
@@ -176,19 +192,51 @@ export default function StudentDashboard() {
     fetchData()
   }
 
-  // Calculate Metrics
+  // ── Preset A Stats Computation (Daily Campus Flow) ────────────────
+  const now = new Date()
+  const dayMap = ['SUN', 'M', 'T', 'W', 'TH', 'F', 'S']
+  const currentDayToken = dayMap[now.getDay()]
+
+  // 1. Classes Scheduled Today
+  const todayClasses = enrollments.filter(cls => {
+    if (!cls.schedule) return false
+    const parsed = parseSchedule(cls.schedule)
+    return parsed?.days?.includes(currentDayToken)
+  })
+  const todayClassesCount = todayClasses.length
+
+  // Check how many of today's scheduled classes the student has checked in to
+  const todayCheckedInClassesCount = todayClasses.filter(cls => {
+    return logs.some(l =>
+      l.class_id === cls.id &&
+      l.marked_at &&
+      isToday(new Date(l.marked_at)) &&
+      (l.status === 'present' || l.status === 'late')
+    )
+  }).length
+
+  // 2. Active / Live Attendance Session for enrolled classes
+  const liveSession = activeSessions.find(s => s.is_active)
+
+  // 3. Overall Attendance Rate & Standing
   const totalSessions = logs.length
   const presentCount = logs.filter(l => l.status === 'present' || l.status === 'late').length
   const lateCount = logs.filter(l => l.status === 'late').length
   const absentCount = logs.filter(l => l.status === 'absent').length
   const attendancePct = totalSessions > 0 ? Math.round((presentCount / totalSessions) * 100) : 0
 
-  // Classes done today
-  const todayLogs = logs.filter(l => {
-    const markedDate = l.marked_at ? new Date(l.marked_at) : null
-    return markedDate && isToday(markedDate) && (l.status === 'present' || l.status === 'late')
-  })
-  const classesTodayCount = todayLogs.length
+  const standingLabel = attendancePct >= 80
+    ? 'Good Standing'
+    : attendancePct >= 75
+      ? 'Satisfactory'
+      : 'At Risk (<75%)'
+
+  // 4. Absence / Safety Status
+  const absenceSafetyLabel = absentCount === 0
+    ? 'Perfect Record • Safe'
+    : absentCount <= 2
+      ? 'Within Limit • Safe'
+      : 'Policy Warning (≥3)'
 
   // Check-in status badge
   const mostRecentCheckIn = logs.find(l => l.status === 'present' || l.status === 'late')
@@ -288,31 +336,86 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* 4 Key Institutional Stat Cards */}
+          {/* 4 Key Institutional Stat Cards — Preset A (Daily Campus Flow) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Attendance Rate</span>
-              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] mt-1">
-                {attendancePct}%
-              </p>
+            {/* Card 1: Today's Classes */}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Today's Classes</span>
+                <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] mt-1">
+                  {todayClassesCount > 0 ? `${todayClassesCount} Scheduled` : '0 Today'}
+                </p>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium">
+                {todayClassesCount > 0
+                  ? `${todayCheckedInClassesCount} of ${todayClassesCount} checked in`
+                  : 'No classes on schedule today'}
+              </span>
             </div>
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Present Sessions</span>
-              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#15803d] mt-1">
-                {presentCount}
-              </p>
+
+            {/* Card 2: Live Attendance */}
+            <div
+              onClick={() => {
+                if (liveSession) navigate('/student/scan')
+              }}
+              className={`bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0 transition-all ${
+                liveSession ? 'cursor-pointer hover:border-[#15803d]/50 hover:shadow-md' : ''
+              }`}
+              title={liveSession ? `Active session in ${liveSession.classes?.name || 'Class'}! Click to open scanner.` : undefined}
+            >
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Live Attendance</span>
+                  {liveSession && (
+                    <span className="flex h-2.5 w-2.5 relative" title="Live check-in gate open">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#15803d] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#15803d]"></span>
+                    </span>
+                  )}
+                </div>
+                <p className={`font-['Source_Serif_4',Georgia,serif] text-2xl lg:text-3xl font-bold mt-1 truncate ${
+                  liveSession ? 'text-[#15803d]' : 'text-[#64748b]'
+                }`}>
+                  {liveSession ? `Live: ${liveSession.classes?.name || 'In Progress'}` : 'Standby'}
+                </p>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium truncate">
+                {liveSession
+                  ? `${liveSession.classes?.room ? `Rm ${liveSession.classes.room} • ` : ''}Tap to scan`
+                  : 'No active check-in gates'}
+              </span>
             </div>
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Late Sessions</span>
-              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#d97706] mt-1">
-                {lateCount}
-              </p>
+
+            {/* Card 3: Overall Attendance Rate */}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Overall Rate</span>
+                <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] mt-1">
+                  {attendancePct}%
+                </p>
+              </div>
+              <span className={`text-[11px] font-medium mt-1 ${
+                attendancePct >= 80 ? 'text-[#15803d]' : attendancePct >= 75 ? 'text-[#d97706]' : 'text-[#b91c1c]'
+              }`}>
+                {standingLabel}
+              </span>
             </div>
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Missed Sessions</span>
-              <p className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#b91c1c] mt-1">
-                {absentCount}
-              </p>
+
+            {/* Card 4: Missed / Absences */}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Absences</span>
+                <p className={`font-['Source_Serif_4',Georgia,serif] text-3xl font-bold mt-1 ${
+                  absentCount === 0 ? 'text-[#005a36]' : absentCount <= 2 ? 'text-[#d97706]' : 'text-[#b91c1c]'
+                }`}>
+                  {absentCount} Missed
+                </p>
+              </div>
+              <span className={`text-[11px] font-medium mt-1 ${
+                absentCount === 0 ? 'text-[#15803d]' : absentCount <= 2 ? 'text-[#64748b]' : 'text-[#b91c1c]'
+              }`}>
+                {absenceSafetyLabel}
+              </span>
             </div>
           </div>
 
@@ -640,33 +743,69 @@ export default function StudentDashboard() {
                       </div>
                     </section>
 
-                    {/* Stat Pair Band — Expands gracefully into 4 columns on tablet */}
+                    {/* Stat Pair Band — Preset A (Daily Campus Flow) */}
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Attendance Rate</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#005a36]">
+                      {/* Card 1: Today's Classes */}
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
+                        <span className="text-[12px] text-[#64748b] font-medium">Today's Classes</span>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#0f172a]">
+                          {todayClassesCount > 0 ? `${todayClassesCount}` : '0'}
+                        </span>
+                        <span className="text-[10px] text-[#64748b] truncate">
+                          {todayClassesCount > 0 ? `${todayCheckedInClassesCount}/${todayClassesCount} checked in` : 'None scheduled'}
+                        </span>
+                      </div>
+
+                      {/* Card 2: Live Attendance */}
+                      <div
+                        onClick={() => {
+                          if (liveSession) navigate('/student/scan')
+                        }}
+                        className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0 ${
+                          liveSession ? 'cursor-pointer active:scale-95' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] text-[#64748b] font-medium">Live Attendance</span>
+                          {liveSession && (
+                            <span className="inline-flex rounded-full h-1.5 w-1.5 bg-[#15803d]"></span>
+                          )}
+                        </div>
+                        <span className={`font-['Source_Serif_4',Georgia,serif] font-bold text-[20px] md:text-[26px] leading-tight truncate ${
+                          liveSession ? 'text-[#15803d]' : 'text-[#64748b]'
+                        }`}>
+                          {liveSession ? (liveSession.classes?.name || 'Live') : 'Standby'}
+                        </span>
+                        <span className="text-[10px] text-[#64748b] truncate">
+                          {liveSession ? 'Tap to scan' : 'Gates closed'}
+                        </span>
+                      </div>
+
+                      {/* Card 3: Overall Rate */}
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
+                        <span className="text-[12px] text-[#64748b] font-medium">Overall Rate</span>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#005a36]">
                           {attendancePct}%
                         </span>
-                      </div>
-
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Today's Classes</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#0f172a]">
-                          {classesTodayCount} Done
+                        <span className={`text-[10px] truncate font-medium ${
+                          attendancePct >= 80 ? 'text-[#15803d]' : attendancePct >= 75 ? 'text-[#d97706]' : 'text-[#b91c1c]'
+                        }`}>
+                          {standingLabel}
                         </span>
                       </div>
 
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Present Logs</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#15803d]">
-                          {presentCount}
-                        </span>
-                      </div>
-
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Missed Logs</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#b91c1c]">
+                      {/* Card 4: Missed Logs */}
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
+                        <span className="text-[12px] text-[#64748b] font-medium">Absences</span>
+                        <span className={`font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight ${
+                          absentCount === 0 ? 'text-[#005a36]' : absentCount <= 2 ? 'text-[#d97706]' : 'text-[#b91c1c]'
+                        }`}>
                           {absentCount}
+                        </span>
+                        <span className={`text-[10px] truncate font-medium ${
+                          absentCount === 0 ? 'text-[#15803d]' : absentCount <= 2 ? 'text-[#64748b]' : 'text-[#b91c1c]'
+                        }`}>
+                          {absentCount === 0 ? 'Safe' : absentCount <= 2 ? 'Within Limit' : 'Warning (≥3)'}
                         </span>
                       </div>
                     </section>

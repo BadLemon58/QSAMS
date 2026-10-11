@@ -18,6 +18,7 @@ export default function ScanPage() {
   const [message, setMessage] = useState('')
   const [scanResult, setScanResult] = useState(null)
   const [facingMode, setFacingMode] = useState('environment')
+  const [scanBoxSize, setScanBoxSize] = useState(null)
 
   const SCANNER_ID = 'student-camera-scanner'
 
@@ -116,17 +117,22 @@ export default function ScanPage() {
         fps: 10, // Optimal rate for JS decoding loop without frame drops
         qrbox: (viewfinderWidth, viewfinderHeight) => {
           const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
-          const size = Math.floor(minEdge * 0.78)
+          const size = Math.max(Math.floor(minEdge * 0.72), 160)
+          setScanBoxSize(size)
           return {
-            width: Math.max(size, 180),
-            height: Math.max(size, 180)
+            width: size,
+            height: size
           }
         },
       }
 
       try {
         await html5QrCode.start(
-          { facingMode: targetFacing },
+          {
+            facingMode: targetFacing,
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
           scanConfig,
           handleScanSuccess,
           () => {}
@@ -355,21 +361,23 @@ export default function ScanPage() {
           </div>
 
           {/* Viewport Frame */}
-          <div className="relative w-full max-w-xs">
+          <div className="relative w-full max-w-sm mx-auto">
             <div
               id={SCANNER_ID}
-              className="w-full rounded-[20px] overflow-hidden bg-[#f8fafc] min-h-[280px] flex items-center justify-center border border-[#cbd5e1]"
+              className={`w-full rounded-[24px] overflow-hidden bg-[#f8fafc] dark:bg-[#0f172a] border border-[#cbd5e1] dark:border-[#334155] shadow-inner flex items-center justify-center transition-all duration-200 ${
+                status === 'scanning' ? 'min-h-0' : 'min-h-[260px]'
+              }`}
             />
 
             {status === 'requesting' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 rounded-[20px] p-6">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/90 dark:bg-[#0f172a]/90 rounded-[24px] p-6 backdrop-blur-xs">
                 <Skeleton className="w-16 h-16 rounded-2xl" />
                 <Skeleton className="h-4 w-32 rounded-md" />
               </div>
             )}
 
             {status === 'verifying' && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 rounded-[20px] p-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#ffffff]/95 dark:bg-[#0f172a]/95 rounded-[24px] p-6 text-center backdrop-blur-xs">
                 <Skeleton className="w-16 h-16 rounded-full" />
                 <Skeleton className="h-5 w-40 rounded-md" />
                 <Skeleton className="h-3.5 w-48 rounded-md" />
@@ -377,8 +385,30 @@ export default function ScanPage() {
             )}
 
             {status === 'scanning' && (
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute inset-[15%] border-2 border-dashed border-[#005a36] rounded-2xl animate-pulse" />
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center p-3">
+                {/* Precision Centered Scan Reticle */}
+                <div
+                  className="relative flex items-center justify-center pointer-events-none transition-all duration-300"
+                  style={{
+                    width: scanBoxSize ? `${scanBoxSize}px` : '72%',
+                    height: scanBoxSize ? `${scanBoxSize}px` : undefined,
+                    maxWidth: '85%',
+                    maxHeight: '85%',
+                    aspectRatio: '1 / 1',
+                  }}
+                >
+                  {/* Subtle outer glow & dashed frame */}
+                  <div className="absolute inset-0 border-2 border-dashed border-[#005a36] dark:border-[#22c55e] rounded-2xl animate-pulse" />
+                  
+                  {/* High-visibility corner targeting brackets */}
+                  <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-[#005a36] dark:border-[#22c55e] rounded-tl-lg" />
+                  <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-[#005a36] dark:border-[#22c55e] rounded-tr-lg" />
+                  <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-[#005a36] dark:border-[#22c55e] rounded-bl-lg" />
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-[#005a36] dark:border-[#22c55e] rounded-br-lg" />
+
+                  {/* Laser Scan Sweeper */}
+                  <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-[#22c55e] to-transparent shadow-[0_0_8px_#22c55e] animate-laser-scan" />
+                </div>
               </div>
             )}
           </div>
