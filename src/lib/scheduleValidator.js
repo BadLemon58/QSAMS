@@ -10,7 +10,7 @@
 
 // Normalize days string into array of normalized day tokens
 export function parseDays(daysStr) {
-  if (!daysStr) return []
+  if (!daysStr || typeof daysStr !== 'string') return []
   const clean = daysStr.toUpperCase().trim()
 
   if (clean === 'MW') return ['M', 'W']
@@ -60,7 +60,7 @@ export function parseDays(daysStr) {
 
 // Convert "10:30 AM" or "14:00" to minutes from midnight
 export function timeStringToMinutes(timeStr) {
-  if (!timeStr) return null
+  if (!timeStr || typeof timeStr !== 'string') return null
   const str = timeStr.trim().toUpperCase()
 
   // Format "14:30" (24h format)
@@ -85,7 +85,7 @@ export function timeStringToMinutes(timeStr) {
 
 // Parse combined schedule string like "TTH 10:00 AM - 11:30 AM"
 export function parseSchedule(scheduleStr) {
-  if (!scheduleStr) return null
+  if (!scheduleStr || typeof scheduleStr !== 'string') return null
   const trimmed = scheduleStr.trim()
 
   // Match: [Days] [StartTime] - [EndTime]

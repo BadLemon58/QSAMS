@@ -657,7 +657,7 @@ export default function TeacherDashboard() {
 
           {/* Stat Metrics Band — Preset A */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Total Classes</span>
                 <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] block mt-1">
@@ -669,7 +669,7 @@ export default function TeacherDashboard() {
               </span>
             </div>
 
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Classes Today</span>
                 <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] block mt-1">
@@ -689,7 +689,7 @@ export default function TeacherDashboard() {
                   navigate(`/teacher/class/${activeSessionClass.classId}`)
                 }
               }}
-              className={`bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between transition-all ${
+              className={`bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between transition-all min-w-0 ${
                 hasLiveSession ? 'cursor-pointer hover:border-[#15803d]/50 hover:shadow-md' : ''
               }`}
               title={hasLiveSession ? `Jump to live session for ${activeSessionClass?.className}` : undefined}
@@ -738,7 +738,7 @@ export default function TeacherDashboard() {
               </span>
             </div>
 
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between min-w-0">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Today's Attendance</span>
                 <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#d97706] block mt-1">
@@ -795,7 +795,7 @@ export default function TeacherDashboard() {
                 <div
                   key={cls.id}
                   onClick={() => navigate(`/teacher/class/${cls.id}`)}
-                  className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-5 group hover:border-[#005a36]/40 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer"
+                  className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] p-5 group hover:border-[#005a36]/40 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer min-w-0"
                 >
                   <div className="block">
                     <div className="flex items-start justify-between mb-3">
@@ -807,7 +807,7 @@ export default function TeacherDashboard() {
                       </span>
                     </div>
 
-                    <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-base mb-1 group-hover:text-[#005a36] transition-colors line-clamp-1">
+                    <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-[#0f172a] text-base mb-1 group-hover:text-[#005a36] transition-colors line-clamp-1 break-words">
                       {cls.name}
                     </h3>
                     {cls.description && (
@@ -926,7 +926,7 @@ export default function TeacherDashboard() {
 
                     {/* Stat Pair Band — 4-columns on tablet */}
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
                         <span className="text-[12px] text-[#64748b] font-medium">Class Sections</span>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#005a36]">
                           {totalClasses}
@@ -936,7 +936,7 @@ export default function TeacherDashboard() {
                         </span>
                       </div>
 
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
                         <span className="text-[12px] text-[#64748b] font-medium">Classes Today</span>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#0f172a]">
                           {todayClassesCount > 0 ? `${todayClassesCount}` : '0'}
@@ -952,7 +952,7 @@ export default function TeacherDashboard() {
                             navigate(`/teacher/class/${activeSessionClass.classId}`)
                           }
                         }}
-                        className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm ${
+                        className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0 ${
                           hasLiveSession ? 'cursor-pointer active:scale-95' : ''
                         }`}
                       >
@@ -983,7 +983,7 @@ export default function TeacherDashboard() {
                         </span>
                       </div>
 
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
+                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm min-w-0">
                         <span className="text-[12px] text-[#64748b] font-medium">Today's Attendance</span>
                         <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#d97706]">
                           {todayCheckInsCount > 0 && todayExpectedStudents > 0
