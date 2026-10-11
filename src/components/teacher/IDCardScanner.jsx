@@ -34,34 +34,50 @@ export default function IDCardScanner({ onScan, onError }) {
     } catch (_) {}
   }
 
+  const isStartingRef = useRef(false)
+
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      const scanner = scannerRef.current
+      scannerRef.current = null
+      try {
+        const state = scanner.getState?.()
+        if (state === 2 || state === 3 || scanner.isScanning) {
+          await scanner.stop()
+        }
+        await scanner.clear()
+      } catch (_) {}
+    }
+    setStatus('idle')
+    setLastScanned(null)
+  }
+
   const startScanner = async (targetFacing = facingMode) => {
+    if (isStartingRef.current) return
+    isStartingRef.current = true
+
     setStatus('requesting')
     setErrorMsg('')
 
-    await stopScanner()
-
     try {
-      if (navigator.mediaDevices?.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-        // Release camera tracks immediately
-        stream.getTracks().forEach(t => t.stop())
+      // 1. Fully stop any existing scanner instance
+      await stopScanner()
+
+      // 2. Pre-check camera access
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+          stream.getTracks().forEach(t => t.stop())
+        }
+      } catch (permErr) {
+        const msg = permErr.name === 'NotAllowedError'
+          ? 'Camera permission denied. Please allow camera access in your browser settings.'
+          : `Could not access camera: ${permErr.message}`
+        setErrorMsg(msg)
+        setStatus('error')
+        onError?.(msg)
+        return
       }
-    } catch (permErr) {
-      const msg = permErr.name === 'NotAllowedError'
-        ? 'Camera permission denied. Please allow camera access in your browser settings.'
-        : `Could not access camera: ${permErr.message}`
-      setErrorMsg(msg)
-      setStatus('error')
-      onError?.(msg)
-      return
-    }
-
-    try {
-      const html5QrCode = new Html5Qrcode(SCANNER_ID, {
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-        verbose: false,
-      })
-      scannerRef.current = html5QrCode
 
       const scanConfig = {
         fps: 10,
@@ -95,33 +111,54 @@ export default function IDCardScanner({ onScan, onError }) {
         }, 1200)
       }
 
+      // 3. Create fresh scanner instance
+      let html5QrCode = new Html5Qrcode(SCANNER_ID, {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false,
+      })
+      scannerRef.current = html5QrCode
+
+      let started = false
       try {
+        // Exactly 1 key required by Html5Qrcode
         await html5QrCode.start(
-          {
-            facingMode: targetFacing,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
+          { facingMode: targetFacing },
           scanConfig,
           onScanSuccess,
           () => {}
         )
+        started = true
       } catch (cameraErr) {
-        console.warn('Target facingMode failed, falling back to any camera:', cameraErr)
+        console.warn('Target facingMode failed, falling back to user camera:', cameraErr)
+        try {
+          await html5QrCode.clear()
+        } catch (_) {}
+
+        html5QrCode = new Html5Qrcode(SCANNER_ID, {
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+        })
+        scannerRef.current = html5QrCode
+
         await html5QrCode.start(
           { facingMode: 'user' },
           scanConfig,
           onScanSuccess,
           () => {}
         )
+        started = true
       }
 
-      setStatus('scanning')
+      if (started) {
+        setStatus('scanning')
+      }
     } catch (err) {
       const msg = `Failed to start scanner: ${err?.message || err}`
       setErrorMsg(msg)
       setStatus('error')
       onError?.(msg)
+    } finally {
+      isStartingRef.current = false
     }
   }
 
@@ -129,22 +166,6 @@ export default function IDCardScanner({ onScan, onError }) {
     const nextMode = facingMode === 'environment' ? 'user' : 'environment'
     setFacingMode(nextMode)
     await startScanner(nextMode)
-  }
-
-
-
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop()
-        }
-        await scannerRef.current.clear()
-      } catch (_) {}
-      scannerRef.current = null
-    }
-    setStatus('idle')
-    setLastScanned(null)
   }
 
   useEffect(() => {

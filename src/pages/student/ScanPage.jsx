@@ -79,7 +79,26 @@ export default function ScanPage() {
     return R * c
   }
 
+  const isStartingRef = useRef(false)
+
+  const stopScanner = async () => {
+    if (scannerRef.current) {
+      const scanner = scannerRef.current
+      scannerRef.current = null
+      try {
+        const state = scanner.getState?.()
+        if (state === 2 || state === 3 || scanner.isScanning) {
+          await scanner.stop()
+        }
+        await scanner.clear()
+      } catch (_) {}
+    }
+  }
+
   const startScanner = async (targetFacing = facingMode) => {
+    if (isStartingRef.current) return
+    isStartingRef.current = true
+
     setStatus('requesting')
     setMessage('')
     setScanResult(null)
@@ -87,34 +106,27 @@ export default function ScanPage() {
     // Pre-fetch location in parallel with camera request
     fetchLocation()
 
-    // Stop existing scanner instance if running
-    await stopScanner()
-
-    // Check camera permission and release track immediately
     try {
-      if (navigator.mediaDevices?.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-        // CRITICAL: Stop tracks immediately so Html5Qrcode gets exclusive hardware access
-        stream.getTracks().forEach(t => t.stop())
+      // 1. Fully stop any existing scanner instance
+      await stopScanner()
+
+      // 2. Pre-check camera permission
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+          stream.getTracks().forEach(t => t.stop())
+        }
+      } catch (permErr) {
+        const msg = permErr.name === 'NotAllowedError'
+          ? 'Camera permission denied. Please allow camera permissions in your browser settings.'
+          : `Cannot access camera: ${permErr.message}`
+        setMessage(msg)
+        setStatus('error')
+        return
       }
-    } catch (permErr) {
-      const msg = permErr.name === 'NotAllowedError'
-        ? 'Camera permission denied. Please allow camera permissions in your browser settings.'
-        : `Cannot access camera: ${permErr.message}`
-      setMessage(msg)
-      setStatus('error')
-      return
-    }
-
-    try {
-      const html5QrCode = new Html5Qrcode(SCANNER_ID, {
-        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-        verbose: false,
-      })
-      scannerRef.current = html5QrCode
 
       const scanConfig = {
-        fps: 10, // Optimal rate for JS decoding loop without frame drops
+        fps: 10,
         qrbox: (viewfinderWidth, viewfinderHeight) => {
           const minEdge = Math.min(viewfinderWidth, viewfinderHeight)
           const size = Math.max(Math.floor(minEdge * 0.72), 160)
@@ -126,32 +138,53 @@ export default function ScanPage() {
         },
       }
 
+      // 3. Create fresh scanner instance
+      let html5QrCode = new Html5Qrcode(SCANNER_ID, {
+        formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+        verbose: false,
+      })
+      scannerRef.current = html5QrCode
+
+      let started = false
       try {
+        // Html5Qrcode strictly expects exactly 1 key ({ facingMode } or { deviceId })
         await html5QrCode.start(
-          {
-            facingMode: targetFacing,
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
+          { facingMode: targetFacing },
           scanConfig,
           handleScanSuccess,
           () => {}
         )
+        started = true
       } catch (cameraErr) {
-        console.warn('Target facingMode failed, falling back to any camera:', cameraErr)
-        // Fallback to user/default camera
+        console.warn('Target facingMode failed, falling back to user camera:', cameraErr)
+        // Clean up failed instance and create fresh one
+        try {
+          await html5QrCode.clear()
+        } catch (_) {}
+
+        html5QrCode = new Html5Qrcode(SCANNER_ID, {
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+        })
+        scannerRef.current = html5QrCode
+
         await html5QrCode.start(
           { facingMode: 'user' },
           scanConfig,
           handleScanSuccess,
           () => {}
         )
+        started = true
       }
 
-      setStatus('scanning')
+      if (started) {
+        setStatus('scanning')
+      }
     } catch (err) {
       setMessage(`Failed to start camera: ${err?.message || err}`)
       setStatus('error')
+    } finally {
+      isStartingRef.current = false
     }
   }
 
@@ -159,18 +192,6 @@ export default function ScanPage() {
     const nextMode = facingMode === 'environment' ? 'user' : 'environment'
     setFacingMode(nextMode)
     await startScanner(nextMode)
-  }
-
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        if (scannerRef.current.isScanning) {
-          await scannerRef.current.stop()
-        }
-        await scannerRef.current.clear()
-      } catch (_) {}
-      scannerRef.current = null
-    }
   }
 
 
