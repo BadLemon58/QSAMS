@@ -808,6 +808,20 @@ export default function ClassDetailPage() {
 
   useEffect(() => { loadData() }, [classId])
 
+  const handleCloseSession = async (sessionId) => {
+    try {
+      const { error } = await supabase
+        .from('attendance_sessions')
+        .update({ is_active: false })
+        .eq('id', sessionId)
+      if (!error) {
+        setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, is_active: false } : s))
+      }
+    } catch (err) {
+      console.error('Error closing session:', err)
+    }
+  }
+
   const handleDeleteClass = async () => {
     setDeletingClass(true)
     try {
@@ -1066,9 +1080,19 @@ export default function ClassDetailPage() {
                         {sess.is_active ? '● Live Session' : 'Recorded'}
                       </p>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${sess.is_active ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#f1f5f9] text-[#64748b]'}`}>
-                      {sess.is_active ? 'Active' : 'Closed'}
-                    </span>
+                    {sess.is_active ? (
+                      <button
+                        onClick={() => handleCloseSession(sess.id)}
+                        className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] transition-all flex items-center gap-1 active:scale-95"
+                        title="Click to close this session"
+                      >
+                        <MorphIcon icon={X} size={11} /> Close
+                      </button>
+                    ) : (
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#f1f5f9] text-[#64748b]">
+                        Closed
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

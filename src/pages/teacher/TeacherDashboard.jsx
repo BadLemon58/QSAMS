@@ -455,6 +455,7 @@ export default function TeacherDashboard() {
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'classes' | 'activity'
   const [classes, setClasses] = useState([])
   const [logs, setLogs] = useState([])
+  const [todayLogs, setTodayLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -462,6 +463,33 @@ export default function TeacherDashboard() {
   const [deletingClass, setDeletingClass] = useState(false)
   const [scheduleErrorModal, setScheduleErrorModal] = useState(null)
   const [showKioskSelectModal, setShowKioskSelectModal] = useState(false)
+  const [stoppingSessions, setStoppingSessions] = useState(false)
+
+  const handleStopAllSessions = async () => {
+    if (!classes.length) return
+    const confirmed = window.confirm(`Stop and close all active attendance sessions (${activeSessionsList.length})? Students will no longer be able to check in.`)
+    if (!confirmed) return
+
+    setStoppingSessions(true)
+    try {
+      const classIds = classes.map(c => c.id)
+      const { error } = await supabase
+        .from('attendance_sessions')
+        .update({ is_active: false })
+        .in('class_id', classIds)
+        .eq('is_active', true)
+
+      if (error) {
+        alert('Failed to stop sessions: ' + error.message)
+      } else {
+        await fetchTeacherData()
+      }
+    } catch (err) {
+      console.error('Error stopping sessions:', err)
+    } finally {
+      setStoppingSessions(false)
+    }
+  }
 
   const handleLaunchKiosk = (cls) => {
     if (!cls) return
@@ -506,15 +534,28 @@ export default function TeacherDashboard() {
 
       const classIds = (clsData || []).map(c => c.id)
       if (classIds.length > 0) {
-        const { data: recentLogs } = await supabase
-          .from('attendance_logs')
-          .select('*, profiles(full_name, student_id), classes(name, room)')
-          .in('class_id', classIds)
-          .order('marked_at', { ascending: false })
-          .limit(25)
-        setLogs(recentLogs || [])
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
+
+        const [recentLogsRes, todayLogsRes] = await Promise.all([
+          supabase
+            .from('attendance_logs')
+            .select('*, profiles(full_name, student_id), classes(name, room)')
+            .in('class_id', classIds)
+            .order('marked_at', { ascending: false })
+            .limit(25),
+          supabase
+            .from('attendance_logs')
+            .select('id, status, marked_at, class_id')
+            .in('class_id', classIds)
+            .gte('marked_at', todayStart.toISOString())
+        ])
+
+        setLogs(recentLogsRes.data || [])
+        setTodayLogs(todayLogsRes.data || [])
       } else {
         setLogs([])
+        setTodayLogs([])
       }
     } catch (err) {
       console.error('Error loading teacher data:', err)
@@ -533,14 +574,48 @@ export default function TeacherDashboard() {
     fetchTeacherData()
   }
 
-  // Quick stats calculation
+  // ── Preset A Stats Computation (Daily Teaching Flow) ────────────────
   const totalClasses = classes.length
-  const totalStudents = classes.reduce((sum, c) => sum + (c.enrollments?.length || 0), 0)
-  const activeSessionsCount = classes.reduce((sum, c) => {
-    const active = (c.attendance_sessions || []).filter(s => s.is_active).length
-    return sum + active
-  }, 0)
-  const todayLogsCount = logs.filter(l => l.marked_at && isToday(new Date(l.marked_at))).length
+
+  // 1. Classes scheduled for today
+  const dayMap = ['SUN', 'M', 'T', 'W', 'TH', 'F', 'S']
+  const currentDayToken = dayMap[new Date().getDay()]
+
+  const todayClasses = classes.filter(c => {
+    if (!c.schedule) return false
+    const parsed = parseSchedule(c.schedule)
+    return parsed?.days?.includes(currentDayToken)
+  })
+  const todayClassesCount = todayClasses.length
+
+  const todayCompletedClassesCount = todayClasses.filter(c => {
+    return (c.attendance_sessions || []).some(s => s.date && isToday(new Date(s.date)))
+  }).length
+
+  // 2. Active Sessions
+  const activeSessionsList = classes.flatMap(c =>
+    (c.attendance_sessions || [])
+      .filter(s => s.is_active)
+      .map(s => ({
+        ...s,
+        classId: c.id,
+        className: c.name,
+        room: c.room
+      }))
+  )
+  const hasLiveSession = activeSessionsList.length > 0
+  const activeSessionClass = activeSessionsList[0]
+
+  // 3. Today's Attendance Metrics
+  const todayExpectedStudents = todayClasses.reduce((sum, c) => sum + (c.enrollments?.length || 0), 0)
+  const validTodayLogs = (todayLogs || []).filter(l => l.marked_at && isToday(new Date(l.marked_at)))
+  const todayCheckInsCount = validTodayLogs.length
+  const todayPresentsCount = validTodayLogs.filter(l => l.status === 'present').length
+  const todayLatesCount = validTodayLogs.filter(l => l.status === 'late').length
+
+  const attendanceTurnoutPct = todayExpectedStudents > 0
+    ? Math.min(100, Math.round((todayCheckInsCount / todayExpectedStudents) * 100))
+    : (todayCheckInsCount > 0 ? 100 : 0)
 
   const primaryClass = classes[0]
 
@@ -580,33 +655,104 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* Stat Metrics Band */}
+          {/* Stat Metrics Band — Preset A */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Total Classes</span>
-              <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] block mt-1">
-                {totalClasses}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Total Classes</span>
+                <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#005a36] block mt-1">
+                  {totalClasses}
+                </span>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium">
+                {totalClasses === 1 ? '1 active section' : `${totalClasses} active sections`}
               </span>
             </div>
 
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Total Students</span>
-              <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] block mt-1">
-                {totalStudents}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Classes Today</span>
+                <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#0f172a] block mt-1">
+                  {todayClassesCount > 0 ? `${todayClassesCount} Scheduled` : '0 Today'}
+                </span>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium">
+                {todayClassesCount > 0
+                  ? `${todayCompletedClassesCount} of ${todayClassesCount} attendance taken`
+                  : 'No classes on schedule today'}
               </span>
             </div>
 
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Active Sessions</span>
-              <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#15803d] block mt-1">
-                {activeSessionsCount} Live
+            <div
+              onClick={() => {
+                if (hasLiveSession && activeSessionClass?.classId) {
+                  navigate(`/teacher/class/${activeSessionClass.classId}`)
+                }
+              }}
+              className={`bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between transition-all ${
+                hasLiveSession ? 'cursor-pointer hover:border-[#15803d]/50 hover:shadow-md' : ''
+              }`}
+              title={hasLiveSession ? `Jump to live session for ${activeSessionClass?.className}` : undefined}
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Current Session</span>
+                    {hasLiveSession && (
+                      <span className="flex h-2.5 w-2.5 relative" title="Live session active">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#15803d] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#15803d]"></span>
+                      </span>
+                    )}
+                  </div>
+                  {hasLiveSession && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleStopAllSessions()
+                      }}
+                      disabled={stoppingSessions}
+                      className="text-[11px] font-bold text-[#b91c1c] hover:text-[#991b1b] bg-[#fee2e2] hover:bg-[#fecaca] px-2.5 py-0.5 rounded-full transition-all flex items-center gap-1 active:scale-95 shadow-xs"
+                      title="Stop and close all active attendance sessions"
+                    >
+                      <MorphIcon icon={X} size={11} />
+                      {stoppingSessions ? 'Stopping...' : `Stop All (${activeSessionsList.length})`}
+                    </button>
+                  )}
+                </div>
+                <span
+                  className={`font-['Source_Serif_4',Georgia,serif] text-2xl lg:text-3xl font-bold block mt-1 truncate ${
+                    hasLiveSession ? 'text-[#15803d]' : 'text-[#64748b]'
+                  }`}
+                  title={hasLiveSession ? (activeSessionsList.length === 1 ? `Live: ${activeSessionClass?.className}` : `${activeSessionsList.length} Live Sessions`) : 'Standby'}
+                >
+                  {hasLiveSession
+                    ? (activeSessionsList.length === 1 ? `Live: ${activeSessionClass?.className}` : `${activeSessionsList.length} Live`)
+                    : 'Standby'}
+                </span>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium truncate">
+                {hasLiveSession
+                  ? (activeSessionsList.length === 1 ? `${activeSessionClass?.room ? `Rm ${activeSessionClass.room} • ` : ''}Accepting scans` : 'Multiple sessions active')
+                  : 'No active check-in gates'}
               </span>
             </div>
 
-            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Today's Check-ins</span>
-              <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#d97706] block mt-1">
-                {todayLogsCount}
+            <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[20px] p-5 shadow-sm flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#64748b]">Today's Attendance</span>
+                <span className="font-['Source_Serif_4',Georgia,serif] text-3xl font-bold text-[#d97706] block mt-1">
+                  {todayCheckInsCount > 0 && todayExpectedStudents > 0
+                    ? `${attendanceTurnoutPct}% Present`
+                    : todayCheckInsCount > 0
+                      ? `${todayCheckInsCount} Present`
+                      : '0 Check-ins'}
+                </span>
+              </div>
+              <span className="text-[11px] text-[#64748b] mt-1 font-medium">
+                {todayCheckInsCount > 0
+                  ? `${todayPresentsCount} on-time • ${todayLatesCount} late`
+                  : 'Awaiting student check-ins'}
               </span>
             </div>
           </div>
@@ -782,29 +928,72 @@ export default function TeacherDashboard() {
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
                         <span className="text-[12px] text-[#64748b] font-medium">Class Sections</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#005a36]">
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#005a36]">
                           {totalClasses}
                         </span>
-                      </div>
-
-                      <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Total Students</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#0f172a]">
-                          {totalStudents}
+                        <span className="text-[10px] text-[#64748b]">
+                          {totalClasses === 1 ? '1 section' : `${totalClasses} sections`}
                         </span>
                       </div>
 
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Active Sessions</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#15803d]">
-                          {activeSessionsCount} Live
+                        <span className="text-[12px] text-[#64748b] font-medium">Classes Today</span>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#0f172a]">
+                          {todayClassesCount > 0 ? `${todayClassesCount}` : '0'}
+                        </span>
+                        <span className="text-[10px] text-[#64748b]">
+                          {todayClassesCount > 0 ? `${todayCompletedClassesCount}/${todayClassesCount} recorded` : 'None scheduled'}
+                        </span>
+                      </div>
+
+                      <div
+                        onClick={() => {
+                          if (hasLiveSession && activeSessionClass?.classId) {
+                            navigate(`/teacher/class/${activeSessionClass.classId}`)
+                          }
+                        }}
+                        className={`bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm ${
+                          hasLiveSession ? 'cursor-pointer active:scale-95' : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-[12px] text-[#64748b] font-medium">Current Session</span>
+                          {hasLiveSession && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleStopAllSessions()
+                              }}
+                              disabled={stoppingSessions}
+                              className="text-[10px] font-bold text-[#b91c1c] bg-[#fee2e2] hover:bg-[#fecaca] px-2 py-0.5 rounded-full"
+                            >
+                              {stoppingSessions ? 'Stopping...' : 'Stop All'}
+                            </button>
+                          )}
+                        </div>
+                        <span className={`font-['Source_Serif_4',Georgia,serif] font-bold text-[20px] md:text-[26px] leading-tight truncate ${
+                          hasLiveSession ? 'text-[#15803d]' : 'text-[#64748b]'
+                        }`}>
+                          {hasLiveSession
+                            ? (activeSessionsList.length === 1 ? activeSessionClass?.className : `${activeSessionsList.length} Live`)
+                            : 'Standby'}
+                        </span>
+                        <span className="text-[10px] text-[#64748b] truncate">
+                          {hasLiveSession ? 'Accepting scans' : 'Gates closed'}
                         </span>
                       </div>
 
                       <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[18px] p-4 sm:p-5 flex flex-col gap-1 shadow-sm">
-                        <span className="text-[12px] text-[#64748b] font-medium">Today's Logs</span>
-                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[28px] md:text-[32px] leading-tight text-[#d97706]">
-                          {todayLogsCount}
+                        <span className="text-[12px] text-[#64748b] font-medium">Today's Attendance</span>
+                        <span className="font-['Source_Serif_4',Georgia,serif] font-bold text-[26px] md:text-[32px] leading-tight text-[#d97706]">
+                          {todayCheckInsCount > 0 && todayExpectedStudents > 0
+                            ? `${attendanceTurnoutPct}%`
+                            : todayCheckInsCount > 0
+                              ? `${todayCheckInsCount}`
+                              : '0'}
+                        </span>
+                        <span className="text-[10px] text-[#64748b]">
+                          {todayCheckInsCount > 0 ? `${todayCheckInsCount} checked in` : 'Awaiting scans'}
                         </span>
                       </div>
                     </section>

@@ -7,7 +7,7 @@ import KioskMode from '../../components/teacher/KioskMode'
 import IDCardScanner from '../../components/teacher/IDCardScanner'
 import RosterTable from '../../components/teacher/RosterTable'
 import Spinner from '../../components/common/Spinner'
-import { Tv2, ScanLine, ArrowLeft, CheckCircle, AlertCircle, Users, CalendarDays, Zap, Download, FileSpreadsheet } from 'lucide';
+import { Tv2, ScanLine, ArrowLeft, CheckCircle, AlertCircle, Users, CalendarDays, Zap, Download, FileSpreadsheet, X } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import { exportSingleSessionToExcel, exportAttendanceReportToExcel } from '../../lib/excelExport'
@@ -80,6 +80,33 @@ export default function AttendancePage() {
   const [session, setSession] = useState(null)
   const [roster, setRoster] = useState([])
   const [loadingRoster, setLoadingRoster] = useState(true)
+  const [closingSession, setClosingSession] = useState(false)
+
+  const handleCloseCurrentSession = async () => {
+    if (!session?.id) return
+    const confirmed = window.confirm('End and close this attendance session? Students will no longer be able to scan or check in.')
+    if (!confirmed) return
+
+    setClosingSession(true)
+    try {
+      const { error } = await supabase
+        .from('attendance_sessions')
+        .update({ is_active: false })
+        .eq('id', session.id)
+
+      if (!error) {
+        setSession(prev => prev ? { ...prev, is_active: false } : null)
+        showToast('Attendance session has been ended.', 'success')
+      } else {
+        showToast(`Failed to close session: ${error.message}`, 'error')
+      }
+    } catch (err) {
+      console.error('Error closing session:', err)
+      showToast(`Error: ${err.message}`, 'error')
+    } finally {
+      setClosingSession(false)
+    }
+  }
 
   // Excel export
   const handleExportSessionExcel = () => {
@@ -448,10 +475,21 @@ export default function AttendancePage() {
               >
                 <MorphIcon icon={FileSpreadsheet} size={14} /> Full Report View
               </button>
-              <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#dcfce7] text-[#15803d] border border-[#86efac] text-xs font-bold shadow-sm">
-                <span className="w-2 h-2 rounded-full bg-[#15803d] animate-pulse" />
-                <span>Session Active</span>
-              </div>
+              {session?.is_active ? (
+                <button
+                  onClick={handleCloseCurrentSession}
+                  disabled={closingSession}
+                  className="bg-[#fee2e2] text-[#b91c1c] hover:bg-[#fecaca] font-bold text-xs py-2.5 px-4 rounded-[12px] shadow-sm transition-all flex items-center gap-1.5 active:scale-95"
+                  title="Close and end active attendance check-in window"
+                >
+                  <MorphIcon icon={X} size={14} />
+                  {closingSession ? 'Ending...' : 'End Session'}
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#f1f5f9] text-[#64748b] border border-[#e2e8f0] text-xs font-bold shadow-sm">
+                  <span>Session Closed</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
