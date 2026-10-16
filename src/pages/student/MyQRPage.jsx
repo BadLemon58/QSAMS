@@ -59,7 +59,7 @@ export default function MyQRPage() {
 
       <div className="max-w-4xl mx-auto px-4 py-8 flex flex-col items-center justify-center min-h-[calc(100vh-5rem)]">
         <div className="w-full max-w-sm flex flex-col gap-4 animate-fade-in">
-          
+
           {/* Back Link */}
           <button
             onClick={() => navigate('/student')}
@@ -70,7 +70,7 @@ export default function MyQRPage() {
 
           {/* Digital ID Card */}
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-7 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
-            
+
             {/* Top Banner Stripe */}
             <div className="w-full bg-[#005a36] text-white py-2.5 px-4 rounded-[14px] mb-4 flex items-center justify-between">
               <div className="flex items-center gap-1.5">
