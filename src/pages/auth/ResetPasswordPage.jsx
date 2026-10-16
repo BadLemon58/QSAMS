@@ -131,7 +131,7 @@ export default function ResetPasswordPage() {
               </div>
 
               <h2 className="font-['Source_Serif_4',Georgia,serif] text-2xl font-bold text-[#0f172a] mb-2">
-                All Set!
+                Password Updated Successfully
               </h2>
 
               <p className="text-[#64748b] text-xs sm:text-sm leading-relaxed mb-6">

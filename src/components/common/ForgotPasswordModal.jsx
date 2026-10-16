@@ -5,10 +5,11 @@ import Spinner from './Spinner'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
 
-export default function ForgotPasswordModal({ initialEmail = '', onClose }) {
-  const { resetPassword } = useAuth()
+export default function ForgotPasswordModal({ initialEmail = '', source = 'login', onClose }) {
+  const { resetPassword, user } = useAuth()
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
+  const isFromProfile = source === 'profile' || !!user
 
   const [email, setEmail] = useState(initialEmail)
   const [loading, setLoading] = useState(false)
@@ -81,20 +82,20 @@ export default function ForgotPasswordModal({ initialEmail = '', onClose }) {
                 ? 'bg-[#14532d]/40 text-[#86efac] border-[#22c55e]/50'
                 : 'bg-[#dcfce7] text-[#15803d] border-[#86efac]'
             }`}>
-              <span>Email Dispatched</span>
+              <span>Verification Email Sent</span>
             </div>
 
             <h3 className={`font-['Source_Serif_4',Georgia,serif] text-xl font-bold mb-2 ${
               isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'
             }`}>
-              Recovery Link Sent!
+              Password Reset Link Sent
             </h3>
 
             <p className={`text-xs sm:text-sm leading-relaxed mb-4 ${
               isDark ? 'text-[#94a3b8]' : 'text-[#64748b]'
             }`}>
-              We've dispatched a recovery link to{' '}
-              <strong className={isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'}>{email}</strong> via Supabase's free mailer.
+              A password reset link has been dispatched to{' '}
+              <strong className={isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'}>{email}</strong>. Please check your email inbox to proceed with updating your credentials.
             </p>
 
             <div className={`rounded-[16px] p-3.5 text-xs text-left space-y-1.5 mb-5 border ${
@@ -103,9 +104,9 @@ export default function ForgotPasswordModal({ initialEmail = '', onClose }) {
                 : 'bg-[#f8fafc] border-[#e2e8f0] text-[#64748b]'
             }`}>
               <p className={`font-semibold ${isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'}`}>Next steps:</p>
-              <p>1. Open your school email inbox (check Spam/Junk if not visible within 1 minute).</p>
-              <p>2. Click the secure password reset link in the message.</p>
-              <p>3. Enter and save your new password.</p>
+              <p>1. Open your email inbox (please check your Spam or Junk folder if the message is not visible within a few minutes).</p>
+              <p>2. Click the verified password reset link in the message.</p>
+              <p>3. Enter and confirm your new password.</p>
             </div>
 
             <button
@@ -113,7 +114,7 @@ export default function ForgotPasswordModal({ initialEmail = '', onClose }) {
               onClick={onClose}
               className="btn-primary w-full justify-center py-3"
             >
-              Return to Sign In
+              {isFromProfile ? 'Return to Profile' : 'Return to Sign In'}
             </button>
           </div>
         ) : (
@@ -132,19 +133,21 @@ export default function ForgotPasswordModal({ initialEmail = '', onClose }) {
                 ? 'bg-[#005a36]/20 text-[#86efac] border-[#005a36]/40'
                 : 'bg-[#e6f2ec] text-[#005a36] border-[#005a36]/30'
             }`}>
-              <span>Account Recovery</span>
+              <span>{isFromProfile ? 'Account Security' : 'Account Recovery'}</span>
             </div>
 
             <h3 className={`font-['Source_Serif_4',Georgia,serif] text-xl font-bold mb-2 ${
               isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'
             }`}>
-              Forgot Your Password?
+              {isFromProfile ? 'Reset Account Password' : 'Forgot Your Password?'}
             </h3>
 
             <p className={`text-xs sm:text-sm leading-relaxed mb-5 ${
               isDark ? 'text-[#94a3b8]' : 'text-[#64748b]'
             }`}>
-              Enter your registered school email address below. We'll send you a password recovery link using Supabase's free built-in service.
+              {isFromProfile
+                ? 'Confirm your registered institutional email address below. A secure password reset link will be sent to your inbox.'
+                : 'Enter your registered school email address below. A secure password recovery link will be sent to help you regain access.'}
             </p>
 
             {error && (

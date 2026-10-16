@@ -321,6 +321,7 @@ export default function ProfilePage() {
       {showForgotPassword && (
         <ForgotPasswordModal
           initialEmail={user?.email || profile?.email || ''}
+          source="profile"
           onClose={() => setShowForgotPassword(false)}
         />
       )}
