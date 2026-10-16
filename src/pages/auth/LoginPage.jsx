@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import Spinner from '../../components/common/Spinner'
 import { TermsModal, PrivacyModal } from '../../components/common/PolicyModals'
+import ForgotPasswordModal from '../../components/common/ForgotPasswordModal'
 import qsamsLogo from '../../assets/QsamsLogoNew.png'
 
 export default function LoginPage() {
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [showTerms, setShowTerms] = useState(false)
   const [showPrivacy, setShowPrivacy] = useState(false)
+  const [showForgot, setShowForgot] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -85,9 +87,18 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b]">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgot(true)}
+                  className="text-xs font-semibold text-[#005a36] hover:underline transition-colors cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
               <div className="relative">
                 <MorphIcon icon={Lock} size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                 <input
@@ -133,6 +144,12 @@ export default function LoginPage() {
         </div>
       </div>
 
+      {showForgot && (
+        <ForgotPasswordModal
+          initialEmail={form.email}
+          onClose={() => setShowForgot(false)}
+        />
+      )}
       {showTerms && <TermsModal onClose={() => setShowTerms(false)} />}
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
     </div>

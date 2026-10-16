@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
@@ -251,14 +251,15 @@ export default function StudentDashboard() {
     ? `${primaryClass.room || 'Room 214'} · ${primaryClass.schedule || 'Period 3'}`
     : 'NDMC · Student Portal'
 
-  // Student QR Code Payload
-  const qrPayload = JSON.stringify({
+  // Permanent Student QR Code Payload (non-renewable, lifetime-valid per student)
+  const qrPayload = useMemo(() => JSON.stringify({
     type: 'student_id',
-    studentId: profile?.student_id || 'UNKNOWN',
+    studentId: profile?.student_id || '',
     name: profile?.full_name || 'Student',
-    uid: profile?.id,
-    timestamp: Date.now(),
-  })
+    uid: profile?.id || '',
+    id: profile?.id || '',
+    permanent: true,
+  }), [profile?.id, profile?.student_id, profile?.full_name])
 
   const progressRatio = Math.min(Math.max(attendancePct, 0), 100)
 
@@ -283,7 +284,7 @@ export default function StudentDashboard() {
       const pngUrl = canvas.toDataURL('image/png')
       const downloadLink = document.createElement('a')
       downloadLink.href = pngUrl
-      downloadLink.download = `QSAMS-QR-${profile?.student_id || 'ID'}.png`
+      downloadLink.download = `QSAMS-Permanent-QR-${profile?.student_id || 'ID'}.png`
       document.body.appendChild(downloadLink)
       downloadLink.click()
       document.body.removeChild(downloadLink)
@@ -564,7 +565,12 @@ export default function StudentDashboard() {
             <div className="space-y-6">
               <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-6 shadow-sm flex flex-col items-center text-center">
                 <div className="w-full bg-[#005a36] text-white py-2 px-3.5 rounded-[12px] mb-4 flex items-center justify-between text-xs">
-                  <span className="font-bold">Digital Student ID</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold">Digital Student ID</span>
+                    <span className="text-[9px] font-bold bg-[#ffffff]/20 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Permanent
+                    </span>
+                  </div>
                   <span className="font-mono">{profile?.student_id || 'Active'}</span>
                 </div>
 
@@ -702,9 +708,14 @@ export default function StudentDashboard() {
                             Checked in at {checkInTimeString}
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
-                            ID: {profile?.student_id || 'Ready to scan'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-4 py-1 rounded-full bg-[#ffffff] text-[#005a36] font-semibold text-[13px] border border-[#e2e8f0] shadow-sm">
+                              ID: {profile?.student_id || 'Ready to scan'}
+                            </span>
+                            <span className="text-[10px] font-bold bg-[#e6f2ec] text-[#005a36] px-2 py-0.5 rounded-full border border-[#005a36]/20">
+                              Permanent
+                            </span>
+                          </div>
                         )}
                       </div>
                     </section>

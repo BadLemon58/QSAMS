@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useModal } from '../../contexts/ModalContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import { CourseCardSkeleton, Skeleton } from '../../components/common/Skeleton'
 import HoldToDeleteButton from '../../components/common/HoldToDeleteButton'
+import Toast from '../../components/common/Toast'
 import Badge from '../../components/common/Badge'
 import { BookOpen, Plus, Users, Calendar, Clock, ChevronRight, MapPin, X, AlertCircle, Tv2, ScanLine, LogOut, User, RefreshCw, QrCode, CheckCircle, FileText, ArrowRight, Trash2, CalendarDays, Home } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
@@ -390,15 +392,28 @@ function SelectKioskClassModal({ classes, onSelect, onClose }) {
   )
 }
 
-// ── Grouped Activity Card (For Mobile Activity Tab) ───────────────────────
-function GroupedActivityCard({ sessionKey, className, date, students }) {
+// ── Safe Date Formatter ───────────────────────────────────────────────────
+function formatDateSafe(dateStr, formatPattern, fallback = '') {
+  if (!dateStr) return fallback
+  try {
+    const d = new Date(dateStr)
+    if (isNaN(d.getTime())) return fallback
+    return format(d, formatPattern)
+  } catch {
+    return fallback
+  }
+}
+
+// ── Grouped Activity Card (For Activity Tab) ──────────────────────────────
+function GroupedActivityCard({ className, date, students }) {
   const [expanded, setExpanded] = useState(false)
+  const formattedDate = formatDateSafe(date, 'MMM d, yyyy • h:mm a', 'Recent session')
   
   return (
     <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[22px] overflow-hidden shadow-sm mb-3">
       <button 
         onClick={() => setExpanded(!expanded)} 
-        className="w-full p-4 flex items-center justify-between text-left hover:bg-[#f8fafc] transition-colors"
+        className="w-full p-4 flex items-center justify-between text-left hover:bg-[#f8fafc] transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[14px] bg-[#e6f2ec] text-[#005a36] flex items-center justify-center shrink-0">
@@ -407,7 +422,7 @@ function GroupedActivityCard({ sessionKey, className, date, students }) {
           <div>
             <h4 className="font-bold text-sm text-[#0f172a]">{className}</h4>
             <p className="text-xs text-[#64748b]">
-              {date ? format(new Date(date), 'MMM d, yyyy • h:mm a') : 'Unknown time'}
+              {formattedDate}
             </p>
           </div>
         </div>
@@ -425,22 +440,27 @@ function GroupedActivityCard({ sessionKey, className, date, students }) {
 
       {expanded && (
         <div className="border-t border-[#f1f5f9] bg-[#f8fafc]/50 p-2 divide-y divide-[#f1f5f9]">
-          {students.map(log => (
-            <div key={log.id} className="p-2.5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-[#ffffff] border border-[#e2e8f0] text-[#0f172a] flex items-center justify-center font-bold text-[10px]">
-                  {log.profiles?.full_name?.[0] || 'S'}
+          {students.map(log => {
+            const timeStr = formatDateSafe(log.marked_at, 'h:mm a')
+            return (
+              <div key={log.id} className="p-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-full bg-[#ffffff] border border-[#e2e8f0] text-[#0f172a] flex items-center justify-center font-bold text-[10px]">
+                    {log.profiles?.full_name?.[0] || 'S'}
+                  </div>
+                  <p className="font-semibold text-[13px] text-[#0f172a]">{log.profiles?.full_name || 'Student'}</p>
                 </div>
-                <p className="font-semibold text-[13px] text-[#0f172a]">{log.profiles?.full_name || 'Student'}</p>
+                <div className="text-right">
+                  <Badge status={log.status} />
+                  {timeStr && (
+                    <p className="text-[9px] text-[#94a3b8] mt-0.5">
+                      {timeStr}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="text-right">
-                <Badge status={log.status} />
-                <p className="text-[9px] text-[#94a3b8] mt-0.5">
-                  {log.marked_at ? format(new Date(log.marked_at), 'h:mm a') : ''}
-                </p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
@@ -450,7 +470,25 @@ function GroupedActivityCard({ sessionKey, className, date, students }) {
 // ── Main Component: Responsive Teacher Dashboard ───────────────────────────
 export default function TeacherDashboard() {
   const { profile, signOut } = useAuth()
+  const { showAlert, showConfirm } = useModal()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const [toast, setToast] = useState(null)
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type, key: Date.now() })
+  }
+
+  // Handle incoming notification from navigation (e.g. class deleted from ClassDetailPage) or tab change
+  useEffect(() => {
+    if (location.state?.toast) {
+      showToast(location.state.toast.message, location.state.toast.type || 'delete')
+      window.history.replaceState({}, '')
+    }
+    if (location.state?.tab) {
+      setActiveTab(location.state.tab)
+    }
+  }, [location.state])
 
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'classes' | 'activity'
   const [classes, setClasses] = useState([])
@@ -467,7 +505,15 @@ export default function TeacherDashboard() {
 
   const handleStopAllSessions = async () => {
     if (!classes.length) return
-    const confirmed = window.confirm(`Stop and close all active attendance sessions (${activeSessionsList.length})? Students will no longer be able to check in.`)
+    const confirmed = await showConfirm({
+      title: 'Stop All Active Sessions?',
+      badge: 'Active Sessions',
+      message: `Stop and close all active attendance sessions (${activeSessionsList.length})? Students will no longer be able to check in.`,
+      confirmText: 'Stop All Sessions',
+      cancelText: 'Keep Active',
+      type: 'warning',
+      isDestructive: true
+    })
     if (!confirmed) return
 
     setStoppingSessions(true)
@@ -480,12 +526,22 @@ export default function TeacherDashboard() {
         .eq('is_active', true)
 
       if (error) {
-        alert('Failed to stop sessions: ' + error.message)
+        await showAlert({
+          title: 'Failed to Stop Sessions',
+          message: error.message,
+          type: 'error'
+        })
       } else {
+        showToast('All active attendance sessions have been closed.', 'success')
         await fetchTeacherData()
       }
     } catch (err) {
       console.error('Error stopping sessions:', err)
+      await showAlert({
+        title: 'Error Stopping Sessions',
+        message: err.message || 'An unexpected error occurred.',
+        type: 'error'
+      })
     } finally {
       setStoppingSessions(false)
     }
@@ -504,6 +560,7 @@ export default function TeacherDashboard() {
 
   const handleDeleteClass = async () => {
     if (!classToDelete) return
+    const deletedClassName = classToDelete.name || 'Class'
     setDeletingClass(true)
     try {
       await supabase.from('attendance_logs').delete().eq('class_id', classToDelete.id)
@@ -513,9 +570,13 @@ export default function TeacherDashboard() {
       if (!error) {
         setClasses(prev => prev.filter(c => c.id !== classToDelete.id))
         setClassToDelete(null)
+        showToast(`Class "${deletedClassName}" has been deleted.`, 'delete')
+      } else {
+        showToast(`Failed to delete class: ${error.message}`, 'error')
       }
     } catch (err) {
       console.error('Error deleting class:', err)
+      showToast(`Error deleting class: ${err.message}`, 'error')
     } finally {
       setDeletingClass(false)
     }
@@ -757,21 +818,88 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* Classes Section Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <MorphIcon icon={BookOpen} size={18} className="text-[#005a36]" />
-              <h2 className="font-['Source_Serif_4',Georgia,serif] font-bold text-xl text-[#0f172a]">
-                Active Class Sections
-              </h2>
+          {/* Section Tabs Header */}
+          <div className="flex items-center justify-between border-b border-[#e2e8f0] mb-6">
+            <div className="flex items-center gap-6">
+              <button
+                onClick={() => setActiveTab('classes')}
+                className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab !== 'activity'
+                    ? 'border-[#005a36] text-[#005a36]'
+                    : 'border-transparent text-[#64748b] hover:text-[#0f172a]'
+                }`}
+              >
+                <MorphIcon icon={BookOpen} size={18} />
+                <span>Active Class Sections ({classes.length})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('activity')}
+                className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+                  activeTab === 'activity'
+                    ? 'border-[#005a36] text-[#005a36]'
+                    : 'border-transparent text-[#64748b] hover:text-[#0f172a]'
+                }`}
+              >
+                <MorphIcon icon={Calendar} size={18} />
+                <span>Recent Activity ({logs.length})</span>
+              </button>
             </div>
-            <span className="text-xs font-semibold text-[#64748b]">
-              {classes.length} Total Course{classes.length === 1 ? '' : 's'}
-            </span>
+
+            {activeTab !== 'activity' ? (
+              <span className="text-xs font-semibold text-[#64748b]">
+                {classes.length} Total Course{classes.length === 1 ? '' : 's'}
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-[#005a36] bg-[#e6f2ec] px-2.5 py-1 rounded-full">
+                {todayCheckInsCount} Checked In Today
+              </span>
+            )}
           </div>
 
-          {/* Classes Grid */}
-          {loading ? (
+          {/* Desktop Content: Classes or Activity */}
+          {activeTab === 'activity' ? (
+            <div className="space-y-4">
+              {logs.length === 0 ? (
+                <div className="bg-[#ffffff] rounded-[24px] border border-[#e2e8f0] p-12 text-center max-w-md mx-auto shadow-sm">
+                  <div className="w-14 h-14 rounded-full bg-[#f8fafc] text-[#94a3b8] flex items-center justify-center mx-auto mb-3">
+                    <MorphIcon icon={Calendar} size={24} />
+                  </div>
+                  <h3 className="font-['Source_Serif_4',Georgia,serif] font-bold text-lg text-[#0f172a] mb-1">
+                    No check-ins yet
+                  </h3>
+                  <p className="text-xs text-[#64748b] leading-relaxed max-w-xs mx-auto">
+                    Launch a live attendance session to start recording real-time student check-ins.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.entries(
+                    logs.reduce((acc, log) => {
+                      const dateKey = formatDateSafe(log.marked_at, 'yyyy-MM-dd', 'nodate')
+                      const key = log.session_id || `${log.class_id}-${dateKey}`
+                      if (!acc[key]) {
+                        acc[key] = {
+                          className: log.classes?.name || 'Class',
+                          date: log.marked_at,
+                          students: []
+                        }
+                      }
+                      acc[key].students.push(log)
+                      return acc
+                    }, {})
+                  ).map(([key, group]) => (
+                    <GroupedActivityCard
+                      key={key}
+                      className={group.className}
+                      date={group.date}
+                      students={group.students}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : loading ? (
             <CourseCardSkeleton count={4} />
           ) : classes.length === 0 ? (
             <div className="bg-[#ffffff] rounded-[24px] border border-[#e2e8f0] p-12 text-center max-w-md mx-auto shadow-sm">
@@ -1178,7 +1306,7 @@ export default function TeacherDashboard() {
                         Recent Check-in Logs ({logs.length})
                       </span>
                       <span className="text-[12px] font-semibold text-[#005a36]">
-                        {todayLogsCount} Today
+                        {todayCheckInsCount} Today
                       </span>
                     </div>
 
@@ -1196,7 +1324,8 @@ export default function TeacherDashboard() {
                       <div>
                         {Object.entries(
                           logs.reduce((acc, log) => {
-                            const key = log.session_id || `${log.class_id}-${format(new Date(log.marked_at || new Date()), 'yyyy-MM-dd')}`;
+                            const dateKey = formatDateSafe(log.marked_at, 'yyyy-MM-dd', 'nodate')
+                            const key = log.session_id || `${log.class_id}-${dateKey}`
                             if (!acc[key]) {
                               acc[key] = {
                                 className: log.classes?.name || 'Class',
@@ -1210,7 +1339,6 @@ export default function TeacherDashboard() {
                         ).map(([key, group]) => (
                           <GroupedActivityCard 
                             key={key} 
-                            sessionKey={key} 
                             className={group.className} 
                             date={group.date} 
                             students={group.students} 
@@ -1322,6 +1450,15 @@ export default function TeacherDashboard() {
             handleLaunchKiosk(cls)
           }}
           onClose={() => setShowKioskSelectModal(false)}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          key={toast.key}
+          message={toast.message}
+          type={toast.type}
+          onDone={() => setToast(null)}
         />
       )}
     </div>

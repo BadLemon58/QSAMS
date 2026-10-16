@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import { useModal } from '../../contexts/ModalContext'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import ImageCropperModal from '../../components/common/ImageCropperModal'
+import ForgotPasswordModal from '../../components/common/ForgotPasswordModal'
 import {
   User,
   Shield,
@@ -46,6 +48,7 @@ function SuccessModal({ title, message, onClose }) {
 export default function ProfilePage() {
   const { user, profile, updateProfile, updatePassword, signIn } = useAuth()
   const { theme, setTheme } = useTheme()
+  const { showAlert, showConfirm } = useModal()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -71,6 +74,7 @@ export default function ProfilePage() {
   // Alert state
   const [profileMessage, setProfileMessage] = useState(null)
   const [passwordMessage, setPasswordMessage] = useState(null)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(null) // 'profile' | 'password' | 'avatar' | null
 
   const isTeacher = profile?.role === 'teacher'
@@ -107,7 +111,18 @@ export default function ProfilePage() {
       }
       setInstallPromptEvent(null)
     } else {
-      alert('To install QSAMS on your device:\n\n• On iOS Safari: Tap the Share button ⎋ at the bottom, then choose "Add to Home Screen".\n• On Android/Chrome: Tap the 3-dots menu ⋮ and choose "Install App" or "Add to Home Screen".\n• On Desktop Chrome/Edge: Click the Install icon in the address bar.')
+      await showAlert({
+        title: 'Install QSAMS App',
+        badge: 'PWA Installation',
+        type: 'info',
+        message: 'Install QSAMS directly on your device home screen or desktop for rapid offline-ready access:',
+        instructions: [
+          { platform: 'iOS Safari', step: 'Tap the Share button ⎋ at the bottom of the screen, then select "Add to Home Screen".' },
+          { platform: 'Android / Chrome', step: 'Tap the 3-dots menu ⋮ at the top right, then choose "Install App" or "Add to Home Screen".' },
+          { platform: 'Desktop Chrome / Edge', step: 'Click the Install icon located on the right side of your browser address bar.' }
+        ],
+        buttonText: 'Understood'
+      })
     }
   }
 
@@ -233,7 +248,14 @@ export default function ProfilePage() {
       return
     }
 
-    const confirmChange = window.confirm("Are you sure you want to change your password?")
+    const confirmChange = await showConfirm({
+      title: 'Change Password?',
+      badge: 'Security Notice',
+      message: 'Are you sure you want to update your password? You will need your new password to sign in next time.',
+      confirmText: 'Update Password',
+      cancelText: 'Cancel',
+      type: 'info'
+    })
     if (!confirmChange) return
 
     setSavingPassword(true)
@@ -293,6 +315,13 @@ export default function ProfilePage() {
           imageSrc={cropTargetSrc}
           onCropComplete={handleCropComplete}
           onClose={() => setCropTargetSrc(null)}
+        />
+      )}
+
+      {showForgotPassword && (
+        <ForgotPasswordModal
+          initialEmail={user?.email || profile?.email || ''}
+          onClose={() => setShowForgotPassword(false)}
         />
       )}
 
@@ -602,22 +631,42 @@ export default function ProfilePage() {
             </p>
 
             {passwordMessage && (
-              <div className={`flex items-center gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
+              <div className={`flex items-center justify-between gap-2.5 rounded-[16px] px-4 py-3 mb-5 text-xs font-semibold ${
                 passwordMessage.type === 'success'
                   ? 'bg-[#dcfce7] text-[#15803d] border border-[#86efac]'
                   : 'bg-[#fee2e2] text-[#b91c1c] border border-[#fca5a5]'
               }`}>
-                {passwordMessage.type === 'success' ? <MorphIcon icon={CheckCircle} size={15} /> : <MorphIcon icon={AlertCircle} size={15} />}
-                <span>{passwordMessage.text}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  {passwordMessage.type === 'success' ? <MorphIcon icon={CheckCircle} size={15} /> : <MorphIcon icon={AlertCircle} size={15} />}
+                  <span>{passwordMessage.text}</span>
+                </div>
+                {passwordMessage.type === 'error' && (
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="underline text-[#b91c1c] hover:text-[#991b1b] shrink-0 font-bold ml-2 cursor-pointer"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
             )}
 
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 mb-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">
-                    Current Password
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#64748b]">
+                      Current Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-xs font-semibold text-[#005a36] hover:underline transition-colors cursor-pointer"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                   <div className="relative">
                     <MorphIcon icon={KeyRound} size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
                     <input

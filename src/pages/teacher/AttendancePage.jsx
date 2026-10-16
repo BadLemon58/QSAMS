@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useModal } from '../../contexts/ModalContext'
 import Navbar from '../../components/common/Navbar'
 import KioskMode from '../../components/teacher/KioskMode'
 import IDCardScanner from '../../components/teacher/IDCardScanner'
@@ -15,6 +16,7 @@ import { format } from 'date-fns'
 import { formatName } from '../../utils/formatName'
 import { parseSchedule, isAttendanceAllowed } from '../../lib/scheduleValidator'
 import ScheduleRestrictionModal from '../../components/teacher/ScheduleRestrictionModal'
+import Toast from '../../components/common/Toast'
 
 // ── Mode Toggle Button (NDMC Forest Green Style) ───────────────────────────
 function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
@@ -41,24 +43,6 @@ function ModeTab({ id, icon: Icon, label, description, active, onClick }) {
   )
 }
 
-// ── Toast Notification ─────────────────────────────────────────────────────
-function Toast({ message, type, onDone }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 3500)
-    return () => clearTimeout(t)
-  }, [onDone])
-
-  return (
-    <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-[20px] shadow-2xl text-sm font-semibold animate-fade-in ${
-      type === 'success'
-        ? 'bg-[#dcfce7] border border-[#86efac] text-[#15803d]'
-        : 'bg-[#fee2e2] border border-[#fca5a5] text-[#b91c1c]'
-    }`}>
-      {type === 'success' ? <MorphIcon icon={CheckCircle} size={18} /> : <MorphIcon icon={AlertCircle} size={18} />}
-      {message}
-    </div>
-  )
-}
 
 // ══════════════════════════════════════════════════════════════
 // MAIN: AttendancePage — Dual-Method Attendance (NDMC Style)
@@ -67,6 +51,7 @@ export default function AttendancePage() {
   const { classId } = useParams()
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const { showConfirm } = useModal()
 
   // UI state
   const [mode, setMode] = useState('kiosk') // 'kiosk' | 'idcard'
@@ -84,7 +69,15 @@ export default function AttendancePage() {
 
   const handleCloseCurrentSession = async () => {
     if (!session?.id) return
-    const confirmed = window.confirm('End and close this attendance session? Students will no longer be able to scan or check in.')
+    const confirmed = await showConfirm({
+      title: 'End Attendance Session?',
+      badge: 'Live Session',
+      message: 'Are you sure you want to end and close this attendance session? Students will no longer be able to scan or check in.',
+      confirmText: 'End Session',
+      cancelText: 'Keep Active',
+      type: 'warning',
+      isDestructive: true
+    })
     if (!confirmed) return
 
     setClosingSession(true)
@@ -372,19 +365,34 @@ export default function AttendancePage() {
   // ID Card scanner handler
   const handleIDCardScan = useCallback(async (rawValue) => {
     let targetStudentId = rawValue
+    let targetUid = null
     try {
       const parsed = JSON.parse(rawValue)
-      targetStudentId = parsed.studentId || parsed.id || rawValue
+      targetStudentId = parsed.studentId || targetStudentId
+      targetUid = parsed.uid || parsed.id || null
     } catch (_) {}
 
-    const { data: found } = await supabase
-      .from('profiles')
-      .select('id, full_name')
-      .eq('student_id', targetStudentId)
-      .single()
+    let found = null
+    if (targetStudentId) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, student_id')
+        .eq('student_id', targetStudentId)
+        .maybeSingle()
+      found = data
+    }
+
+    if (!found && targetUid) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, student_id')
+        .eq('id', targetUid)
+        .maybeSingle()
+      found = data
+    }
 
     if (!found) {
-      showToast(`Student not found: ${targetStudentId}`, 'error')
+      showToast(`Student not found: ${targetStudentId || targetUid || rawValue}`, 'error')
       return
     }
 

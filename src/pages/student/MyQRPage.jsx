@@ -1,9 +1,9 @@
-import { useRef, useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../../contexts/AuthContext'
 import Navbar from '../../components/common/Navbar'
-import { Download, ArrowLeft, Check, Shield, Share2, RefreshCw, User } from 'lucide';
+import { Download, ArrowLeft, Check, Shield, User } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 
 export default function MyQRPage() {
@@ -11,12 +11,15 @@ export default function MyQRPage() {
   const navigate = useNavigate()
   const [downloaded, setDownloaded] = useState(false)
 
-  const studentQrData = JSON.stringify({
+  // Permanent student personal QR payload (non-renewable, lifetime-valid per student)
+  const studentQrData = useMemo(() => JSON.stringify({
     type: 'student_id',
-    studentId: profile?.student_id,
-    name: profile?.full_name,
-    id: profile?.id,
-  })
+    studentId: profile?.student_id || '',
+    name: profile?.full_name || 'Student',
+    uid: profile?.id || '',
+    id: profile?.id || '',
+    permanent: true,
+  }), [profile?.id, profile?.student_id, profile?.full_name])
 
   const downloadQR = () => {
     const svg = document.getElementById('student-id-qr')
@@ -38,7 +41,7 @@ export default function MyQRPage() {
       const pngUrl = canvas.toDataURL('image/png')
       const downloadLink = document.createElement('a')
       downloadLink.href = pngUrl
-      downloadLink.download = `QSAMS-QR-${profile?.student_id || 'ID'}.png`
+      downloadLink.download = `QSAMS-Permanent-QR-${profile?.student_id || 'ID'}.png`
       document.body.appendChild(downloadLink)
       downloadLink.click()
       document.body.removeChild(downloadLink)
@@ -69,8 +72,13 @@ export default function MyQRPage() {
           <div className="bg-[#ffffff] border border-[#e2e8f0] rounded-[24px] p-7 shadow-sm flex flex-col items-center text-center relative overflow-hidden">
             
             {/* Top Banner Stripe */}
-            <div className="w-full bg-[#005a36] text-white py-2 px-4 rounded-[14px] mb-4 flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider">NDMC Digital ID</span>
+            <div className="w-full bg-[#005a36] text-white py-2.5 px-4 rounded-[14px] mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold uppercase tracking-wider">NDMC Digital ID</span>
+                <span className="text-[9px] font-bold bg-[#ffffff]/20 px-2 py-0.5 rounded-full uppercase tracking-wider text-white">
+                  Permanent
+                </span>
+              </div>
               <span className="text-[10px] font-mono opacity-90">{profile?.student_id || 'Student'}</span>
             </div>
 
@@ -106,8 +114,13 @@ export default function MyQRPage() {
               />
             </div>
 
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#e6f2ec] text-[#005a36] text-[11px] font-bold mb-2">
+              <MorphIcon icon={Shield} size={13} />
+              <span>Permanent Non-Renewable ID</span>
+            </div>
+
             <p className="text-xs text-[#64748b] leading-relaxed max-w-xs">
-              Present this static ID QR code to your instructor for rapid scanner verification
+              This is your permanent student ID QR code. It is non-renewable and valid for your entire academic tenure at NDMC.
             </p>
 
             {/* Action Buttons */}
@@ -128,7 +141,7 @@ export default function MyQRPage() {
           {/* Security Indicator */}
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#64748b]">
             <MorphIcon icon={Shield} size={12} className="text-[#005a36]" />
-            <span>Official Notre Dame of Midsayap College QR Credential</span>
+            <span>Official Notre Dame of Midsayap College QR Credential • Permanent</span>
           </div>
         </div>
       </div>

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
+import { useModal } from '../../contexts/ModalContext'
 import { supabase } from '../../lib/supabase'
 import { Settings, Trash2, X, RefreshCw, AlertTriangle } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 
 export default function DebugPanel() {
   const { profile } = useAuth()
+  const { showConfirm } = useModal()
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -31,7 +33,15 @@ export default function DebugPanel() {
   }
 
   const resetLogs = async () => {
-    if (!window.confirm('Delete ALL your attendance logs?')) return
+    const confirmed = await showConfirm({
+      title: 'Delete Attendance Logs?',
+      badge: 'Debug Action',
+      message: 'Delete ALL your personal attendance logs? This action cannot be undone.',
+      confirmText: 'Delete Logs',
+      isDestructive: true,
+      type: 'danger'
+    })
+    if (!confirmed) return
     await handleAction(async () => {
       const { error } = await supabase
         .from('attendance_logs')
@@ -42,7 +52,15 @@ export default function DebugPanel() {
   }
 
   const clearEnrollments = async () => {
-    if (!window.confirm('Delete ALL your class enrollments?')) return
+    const confirmed = await showConfirm({
+      title: 'Clear Enrollments?',
+      badge: 'Debug Action',
+      message: 'Delete ALL your class enrollments? This action cannot be undone.',
+      confirmText: 'Clear Enrollments',
+      isDestructive: true,
+      type: 'danger'
+    })
+    if (!confirmed) return
     await handleAction(async () => {
       const { error } = await supabase
         .from('enrollments')
@@ -53,7 +71,15 @@ export default function DebugPanel() {
   }
 
   const deleteClasses = async () => {
-    if (!window.confirm('Delete ALL classes you created?')) return
+    const confirmed = await showConfirm({
+      title: 'Delete All Classes?',
+      badge: 'Debug Action',
+      message: 'Delete ALL classes you created along with their data? This action cannot be undone.',
+      confirmText: 'Delete All Classes',
+      isDestructive: true,
+      type: 'danger'
+    })
+    if (!confirmed) return
     await handleAction(async () => {
       const { error } = await supabase
         .from('classes')

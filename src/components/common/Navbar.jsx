@@ -134,7 +134,7 @@ export default function Navbar() {
                 <span className="text-[10px] font-bold mt-1">Home</span>
               </Link>
 
-              <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <Link to="/teacher" state={{ tab: 'classes' }} className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
                 <MorphIcon icon={BookOpen} size={22} />
                 <span className="text-[10px] font-bold mt-1">Classes</span>
               </Link>
@@ -151,7 +151,7 @@ export default function Navbar() {
                 <span className="text-[10px] font-bold text-[#94a3b8] mt-1">Attendance</span>
               </div>
 
-              <Link to="/teacher" className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
+              <Link to="/teacher" state={{ tab: 'activity' }} className={`flex flex-col items-center p-2 flex-1 transition-colors ${location.pathname === '/teacher' && false ? 'text-[#005a36]' : 'text-[#94a3b8]'}`}>
                 <MorphIcon icon={Calendar} size={22} />
                 <span className="text-[10px] font-bold mt-1">Activity</span>
               </Link>

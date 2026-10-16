@@ -5,6 +5,7 @@ import { Skeleton } from '../components/common/Skeleton'
 // Auth Pages
 import LoginPage from '../pages/auth/LoginPage'
 import RegisterPage from '../pages/auth/RegisterPage'
+import ResetPasswordPage from '../pages/auth/ResetPasswordPage'
 
 // Teacher Pages
 import TeacherDashboard from '../pages/teacher/TeacherDashboard'
@@ -137,8 +138,9 @@ export default function AppRouter() {
     <>
     <Routes>
       {/* Public */}
-      <Route path="/login"    element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/login"          element={<LoginPage />} />
+      <Route path="/register"       element={<RegisterPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Root → auto-redirect by role */}
       <Route path="/" element={<RootRedirect />} />

@@ -3,12 +3,14 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
+import { useModal } from '../../contexts/ModalContext'
 import Navbar from '../../components/common/Navbar'
 import Spinner from '../../components/common/Spinner'
 import { Skeleton } from '../../components/common/Skeleton'
 import HoldToDeleteButton from '../../components/common/HoldToDeleteButton'
 import AttendanceReportModal from '../../components/teacher/AttendanceReportModal'
 import StudentSummaryModal from '../../components/teacher/StudentSummaryModal'
+import Toast from '../../components/common/Toast'
 import { Users, QrCode, ArrowLeft, Plus, Clock, MapPin, ClipboardList, Copy, Check, X, AlertCircle, Trash2, BarChart2, FileSpreadsheet, UserPlus, AlertTriangle, User, CalendarDays, Pencil, Camera } from 'lucide';
 import { MorphIcon } from 'morphicons/react';
 import { format } from 'date-fns'
@@ -743,6 +745,7 @@ export default function ClassDetailPage() {
   const { classId } = useParams()
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const { showConfirm, showAlert } = useModal()
 
   const [classInfo, setClassInfo] = useState(null)
   const [students, setStudents] = useState([])
@@ -761,6 +764,11 @@ export default function ClassDetailPage() {
   const [studentToDelete, setStudentToDelete] = useState(null)
   const [removing, setRemoving] = useState(false)
   const [showScheduleError, setShowScheduleError] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type, key: Date.now() })
+  }
 
   // Show error modal if redirected back from AttendancePage due to time restriction
   const location = useLocation()
@@ -809,6 +817,17 @@ export default function ClassDetailPage() {
   useEffect(() => { loadData() }, [classId])
 
   const handleCloseSession = async (sessionId) => {
+    const confirmed = await showConfirm({
+      title: 'Close Attendance Session?',
+      badge: 'Live Session',
+      message: 'Are you sure you want to end and close this live attendance session? Students will no longer be able to check in.',
+      confirmText: 'Close Session',
+      cancelText: 'Keep Active',
+      type: 'warning',
+      isDestructive: true
+    })
+    if (!confirmed) return
+
     try {
       const { error } = await supabase
         .from('attendance_sessions')
@@ -816,6 +835,13 @@ export default function ClassDetailPage() {
         .eq('id', sessionId)
       if (!error) {
         setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, is_active: false } : s))
+        showToast('Attendance session closed.', 'success')
+      } else {
+        await showAlert({
+          title: 'Error Closing Session',
+          message: error.message,
+          type: 'error'
+        })
       }
     } catch (err) {
       console.error('Error closing session:', err)
@@ -823,6 +849,7 @@ export default function ClassDetailPage() {
   }
 
   const handleDeleteClass = async () => {
+    const deletedClassName = classInfo?.name || 'Class'
     setDeletingClass(true)
     try {
       await supabase.from('attendance_logs').delete().eq('class_id', classId)
@@ -830,10 +857,20 @@ export default function ClassDetailPage() {
       await supabase.from('enrollments').delete().eq('class_id', classId)
       const { error } = await supabase.from('classes').delete().eq('id', classId)
       if (!error) {
-        navigate('/teacher')
+        navigate('/teacher', {
+          state: {
+            toast: {
+              message: `Class "${deletedClassName}" has been deleted.`,
+              type: 'delete'
+            }
+          }
+        })
+      } else {
+        showToast(`Failed to delete class: ${error.message}`, 'error')
       }
     } catch (err) {
       console.error('Error deleting class:', err)
+      showToast(`Error deleting class: ${err.message}`, 'error')
     } finally {
       setDeletingClass(false)
       setShowDeleteClass(false)
@@ -853,18 +890,28 @@ export default function ClassDetailPage() {
 
   const handleRemoveStudent = async () => {
     if (!studentToDelete) return
+    const studentName = formatName(studentToDelete) || studentToDelete.full_name || 'Student'
     setRemoving(true)
-    const { error } = await supabase
-      .from('enrollments')
-      .delete()
-      .eq('class_id', classId)
-      .eq('student_id', studentToDelete.id)
+    try {
+      const { error } = await supabase
+        .from('enrollments')
+        .delete()
+        .eq('class_id', classId)
+        .eq('student_id', studentToDelete.id)
 
-    if (!error) {
-      setStudents(prev => prev.filter(s => s.id !== studentToDelete.id))
-      setStudentToDelete(null)
+      if (!error) {
+        setStudents(prev => prev.filter(s => s.id !== studentToDelete.id))
+        setStudentToDelete(null)
+        showToast(`Student "${studentName}" has been deleted from this class.`, 'delete')
+      } else {
+        showToast(`Failed to remove student: ${error.message}`, 'error')
+      }
+    } catch (err) {
+      console.error('Error removing student:', err)
+      showToast(`Error removing student: ${err.message}`, 'error')
+    } finally {
+      setRemoving(false)
     }
-    setRemoving(false)
   }
 
   if (loading) return (
@@ -1184,6 +1231,15 @@ export default function ClassDetailPage() {
         <ScheduleRestrictionModal
           schedule={classInfo?.schedule}
           onClose={() => setShowScheduleError(false)}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          key={toast.key}
+          message={toast.message}
+          type={toast.type}
+          onDone={() => setToast(null)}
         />
       )}
     </div>
