@@ -18,18 +18,47 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false)
 
   useEffect(() => {
-    // Check if a recovery session is active
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // 1. Check if Supabase returned an error in hash fragment (#error=...&error_description=...)
+    const hash = window.location.hash
+    if (hash && hash.includes('error=')) {
+      const hashParams = new URLSearchParams(hash.replace(/^#/, ''))
+      const errorDesc = hashParams.get('error_description') || hashParams.get('error')
+      setError(decodeURIComponent(errorDesc || 'The password reset link is invalid or has expired.'))
+      setLoading(false)
+      return
+    }
+
+    // 2. Check if Supabase returned a PKCE code in query params (?code=...)
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+
+    const initAuth = async () => {
+      if (code) {
+        try {
+          const { data, error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code)
+          if (!exchangeErr && data?.session) {
+            setSessionReady(true)
+            setLoading(false)
+            return
+          }
+        } catch (_) {}
+      }
+
+      // 3. Check if session already exists
+      const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         setSessionReady(true)
       }
       setLoading(false)
-    })
+    }
 
-    // Listen for PASSWORD_RECOVERY event
+    initAuth()
+
+    // 4. Listen for PASSWORD_RECOVERY event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || (session && event === 'SIGNED_IN')) {
         setSessionReady(true)
+        setLoading(false)
       }
     })
 
