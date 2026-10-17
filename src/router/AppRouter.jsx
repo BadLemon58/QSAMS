@@ -141,6 +141,8 @@ export default function AppRouter() {
       <Route path="/login"          element={<LoginPage />} />
       <Route path="/register"       element={<RegisterPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
+      <Route path="/forgotpassword" element={<Navigate to="/login" replace />} />
 
       {/* Root → auto-redirect by role */}
       <Route path="/" element={<RootRedirect />} />

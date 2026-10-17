@@ -4,6 +4,7 @@ import { MorphIcon } from 'morphicons/react'
 import Spinner from './Spinner'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme } from '../../contexts/ThemeContext'
+import { maskEmail } from '../../utils/maskEmail'
 
 export default function ForgotPasswordModal({ initialEmail = '', source = 'login', onClose }) {
   const { resetPassword, user } = useAuth()
@@ -95,7 +96,7 @@ export default function ForgotPasswordModal({ initialEmail = '', source = 'login
               isDark ? 'text-[#94a3b8]' : 'text-[#64748b]'
             }`}>
               A password reset link has been dispatched to{' '}
-              <strong className={isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'}>{email}</strong>. Please check your email inbox to proceed with updating your credentials.
+              <strong className={isDark ? 'text-[#f8fafc]' : 'text-[#0f172a]'}>{maskEmail(email)}</strong>. Please check your email inbox to proceed with updating your credentials.
             </p>
 
             <div className={`rounded-[16px] p-3.5 text-xs text-left space-y-1.5 mb-5 border ${
