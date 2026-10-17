@@ -57,9 +57,10 @@ export default function HoldToDeleteButton({
       onTouchStart={handleHoldStart}
       onTouchEnd={handleHoldEnd}
       onTouchCancel={handleHoldEnd}
+      onContextMenu={(e) => e.preventDefault()}
       disabled={deleting}
       className={`relative flex-1 overflow-hidden select-none py-3 px-4 rounded-[14px] font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] border border-[#ef4444] bg-[#ffffff] hover:bg-[#fef2f2] text-[#ef4444] ${className}`}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'none', WebkitTouchCallout: 'none', WebkitUserSelect: 'none', userSelect: 'none' }}
     >
       {/* Slow, Continuous Linear Progress Fill Layer */}
       <div
