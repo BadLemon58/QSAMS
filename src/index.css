@@ -45,10 +45,7 @@
 
   img {
     -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
-    user-drag: none;
+    user-select: none;
     -webkit-touch-callout: none;
   }
 
@@ -364,7 +361,7 @@
 
   nav,
   button,
-  .print\:hidden,
+  [class*="print:hidden"],
   #debug-panel {
     display: none !important;
   }
@@ -472,43 +469,43 @@ html.dark body {
 }
 
 /* Base Neutral Surfaces */
-html.dark .bg-\[\#f4f6f8\],
-html.dark .bg-\[\#f8fafc\] {
+html.dark [class*="bg-[#f4f6f8]"],
+html.dark [class*="bg-[#f8fafc]"] {
   background-color: #0f172a !important;
 }
 
-html.dark .bg-\[\#f1f5f9\],
-html.dark .bg-\[\#ebebeb\],
-html.dark .bg-\[\#f5f5f5\] {
+html.dark [class*="bg-[#f1f5f9]"],
+html.dark [class*="bg-[#ebebeb]"],
+html.dark [class*="bg-[#f5f5f5]"] {
   background-color: #1e293b !important;
 }
 
-html.dark .bg-\[\#ffffff\],
+html.dark [class*="bg-[#ffffff]"],
 html.dark .bg-white {
   background-color: #1e293b !important;
   color: #f1f5f9;
 }
 
-html.dark .border-\[\#e2e8f0\],
-html.dark .border-\[\#cbd5e1\] {
+html.dark [class*="border-[#e2e8f0]"],
+html.dark [class*="border-[#cbd5e1]"] {
   border-color: #334155 !important;
 }
 
-html.dark .text-\[\#0f172a\],
-html.dark .text-\[\#1a1a1a\] {
+html.dark [class*="text-[#0f172a]"],
+html.dark [class*="text-[#1a1a1a]"] {
   color: #f8fafc !important;
 }
 
-html.dark .text-\[\#64748b\],
-html.dark .text-\[\#94a3b8\] {
+html.dark [class*="text-[#64748b]"],
+html.dark [class*="text-[#94a3b8]"] {
   color: #94a3b8 !important;
 }
 
-html.dark .text-\[\#005a36\] {
+html.dark [class*="text-[#005a36]"] {
   color: #34d399 !important;
 }
 
-html.dark .bg-\[\#e6f2ec\] {
+html.dark [class*="bg-[#e6f2ec]"] {
   background-color: rgba(0, 90, 54, 0.3) !important;
 }
 
@@ -562,43 +559,42 @@ html.dark .btn-primary:hover {
 
 /* Danger / Destructive Buttons & Alerts */
 html.dark .btn-danger,
-html.dark .bg-\[\#fee2e2\],
-html.dark .bg-\[\#fef2f2\] {
+html.dark [class*="bg-[#fee2e2]"],
+html.dark [class*="bg-[#fef2f2]"] {
   background-color: rgba(220, 38, 38, 0.18) !important;
   border-color: rgba(239, 68, 68, 0.35) !important;
 }
 
 html.dark .btn-danger:hover,
-html.dark .hover\:bg-\[\#fee2e2\]:hover,
-html.dark .hover\:bg-\[\#fecaca\]:hover {
+html.dark [class*="hover:bg-[#fee2e2]"]:hover,
+html.dark [class*="hover:bg-[#fecaca]"]:hover {
   background-color: rgba(220, 38, 38, 0.32) !important;
 }
 
-html.dark .text-\[\#b91c1c\],
-html.dark .text-\[\#dc2626\],
-html.dark .text-\[\#ef4444\] {
+html.dark [class*="text-[#b91c1c]"],
+html.dark [class*="text-[#dc2626]"],
+html.dark [class*="text-[#ef4444]"] {
   color: #f87171 !important;
 }
 
 /* Success Buttons & Badges */
 html.dark .btn-success,
-html.dark .bg-\[\#dcfce7\] {
+html.dark [class*="bg-[#dcfce7]"] {
   background-color: rgba(22, 101, 52, 0.25) !important;
   border-color: rgba(34, 197, 94, 0.35) !important;
 }
 
 html.dark .btn-success:hover,
-html.dark .hover\:bg-\[\#bbf7d0\]:hover {
+html.dark [class*="hover:bg-[#bbf7d0]"]:hover {
   background-color: rgba(22, 101, 52, 0.42) !important;
 }
 
-html.dark .text-\[\#15803d\] {
+html.dark [class*="text-[#15803d]"] {
   color: #4ade80 !important;
 }
 
 /* White-styled buttons (Action buttons on green banners and cards) */
 html.dark button.bg-white,
-html.dark button.bg-\[\#ffffff\],
 html.dark button[class*="bg-white"],
 html.dark button[class*="bg-[#ffffff]"] {
   background-color: #1e293b !important;
@@ -607,7 +603,6 @@ html.dark button[class*="bg-[#ffffff]"] {
 }
 
 html.dark button.bg-white:hover,
-html.dark button.bg-\[\#ffffff\]:hover,
 html.dark button[class*="bg-white"]:hover,
 html.dark button[class*="bg-[#ffffff]"]:hover {
   background-color: #334155 !important;
@@ -617,25 +612,22 @@ html.dark button[class*="bg-[#ffffff]"]:hover {
 
 /* When a white-styled button explicitly has text-white, keep text visible */
 html.dark button.bg-white.text-white,
-html.dark button.bg-\[\#ffffff\].text-white {
+html.dark button[class*="bg-[#ffffff]"].text-white {
   color: #ffffff !important;
 }
 
 /* Modal & Kiosk Close Buttons and Badges */
-html.dark button.rounded-full.bg-\[\#f1f5f9\],
-html.dark button.rounded-full.bg-\[\#fef2f2\],
-html.dark button.bg-\[\#f1f5f9\],
+html.dark button.rounded-full[class*="bg-[#f1f5f9]"],
+html.dark button.rounded-full[class*="bg-[#fef2f2]"],
 html.dark button[class*="bg-[#f1f5f9]"],
-html.dark kbd.bg-\[\#f1f5f9\],
 html.dark kbd[class*="bg-[#f1f5f9]"] {
   background-color: #1e293b !important;
   border: 1px solid #334155 !important;
   color: #f8fafc !important;
 }
 
-html.dark button.rounded-full.bg-\[\#f1f5f9\]:hover,
-html.dark button.rounded-full.bg-\[\#fef2f2\]:hover,
-html.dark button.bg-\[\#f1f5f9\]:hover,
+html.dark button.rounded-full[class*="bg-[#f1f5f9]"]:hover,
+html.dark button.rounded-full[class*="bg-[#fef2f2]"]:hover,
 html.dark button[class*="bg-[#f1f5f9]"]:hover {
   background-color: #334155 !important;
   color: #ffffff !important;
@@ -648,10 +640,10 @@ html.dark nav {
 }
 
 /* Hover Backgrounds: prevent any hover from flashing white/light */
-html.dark .hover\:bg-\[\#f1f5f9\]:hover,
-html.dark .hover\:bg-\[\#f8fafc\]:hover,
-html.dark .hover\:bg-white:hover,
-html.dark .hover\:bg-gray-50:hover {
+html.dark [class*="hover:bg-[#f1f5f9]"]:hover,
+html.dark [class*="hover:bg-[#f8fafc]"]:hover,
+html.dark [class*="hover:bg-white"]:hover,
+html.dark [class*="hover:bg-gray-50"]:hover {
   background-color: #334155 !important;
 }
 
